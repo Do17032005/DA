@@ -1,0 +1,294 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán | Clothes Shop</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .payment-method {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .payment-method:hover,
+        .payment-method.active {
+            border-color: #DA291C !important;
+            background-color: #fff5f5;
+        }
+
+        .payment-method.active {
+            box-shadow: 0 0 0 2px #DA291C;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <!-- Header -->
+    <header class="bg-white py-3 border-bottom">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <a href="index.html">
+                    <img src="/images/logo.png" alt="Clothes Shop" height="36">
+                </a>
+                <div class="d-flex align-items-center gap-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge rounded-circle bg-danger">1</span>
+                        <span class="fw-semibold small">Giỏ hàng</span>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge rounded-circle bg-danger">2</span>
+                        <span class="fw-semibold small text-danger">Thanh toán</span>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge rounded-circle bg-secondary">3</span>
+                        <span class="text-muted small">Hoàn tất</span>
+                    </div>
+                </div>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container py-4">
+        <div class="row g-4">
+            <!-- Checkout Form -->
+            <div class="col-lg-8">
+                <!-- Shipping Info -->
+                <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-geo-alt text-danger me-2"></i>Thông tin giao hàng</h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Họ và tên *</label>
+                            <input type="text" class="form-control" placeholder="Nguyễn Văn A" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Số điện thoại *</label>
+                            <input type="tel" class="form-control" placeholder="0912 345 678" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Email</label>
+                            <input type="email" class="form-control" placeholder="email@example.com">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Tỉnh/Thành phố *</label>
+                            <select class="form-select" required>
+                                <option value="">Chọn tỉnh/thành</option>
+                                <option>Hà Nội</option>
+                                <option>TP. Hồ Chí Minh</option>
+                                <option>Đà Nẵng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Quận/Huyện *</label>
+                            <select class="form-select" required>
+                                <option value="">Chọn quận/huyện</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Phường/Xã *</label>
+                            <select class="form-select" required>
+                                <option value="">Chọn phường/xã</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Địa chỉ chi tiết *</label>
+                            <input type="text" class="form-control" placeholder="Số nhà, tên đường..." required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Ghi chú</label>
+                            <textarea class="form-control" rows="2"
+                                placeholder="Ghi chú cho đơn hàng (không bắt buộc)"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="bg-white rounded-3 shadow-sm p-4">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-credit-card text-danger me-2"></i>Phương thức thanh toán
+                    </h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="payment-method border rounded-3 p-3 d-flex align-items-center gap-3 active">
+                                <input type="radio" name="payment" id="cod" class="form-check-input" checked>
+                                <label for="cod" class="d-flex align-items-center gap-2 mb-0 w-100"
+                                    style="cursor:pointer;">
+                                    <i class="bi bi-cash-coin fs-4 text-success"></i>
+                                    <div>
+                                        <div class="fw-semibold small">Thanh toán khi nhận hàng</div>
+                                        <div class="text-muted small">COD</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="payment-method border rounded-3 p-3 d-flex align-items-center gap-3">
+                                <input type="radio" name="payment" id="vnpay" class="form-check-input">
+                                <label for="vnpay" class="d-flex align-items-center gap-2 mb-0 w-100"
+                                    style="cursor:pointer;">
+                                    <img src="https://vnpay.vn/assets/images/logo-icon/logo-primary.svg" height="24"
+                                        alt="VNPay">
+                                    <div>
+                                        <div class="fw-semibold small">VNPay</div>
+                                        <div class="text-muted small">Ví điện tử, thẻ ATM</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="payment-method border rounded-3 p-3 d-flex align-items-center gap-3">
+                                <input type="radio" name="payment" id="momo" class="form-check-input">
+                                <label for="momo" class="d-flex align-items-center gap-2 mb-0 w-100"
+                                    style="cursor:pointer;">
+                                    <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" height="24"
+                                        alt="MoMo">
+                                    <div>
+                                        <div class="fw-semibold small">Ví MoMo</div>
+                                        <div class="text-muted small">Thanh toán qua app</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="payment-method border rounded-3 p-3 d-flex align-items-center gap-3">
+                                <input type="radio" name="payment" id="card" class="form-check-input">
+                                <label for="card" class="d-flex align-items-center gap-2 mb-0 w-100"
+                                    style="cursor:pointer;">
+                                    <i class="bi bi-credit-card-2-front fs-4 text-primary"></i>
+                                    <div>
+                                        <div class="fw-semibold small">Thẻ tín dụng/Ghi nợ</div>
+                                        <div class="text-muted small">Visa, Mastercard, JCB</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="bg-white rounded-3 shadow-sm p-4 sticky-lg-top" style="top: 20px;">
+                    <h5 class="fw-bold mb-4">Đơn hàng của bạn</h5>
+
+                    <div id="orderItems" class="border-bottom pb-3 mb-3">
+                        <!-- Items will be rendered here -->
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tạm tính</span>
+                        <span id="subtotal">0đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Phí vận chuyển</span>
+                        <span class="text-success">Miễn phí</span>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="fw-bold">Tổng cộng</span>
+                        <span class="h5 fw-bold text-danger mb-0" id="total">0đ</span>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                        <label class="form-check-label small" for="agreeTerms">
+                            Tôi đồng ý với <a href="#" class="text-danger">điều khoản sử dụng</a> và <a href="#"
+                                class="text-danger">chính sách bảo mật</a>
+                        </label>
+                    </div>
+
+                    <button class="btn btn-danger btn-lg w-100 fw-bold" onclick="placeOrder()">
+                        <i class="bi bi-check-circle me-2"></i>Đặt hàng
+                    </button>
+
+                    <a href="cart.html" class="btn btn-link w-100 mt-2 text-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Quay lại giỏ hàng
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0 small">© 2026 Clothes Shop Demo - ĐH Phenikaa All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function formatPrice(price) {
+            return price.toLocaleString('vi-VN') + 'đ';
+        }
+
+        function renderOrder() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const container = document.getElementById('orderItems');
+
+            if (cart.length === 0) {
+                window.location.href = 'cart.html';
+                return;
+            }
+
+            container.innerHTML = cart.map(item => `
+                <div class="d-flex gap-3 mb-3">
+                    <img src="${item.image}" alt="${item.name}" class="rounded" style="width:60px;height:75px;object-fit:cover;">
+                    <div class="flex-grow-1">
+                        <h6 class="small fw-semibold mb-1">${item.name}</h6>
+                        <p class="text-muted small mb-0">${item.color} / ${item.size} x ${item.qty}</p>
+                    </div>
+                    <span class="fw-semibold small">${formatPrice(item.price * item.qty)}</span>
+                </div>
+            `).join('');
+
+            const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+            document.getElementById('subtotal').textContent = formatPrice(subtotal);
+            document.getElementById('total').textContent = formatPrice(subtotal);
+        }
+
+        // Payment method selection
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('click', function () {
+                document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
+                this.classList.add('active');
+                this.querySelector('input[type="radio"]').checked = true;
+            });
+        });
+
+        function placeOrder() {
+            const agree = document.getElementById('agreeTerms').checked;
+            if (!agree) {
+                alert('Vui lòng đồng ý với điều khoản sử dụng');
+                return;
+            }
+
+            // Clear cart and redirect
+            localStorage.removeItem('cart');
+            window.location.href = 'order-success.html';
+        }
+
+        renderOrder();
+    </script>
+</body>
+
+</html>
+
