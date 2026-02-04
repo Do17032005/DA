@@ -478,6 +478,12 @@
 
     <th:block layout:fragment="scripts">
         <script>
+            function changeMainImage(src, element) {
+                document.getElementById('mainProductImage').src = src;
+                document.querySelectorAll('.thumbnail-img').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+            }
+
             function addToCartDetail() {
                 const form = document.getElementById('addToCartForm');
                 if (!form.checkValidity()) {

@@ -2,7 +2,9 @@ package com.clothes.controller;
 
 import com.clothes.model.Address;
 import com.clothes.model.Cart;
+import com.clothes.model.CartItem;
 import com.clothes.model.Order;
+import com.clothes.model.Voucher;
 import com.clothes.service.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -55,7 +57,37 @@ public class OrderController {
         List<Address> addresses = addressService.getAddressesByUserId(userId);
         Optional<Address> defaultAddress = addressService.getDefaultAddress(userId);
 
+        // Calculate totals
+        BigDecimal subtotal = cart.getTotalAmount();
+        BigDecimal shippingFee = BigDecimal.ZERO;
+        BigDecimal discount = BigDecimal.ZERO;
+
+        // Check for voucher in session
+        Object voucherObj = session.getAttribute("appliedVoucher");
+        Voucher appliedVoucher = null;
+        if (voucherObj instanceof Voucher) {
+            appliedVoucher = (Voucher) voucherObj;
+            try {
+                // Calculate discount without incrementing usage
+                discount = appliedVoucher.calculateDiscount(subtotal);
+            } catch (Exception e) {
+                // Ignore calculation errors
+            }
+        }
+
+        BigDecimal total = subtotal.add(shippingFee).subtract(discount);
+        if (total.compareTo(BigDecimal.ZERO) < 0) {
+            total = BigDecimal.ZERO;
+        }
+
         model.addAttribute("cart", cart);
+        model.addAttribute("cartItems", cart.getItems());
+        model.addAttribute("subtotal", subtotal);
+        model.addAttribute("shippingFee", shippingFee);
+        model.addAttribute("discount", discount);
+        model.addAttribute("total", total);
+        model.addAttribute("appliedVoucher", appliedVoucher);
+
         model.addAttribute("addresses", addresses);
         model.addAttribute("defaultAddress", defaultAddress.orElse(null));
 
@@ -66,10 +98,19 @@ public class OrderController {
      * Process checkout
      */
     @PostMapping("/checkout")
-    public String processCheckout(@RequestParam Long addressId,
+    public String processCheckout(
+            @RequestParam(required = false) Long addressId,
             @RequestParam(defaultValue = "COD") String paymentMethod,
             @RequestParam(required = false) String voucherCode,
-            @RequestParam(required = false) String notes,
+            @RequestParam(name = "note", required = false) String notes,
+            // New fields for address creation
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String province,
+            @RequestParam(required = false) String district,
+            @RequestParam(required = false) String ward,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) Boolean saveAddress,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         Long userId = (Long) session.getAttribute("userId");
@@ -84,14 +125,38 @@ public class OrderController {
                 return "redirect:/cart";
             }
 
-            // Get shipping address
-            Optional<Address> addressOpt = addressService.getAddressById(addressId);
-            if (addressOpt.isEmpty() || !addressOpt.get().getUserId().equals(userId)) {
-                redirectAttributes.addFlashAttribute("error", "Địa chỉ không hợp lệ");
-                return "redirect:/orders/checkout";
+            String shippingAddress = "";
+
+            // Logic to determine address
+            if (addressId != null) {
+                // Get shipping address from ID
+                Optional<Address> addressOpt = addressService.getAddressById(addressId);
+                if (addressOpt.isPresent() && addressOpt.get().getUserId().equals(userId)) {
+                    shippingAddress = addressOpt.get().getFullAddress();
+                }
             }
 
-            String shippingAddress = addressOpt.get().getFullAddress();
+            // If addressId invalid or not provided, try to construct from fields
+            if (shippingAddress.isEmpty()) {
+                if (province != null && district != null && ward != null && address != null) {
+                    shippingAddress = String.format("%s, %s, %s, %s (Người nhận: %s, SĐT: %s)",
+                            address, ward, district, province, fullName, phone);
+
+                    // Save new address if requested
+                    if (Boolean.TRUE.equals(saveAddress)) {
+                        try {
+                            addressService.createAddress(userId, fullName, phone, address, ward, district, province,
+                                    false);
+                        } catch (Exception e) {
+                            // Ignore save error, continue with order
+                        }
+                    }
+                } else {
+                    // Fail if no address info at all
+                    redirectAttributes.addFlashAttribute("error", "Vui lòng cung cấp địa chỉ giao hàng hợp lệ");
+                    return "redirect:/orders/checkout";
+                }
+            }
 
             // Apply voucher if provided
             BigDecimal totalAmount = cart.getTotalAmount();
@@ -117,7 +182,7 @@ public class OrderController {
 
             return "redirect:/orders/success";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Lỗi xử lý đơn hàng: " + e.getMessage());
             return "redirect:/orders/checkout";
         }
     }

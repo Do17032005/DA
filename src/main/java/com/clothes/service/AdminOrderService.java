@@ -98,6 +98,15 @@ public class AdminOrderService {
             if (order.getTotal() == null && order.getTotalAmount() != null) {
                 order.setTotal(order.getTotalAmount());
             }
+
+            // Populate Item Count
+            try {
+                // Assuming countItemsByOrderId exists in OrderDAO or we implement it
+                int count = orderDAO.countItemsByOrderId(order.getOrderId());
+                order.setItemCount(count);
+            } catch (Exception e) {
+                order.setItemCount(0);
+            }
         });
     }
 }

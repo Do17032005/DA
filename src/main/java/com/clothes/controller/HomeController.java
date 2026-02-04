@@ -27,6 +27,14 @@ public class HomeController {
     }
 
     /**
+     * Redirect legacy checkout URL
+     */
+    @GetMapping("/checkout")
+    public String redirectCheckout() {
+        return "redirect:/orders/checkout";
+    }
+
+    /**
      * Show home page
      */
     @GetMapping("/")
@@ -54,6 +62,7 @@ public class HomeController {
         model.addAttribute("recommendedProducts", recommendedProducts);
         model.addAttribute("newProducts", newProducts);
         model.addAttribute("trendingProducts", trendingProducts);
+        model.addAttribute("featuredProducts", trendingProducts);
         model.addAttribute("categories", categories);
 
         return "index";

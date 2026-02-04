@@ -45,6 +45,25 @@ public class WishlistController {
     }
 
     /**
+     * Get wishlist count (API)
+     */
+    @GetMapping("/count")
+    @ResponseBody
+    public java.util.Map<String, Object> getWishlistCount(HttpSession session) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId != null) {
+            int count = wishlistDAO.countByUserId(userId);
+            response.put("count", count);
+        } else {
+            response.put("count", 0);
+        }
+
+        return response;
+    }
+
+    /**
      * Add product to wishlist
      */
     @PostMapping("/add")

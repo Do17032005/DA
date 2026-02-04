@@ -52,9 +52,20 @@ public class SettingsService {
     /**
      * Get setting as boolean
      */
-    public boolean getSettingAsBoolean(String key) {
+    public boolean getSettingAsBoolean(String key, boolean defaultValue) {
         String value = getSetting(key);
-        return value != null && ("true".equalsIgnoreCase(value) || "1".equals(value));
+        if (value == null) {
+            return defaultValue;
+        }
+        return "true".equalsIgnoreCase(value) || "1".equals(value) || "yes".equalsIgnoreCase(value)
+                || "on".equalsIgnoreCase(value);
+    }
+
+    /**
+     * Get setting as boolean (Legacy support)
+     */
+    public boolean getSettingAsBoolean(String key) {
+        return getSettingAsBoolean(key, false);
     }
 
     /**

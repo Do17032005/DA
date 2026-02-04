@@ -31,8 +31,10 @@ public class OrderItemDAO {
             item.setOrderId(rs.getLong("order_id"));
             item.setProductId(rs.getLong("product_id"));
             item.setQuantity(rs.getInt("quantity"));
-            item.setUnitPrice(rs.getBigDecimal("unit_price"));
-            item.setSubtotal(rs.getBigDecimal("subtotal"));
+            item.setUnitPrice(rs.getBigDecimal("price"));
+            if (item.getUnitPrice() != null) {
+                item.setSubtotal(item.getUnitPrice().multiply(new java.math.BigDecimal(item.getQuantity())));
+            }
             item.setSize(rs.getString("size"));
             item.setColor(rs.getString("color"));
 
@@ -54,15 +56,14 @@ public class OrderItemDAO {
     }
 
     public Long save(OrderItem item) {
-        String sql = "INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal, size, color) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO order_items (order_id, product_id, quantity, price, size, color) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
                 item.getOrderId(),
                 item.getProductId(),
                 item.getQuantity(),
                 item.getUnitPrice(),
-                item.getSubtotal(),
                 item.getSize(),
                 item.getColor());
 

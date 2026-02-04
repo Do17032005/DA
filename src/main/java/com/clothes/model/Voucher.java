@@ -73,6 +73,11 @@ public class Voucher {
         return voucherCode;
     }
 
+    // Alias for template compatibility
+    public String getCode() {
+        return voucherCode;
+    }
+
     public void setVoucherCode(String voucherCode) {
         this.voucherCode = voucherCode;
     }

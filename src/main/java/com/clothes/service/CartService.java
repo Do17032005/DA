@@ -39,6 +39,8 @@ public class CartService {
         Long userId = (Long) session.getAttribute("userId");
         String sessionToken = (String) session.getAttribute("cartToken");
 
+        System.out.println("DEBUG: getCart called. UserId: " + userId + ", SessionToken: " + sessionToken);
+
         // If no token and not logged in, generate token
         if (userId == null && sessionToken == null) {
             sessionToken = UUID.randomUUID().toString();
@@ -85,11 +87,18 @@ public class CartService {
     }
 
     /**
-     * Remove item from cart
+     * Remove item from cart by Product ID
      */
     public void removeItem(Long productId) {
         Cart cart = getCart();
         cartDAO.removeItemByProduct(cart.getCartId(), productId);
+    }
+
+    /**
+     * Remove item from cart by Cart Item ID
+     */
+    public void removeCartItem(Long cartItemId) {
+        cartDAO.removeItem(cartItemId);
     }
 
     /**
@@ -109,6 +118,17 @@ public class CartService {
         if (itemOpt.isPresent()) {
             cartDAO.updateItemQuantity(itemOpt.get().getCartItemId(), quantity);
         }
+    }
+
+    /**
+     * Update item quantity by Cart Item ID
+     */
+    public void updateCartItemQuantity(Long cartItemId, Integer quantity) {
+        if (quantity <= 0) {
+            removeCartItem(cartItemId);
+            return;
+        }
+        cartDAO.updateItemQuantity(cartItemId, quantity);
     }
 
     /**

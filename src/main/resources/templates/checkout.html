@@ -45,7 +45,7 @@
                 </div>
             </div>
 
-            <form th:action="@{/checkout/process}" method="post" id="checkoutForm">
+            <form th:action="@{/orders/checkout}" method="post" id="checkoutForm">
                 <div class="row">
                     <!-- Left Column: Shipping & Payment Info -->
                     <div class="col-lg-8">
@@ -97,6 +97,7 @@
                                             Address
                                         </option>
                                     </select>
+                                    <input type="hidden" name="addressId" id="addressIdInput">
                                 </div>
 
                                 <div class="row">
@@ -165,8 +166,7 @@
                             </div>
                             <div class="card-body">
                                 <!-- COD -->
-                                <div class="form-check mb-3 p-3 border rounded" 
-                                     th:if="${@settingsService.getSettingAsBoolean('payment_cod_enabled', true)}">
+                                <div class="form-check mb-3 p-3 border rounded">
                                     <input class="form-check-input" type="radio" name="paymentMethod" 
                                            value="COD" id="paymentCOD" checked>
                                     <label class="form-check-label w-100" for="paymentCOD">
@@ -183,8 +183,7 @@
                                 </div>
 
                                 <!-- Bank Transfer -->
-                                <div class="form-check mb-3 p-3 border rounded" 
-                                     th:if="${@settingsService.getSettingAsBoolean('payment_bank_enabled', true)}">
+                                <div class="form-check mb-3 p-3 border rounded">
                                     <input class="form-check-input" type="radio" name="paymentMethod" 
                                            value="BANK" id="paymentBank">
                                     <label class="form-check-label w-100" for="paymentBank">
@@ -194,12 +193,15 @@
                                                 <strong>Chuyển khoản ngân hàng</strong>
                                                 <p class="small text-muted mb-0">
                                                     Chuyển khoản qua STK: 
-                                                    <strong th:text="${@settingsService.getSetting('bank_account_number', '')}"></strong>
+                                                    <strong th:text="${@settingsService.getSetting('bank_account_number', '1900123456789')}"></strong>
+                                                    - <span th:text="${@settingsService.getSetting('bank_name', 'Techcombank')}"></span>
                                                 </p>
                                             </div>
                                         </div>
                                     </label>
                                 </div>
+                            </div>
+                        </div>
 
                                 <!-- MoMo -->
                                 <div class="form-check mb-3 p-3 border rounded" 
@@ -363,7 +365,12 @@
         <script>
             function loadAddress() {
                 const addressId = $('#savedAddressSelect').val();
-                if (!addressId) return;
+                $('#addressIdInput').val(addressId);
+                
+                if (!addressId) {
+                    $('#checkoutForm')[0].reset();
+                    return;
+                }
 
                 $.get('/user/address/' + addressId, function(addr) {
                     $('input[name="fullName"]').val(addr.fullName);
@@ -381,15 +388,38 @@
 
             function loadDistricts() {
                 const province = $('#province').val();
-                // In production, load districts from API
-                $('#district').html('<option value="">-- Chọn --</option>');
-                $('#ward').html('<option value="">-- Chọn --</option>');
+                const districtSelect = $('#district');
+                const wardSelect = $('#ward');
+                
+                // Reset
+                districtSelect.html('<option value="">-- Chọn --</option>');
+                wardSelect.html('<option value="">-- Chọn --</option>');
+                
+                if (!province) return;
+
+                // Load districts via API
+                $.get('/addresses/api/districts?province=' + encodeURIComponent(province), function(districts) {
+                    districts.forEach(function(d) {
+                        districtSelect.append(`<option value="${d}">${d}</option>`);
+                    });
+                });
             }
 
             function loadWards() {
                 const district = $('#district').val();
-                // In production, load wards from API
-                $('#ward').html('<option value="">-- Chọn --</option>');
+                const wardSelect = $('#ward');
+                
+                // Reset
+                wardSelect.html('<option value="">-- Chọn --</option>');
+                
+                if (!district) return;
+
+                // Load wards via API
+                $.get('/addresses/api/wards?district=' + encodeURIComponent(district), function(wards) {
+                    wards.forEach(function(w) {
+                        wardSelect.append(`<option value="${w}">${w}</option>`);
+                    });
+                });
             }
 
             function applyVoucherCheckout() {

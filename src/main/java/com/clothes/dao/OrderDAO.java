@@ -44,10 +44,10 @@ public class OrderDAO {
             order.setStatus(Order.OrderStatus.fromValue(rs.getString("status")));
             order.setShippingAddress(rs.getString("shipping_address"));
             order.setPaymentMethod(rs.getString("payment_method"));
-            order.setNotes(rs.getString("notes"));
+            order.setNotes(rs.getString("note"));
 
-            // New field for admin
-            order.setOrderCode(rs.getString("order_code"));
+            // New field for admin - generated from ID since not in DB yet
+            order.setOrderCode("ORD-" + rs.getLong("order_id"));
 
             return order;
         }
@@ -55,7 +55,7 @@ public class OrderDAO {
 
     public Long save(Order order) {
         String sql = "INSERT INTO orders (user_id, order_date, total_amount, status, " +
-                "shipping_address, payment_method, notes) " +
+                "shipping_address, payment_method, note) " +
                 "VALUES (?, NOW(), ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
@@ -86,7 +86,7 @@ public class OrderDAO {
 
     public int update(Order order) {
         String sql = "UPDATE orders SET total_amount = ?, status = ?, " +
-                "shipping_address = ?, payment_method = ?, notes = ? " +
+                "shipping_address = ?, payment_method = ?, note = ? " +
                 "WHERE order_id = ?";
 
         return jdbcTemplate.update(sql,
@@ -144,6 +144,12 @@ public class OrderDAO {
     public List<Order> findRecentOrders(int limit) {
         String sql = "SELECT * FROM orders ORDER BY order_date DESC LIMIT ?";
         return jdbcTemplate.query(sql, new OrderRowMapper(), limit);
+    }
+
+    public int countItemsByOrderId(Long orderId) {
+        String sql = "SELECT COUNT(*) FROM order_items WHERE order_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, orderId);
+        return count != null ? count : 0;
     }
 
     public int delete(Long orderId) {

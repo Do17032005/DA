@@ -151,7 +151,7 @@ public class CartDAO {
      * Find items for a cart
      */
     private List<CartItem> findItemsByCartId(Long cartId) {
-        String sql = "SELECT ci.*, p.product_name, p.price, p.discount_price, p.image_url " +
+        String sql = "SELECT ci.*, p.product_name, p.price, p.discount_price, p.image_url, p.stock_quantity " +
                 "FROM cart_items ci " +
                 "JOIN products p ON ci.product_id = p.product_id " +
                 "WHERE ci.cart_id = ?";
@@ -170,6 +170,7 @@ public class CartDAO {
             p.setPrice(rs.getBigDecimal("price"));
             p.setDiscountPrice(rs.getBigDecimal("discount_price"));
             p.setImageUrl(rs.getString("image_url"));
+            p.setStockQuantity(rs.getInt("stock_quantity"));
 
             item.setProduct(p);
 

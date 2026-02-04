@@ -159,4 +159,33 @@ public class AddressController {
 
         return "redirect:/addresses";
     }
+
+    /**
+     * Get districts by province (API)
+     * Hardcoded data for demo since we don't have a full database of locations
+     */
+    @GetMapping("/api/districts")
+    @ResponseBody
+    public List<String> getDistricts(@RequestParam String province) {
+        if ("Hà Nội".equals(province)) {
+            return List.of("Ba Đình", "Hoàn Kiếm", "Tây Hồ", "Long Biên", "Cầu Giấy", "Đống Đa", "Hai Bà Trưng",
+                    "Hoàng Mai", "Thanh Xuân", "Hà Đông");
+        } else if ("TP.HCM".equals(province)) {
+            return List.of("Quận 1", "Quận 3", "Quận 4", "Quận 5", "Quận 6", "Quận 7", "Quận 8", "Quận 10", "Quận 11",
+                    "Quận 12", "Bình Thạnh", "Gò Vấp");
+        } else if ("Đà Nẵng".equals(province)) {
+            return List.of("Hải Châu", "Thanh Khê", "Sơn Trà", "Ngũ Hành Sơn", "Liên Chiểu", "Cẩm Lệ");
+        } else {
+            return List.of("Quận/Huyện 1", "Quận/Huyện 2");
+        }
+    }
+
+    /**
+     * Get wards by district (API)
+     */
+    @GetMapping("/api/wards")
+    @ResponseBody
+    public List<String> getWards(@RequestParam String district) {
+        return List.of("Phường 1", "Phường 2", "Phường 3", "Phường 4", "Xã 1", "Xã 2");
+    }
 }

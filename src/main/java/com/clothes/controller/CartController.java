@@ -2,7 +2,10 @@ package com.clothes.controller;
 
 import com.clothes.dao.ProductDAO;
 import com.clothes.model.Product;
+import com.clothes.model.Voucher;
 import com.clothes.service.CartService;
+import com.clothes.service.VoucherService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,18 +23,73 @@ public class CartController {
 
     private final CartService cartService;
     private final ProductDAO productDAO;
+    private final VoucherService voucherService;
 
-    public CartController(CartService cartService, ProductDAO productDAO) {
+    public CartController(CartService cartService, ProductDAO productDAO, VoucherService voucherService) {
         this.cartService = cartService;
         this.productDAO = productDAO;
+        this.voucherService = voucherService;
     }
 
     /**
      * Show cart page
      */
     @GetMapping
-    public String showCart(Model model) {
-        model.addAttribute("cart", cartService.getCart());
+    public String showCart(Model model, HttpSession session) {
+        com.clothes.model.Cart cart = cartService.getCart();
+        java.util.List<com.clothes.model.CartItem> items = cart.getItems();
+
+        BigDecimal subtotal = items.stream()
+                .map(item -> item.getSubtotal() != null ? item.getSubtotal() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Default shipping logic: 30k, free over 500k
+        BigDecimal shippingFee = BigDecimal.ZERO;
+        // Check setting or use default
+        BigDecimal freeShippingThreshold = new BigDecimal("500000"); // Should get from settings service if possible
+
+        if (subtotal.compareTo(BigDecimal.ZERO) > 0) {
+            shippingFee = subtotal.compareTo(freeShippingThreshold) >= 0 ? BigDecimal.ZERO : new BigDecimal("30000");
+        }
+
+        // Voucher logic
+        BigDecimal discount = BigDecimal.ZERO;
+        Voucher appliedVoucher = (Voucher) session.getAttribute("appliedVoucher");
+
+        if (appliedVoucher != null) {
+            // Re-validate voucher
+            try {
+                // Refresh voucher from DB to check current validity
+                Optional<Voucher> currentVoucher = voucherService.getVoucherById(appliedVoucher.getVoucherId());
+                if (currentVoucher.isPresent() && currentVoucher.get().isValid()) {
+                    discount = currentVoucher.get().calculateDiscount(subtotal);
+                    appliedVoucher = currentVoucher.get(); // Update with latest info
+                    session.setAttribute("appliedVoucher", appliedVoucher);
+                } else {
+                    session.removeAttribute("appliedVoucher");
+                    appliedVoucher = null;
+                }
+            } catch (Exception e) {
+                session.removeAttribute("appliedVoucher");
+                appliedVoucher = null;
+            }
+        }
+
+        BigDecimal total = subtotal.add(shippingFee).subtract(discount);
+        if (total.compareTo(BigDecimal.ZERO) < 0)
+            total = BigDecimal.ZERO;
+
+        model.addAttribute("cart", cart);
+        model.addAttribute("cartItems", items);
+        model.addAttribute("subtotal", subtotal);
+        model.addAttribute("shippingFee", shippingFee);
+        model.addAttribute("discount", discount);
+        model.addAttribute("total", total);
+        model.addAttribute("appliedVoucher", appliedVoucher);
+
+        // Get valid vouchers for display
+        model.addAttribute("availableVouchers", voucherService.getValidVouchers());
+
         return "cart";
     }
 
@@ -128,7 +186,42 @@ public class CartController {
     }
 
     /**
-     * Update cart item quantity
+     * Update cart item quantity (AJAX by CartItemId)
+     */
+    @PostMapping("/update/{cartItemId}")
+    @ResponseBody
+    public java.util.Map<String, Object> updateCartItemApi(@PathVariable Long cartItemId,
+            @RequestParam Integer quantity) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        try {
+            cartService.updateCartItemQuantity(cartItemId, quantity);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
+    /**
+     * Remove item from cart (AJAX by CartItemId)
+     */
+    @PostMapping("/remove/{cartItemId}")
+    @ResponseBody
+    public java.util.Map<String, Object> removeCartItemApi(@PathVariable Long cartItemId) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        try {
+            cartService.removeCartItem(cartItemId);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
+    /**
+     * Update cart item quantity (Legacy)
      */
     @PostMapping("/update")
     public String updateCart(@RequestParam Long productId,
@@ -203,5 +296,62 @@ public class CartController {
     @ResponseBody
     public BigDecimal getCartTotal() {
         return cartService.getTotalAmount();
+    }
+
+    /**
+     * Apply voucher
+     */
+    @PostMapping("/apply-voucher")
+    @ResponseBody
+    public java.util.Map<String, Object> applyVoucher(@RequestParam String code, HttpSession session) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        try {
+            Optional<Voucher> voucherOpt = voucherService.getVoucherByCode(code);
+            if (voucherOpt.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Mã giảm giá không tồn tại");
+                return response;
+            }
+
+            Voucher voucher = voucherOpt.get();
+            if (!voucher.isValid()) {
+                response.put("success", false);
+                response.put("message", "Mã giảm giá đã hết hạn hoặc không khả dụng");
+                return response;
+            }
+
+            // Check min order value
+            com.clothes.model.Cart cart = cartService.getCart();
+            java.util.List<com.clothes.model.CartItem> items = cart.getItems();
+            BigDecimal subtotal = items.stream()
+                    .map(item -> item.getSubtotal() != null ? item.getSubtotal() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            if (voucher.getMinOrderValue() != null && subtotal.compareTo(voucher.getMinOrderValue()) < 0) {
+                response.put("success", false);
+                response.put("message", "Giá trị đơn hàng tối thiểu là "
+                        + new java.text.DecimalFormat("#,###").format(voucher.getMinOrderValue()) + "đ");
+                return response;
+            }
+
+            session.setAttribute("appliedVoucher", voucher);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
+    /**
+     * Remove voucher
+     */
+    @PostMapping("/remove-voucher")
+    @ResponseBody
+    public java.util.Map<String, Object> removeVoucher(HttpSession session) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        session.removeAttribute("appliedVoucher");
+        response.put("success", true);
+        return response;
     }
 }

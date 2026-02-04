@@ -109,6 +109,19 @@ public class CartItem {
         }
     }
 
+    // Delegation methods for template compatibility
+    public String getProductName() {
+        return product != null ? product.getProductName() : null;
+    }
+
+    public String getImageUrl() {
+        return product != null ? product.getImageUrl() : null;
+    }
+
+    public Integer getStockQuantity() {
+        return product != null ? product.getStockQuantity() : 0;
+    }
+
     @Override
     public String toString() {
         return "CartItem{" +

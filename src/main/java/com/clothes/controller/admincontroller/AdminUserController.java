@@ -32,6 +32,14 @@ public class AdminUserController {
         }
 
         List<User> customers = customerService.getAllCustomers();
+
+        // Debug logging
+        System.out.println("AdminUserController: Fetching customers...");
+        for (User u : customers) {
+            System.out.println("User: ID=" + u.getUserId() + ", Name=" + u.getFullName() + ", Email=" + u.getEmail()
+                    + ", Role=" + u.getRole());
+        }
+
         Map<String, Integer> stats = customerService.getCustomerStats();
 
         model.addAttribute("customers", customers);
