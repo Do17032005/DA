@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle != null ? pageTitle + ' - ' + siteName : siteName}">Clothes Shop</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" th:content="${metaDescription ?: 'Cửa hàng thời trang trực tuyến'}">
+    <meta name="keywords" th:content="${metaKeywords ?: 'thời trang, quần áo'}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" th:href="${siteFavicon ?: '/images/favicon.ico'}">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <!-- Additional CSS -->
+    <th:block layout:fragment="css"></th:block>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky-top">
+        <!-- Top Bar -->
+        <div class="bg-dark text-white py-2">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small>
+                            <i class="fas fa-phone me-2"></i>
+                            <span th:text="${@settingsService.getSetting('contact_phone', '0123456789')}"></span>
+                            <i class="fas fa-envelope ms-3 me-2"></i>
+                            <span
+                                th:text="${@settingsService.getSetting('contact_email', 'contact@clothesshop.com')}"></span>
+                        </small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <small>
+                            <a th:href="${@settingsService.getSetting('facebook_url', '#')}" class="text-white me-2"
+                                target="_blank">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            <a th:href="${@settingsService.getSetting('instagram_url', '#')}" class="text-white me-2"
+                                target="_blank">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a th:href="${@settingsService.getSetting('youtube_url', '#')}" class="text-white"
+                                target="_blank">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Header -->
+        <div class="container py-3">
+            <div class="row align-items-center">
+                <!-- Logo -->
+                <div class="col-md-3">
+                    <a th:href="@{/}" class="text-decoration-none">
+                        <img th:src="${@settingsService.getSetting('site_logo', '/images/logo.png')}"
+                            th:alt="${@settingsService.getSetting('site_name', 'Clothes Shop')}" height="50"
+                            class="d-none d-md-block">
+                        <h4 class="d-md-none mb-0 text-dark"
+                            th:text="${@settingsService.getSetting('site_name', 'Clothes Shop')}"></h4>
+                    </a>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="col-md-5">
+                    <form th:action="@{/products}" method="get" class="d-flex">
+                        <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm sản phẩm..."
+                            th:value="${param.keyword}">
+                        <button type="submit" class="btn btn-primary ms-2">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- User Actions -->
+                <div class="col-md-4 text-end">
+                    <a th:href="@{/wishlist}" class="btn btn-link text-dark position-relative">
+                        <i class="far fa-heart fa-lg"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            th:if="${session.wishlistCount != null && session.wishlistCount > 0}"
+                            th:text="${session.wishlistCount}">0</span>
+                    </a>
+
+                    <a th:href="@{/cart}" class="btn btn-link text-dark position-relative ms-2">
+                        <i class="fas fa-shopping-cart fa-lg"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            th:if="${session.cartItemCount != null && session.cartItemCount > 0}"
+                            th:text="${session.cartItemCount}">0</span>
+                    </a>
+
+                    <div class="btn-group ms-2">
+                        <button type="button" class="btn btn-link text-dark dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-user fa-lg"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li th:if="${session.userId == null}">
+                                <a class="dropdown-item" th:href="@{/login}">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                                </a>
+                            </li>
+                            <li th:if="${session.userId == null}">
+                                <a class="dropdown-item" th:href="@{/register}">
+                                    <i class="fas fa-user-plus me-2"></i>Đăng ký
+                                </a>
+                            </li>
+                            <li th:if="${session.userId != null}">
+                                <h6 class="dropdown-header" th:text="${session.username}">User</h6>
+                            </li>
+                            <li th:if="${session.userId != null}">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li th:if="${session.userId != null}">
+                                <a class="dropdown-item" th:href="@{/user/profile}">
+                                    <i class="fas fa-user me-2"></i>Tài khoản
+                                </a>
+                            </li>
+                            <li th:if="${session.userId != null}">
+                                <a class="dropdown-item" th:href="@{/user/orders}">
+                                    <i class="fas fa-box me-2"></i>Đơn hàng
+                                </a>
+                            </li>
+                            <li th:if="${session.userId != null}">
+                                <a class="dropdown-item" th:href="@{/user/address}">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Địa chỉ
+                                </a>
+                            </li>
+                            <li th:if="${session.userId != null}">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item" th:href="@{/admin/login}">
+                                    <i class="fas fa-user-shield me-2"></i>Quản trị
+                                </a>
+                            </li>
+                            <li th:if="${session.userId != null}">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li th:if="${session.userId != null}">
+                                <a class="dropdown-item" th:href="@{/logout}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light border-top">
+            <div class="container">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/}">
+                                <i class="fas fa-home me-1"></i>Trang chủ
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                Sản phẩm
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" th:href="@{/products(gender='nam')}">Nam</a></li>
+                                <li><a class="dropdown-item" th:href="@{/products(gender='nu')}">Nữ</a></li>
+                                <li><a class="dropdown-item" th:href="@{/products(gender='tre-em')}">Trẻ em</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" th:href="@{/products}">Tất cả sản phẩm</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/blog}">Blog</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
+                        </li>
+                    </ul>
+                    <span class="navbar-text text-danger fw-bold">
+                        <i class="fas fa-tag me-1"></i>
+                        Miễn phí ship đơn từ
+                        <span
+                            th:text="${#numbers.formatDecimal(@settingsService.getSettingAsDouble('free_shipping_threshold', 500000), 0, 0)}">500,000</span>đ
+                    </span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Alert Messages -->
+    <div class="container mt-3" th:if="${success} or ${error} or ${message}">
+        <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${success}">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${error}">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div class="alert alert-info alert-dismissible fade show" role="alert" th:if="${message}">
+            <i class="fas fa-info-circle me-2"></i>
+            <span th:text="${message}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main layout:fragment="content">
+        <!-- Page content will be inserted here -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5">
+        <div class="container py-5">
+            <div class="row">
+                <!-- Company Info -->
+                <div class="col-md-4 mb-4">
+                    <h5 th:text="${@settingsService.getSetting('site_name', 'Clothes Shop')}">Clothes Shop</h5>
+                    <p class="small" th:text="${@settingsService.getSetting('contact_address', '')}">
+                        Địa chỉ công ty
+                    </p>
+                    <p class="small">
+                        <i class="fas fa-phone me-2"></i>
+                        <span th:text="${@settingsService.getSetting('contact_phone', '')}"></span>
+                    </p>
+                    <p class="small">
+                        <i class="fas fa-envelope me-2"></i>
+                        <span th:text="${@settingsService.getSetting('contact_email', '')}"></span>
+                    </p>
+                    <p class="small">
+                        <i class="fas fa-clock me-2"></i>
+                        <span th:text="${@settingsService.getSetting('business_hours', 'T2-CN: 8:00-22:00')}"></span>
+                    </p>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-md-2 mb-4">
+                    <h6>Về chúng tôi</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/about" class="text-white-50 text-decoration-none small">Giới thiệu</a></li>
+                        <li><a href="/stores" class="text-white-50 text-decoration-none small">Hệ thống cửa hàng</a>
+                        </li>
+                        <li><a href="/contact" class="text-white-50 text-decoration-none small">Liên hệ</a></li>
+                        <li><a href="/blog" class="text-white-50 text-decoration-none small">Blog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Customer Service -->
+                <div class="col-md-3 mb-4">
+                    <h6>Chăm sóc khách hàng</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/policy-return" class="text-white-50 text-decoration-none small">Chính sách đổi
+                                trả</a></li>
+                        <li><a href="/policy-privacy" class="text-white-50 text-decoration-none small">Chính sách bảo
+                                mật</a></li>
+                        <li><a href="/policy-shipping" class="text-white-50 text-decoration-none small">Chính sách vận
+                                chuyển</a></li>
+                        <li><a href="/faq" class="text-white-50 text-decoration-none small">Câu hỏi thường gặp</a></li>
+                    </ul>
+                </div>
+
+                <!-- Newsletter -->
+                <div class="col-md-3 mb-4">
+                    <h6>Đăng ký nhận tin</h6>
+                    <p class="small">Nhận thông tin khuyến mãi mới nhất</p>
+                    <form th:action="@{/newsletter/subscribe}" method="post" class="mb-3">
+                        <div class="input-group input-group-sm">
+                            <input type="email" name="email" class="form-control" placeholder="Email của bạn" required>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                    <div>
+                        <h6>Kết nối với chúng tôi</h6>
+                        <a th:href="${@settingsService.getSetting('facebook_url', '#')}"
+                            class="btn btn-sm btn-outline-light me-2" target="_blank">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a th:href="${@settingsService.getSetting('instagram_url', '#')}"
+                            class="btn btn-sm btn-outline-light me-2" target="_blank">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a th:href="${@settingsService.getSetting('youtube_url', '#')}"
+                            class="btn btn-sm btn-outline-light" target="_blank">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copyright -->
+            <div class="row mt-4 pt-4 border-top border-secondary">
+                <div class="col-md-6">
+                    <p class="small mb-0">
+                        &copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span>
+                        <span th:text="${@settingsService.getSetting('site_name', 'Clothes Shop')}"></span>.
+                        All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <img src="/images/payment-methods.png" alt="Payment methods" height="25" class="opacity-75">
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <a href="#" class="btn btn-primary btn-floating position-fixed bottom-0 end-0 m-4" id="backToTop"
+        style="display: none;">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Custom JS -->
+    <script th:src="@{/js/main.js}"></script>
+
+    <!-- Additional Scripts -->
+    <th:block layout:fragment="scripts"></th:block>
+
+    <script>
+        // Back to top button
+        $(window).scroll(function () {
+            if ($(this).scrollTop() > 100) {
+                $('#backToTop').fadeIn();
+            } else {
+                $('#backToTop').fadeOut();
+            }
+        });
+
+        $('#backToTop').click(function (e) {
+            e.preventDefault();
+            $('html, body').animate({ scrollTop: 0 }, 500);
+        });
+
+        // Auto dismiss alerts after 5 seconds
+        setTimeout(function () {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    </script>
+</body>
+
+</html>

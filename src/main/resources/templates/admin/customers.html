@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/admin-layout}">
+<head>
+    <title>Quản lý khách hàng</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-users me-2"></i>Quản lý Khách hàng
+            </h1>
+            <button class="btn btn-primary" onclick="exportCustomers()">
+                <i class="fas fa-file-excel me-2"></i>Xuất Excel
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Tổng khách hàng
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${totalCustomers ?: 0}">
+                            1,245
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            KH hoạt động
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${activeCustomers ?: 0}">
+                            1,180
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            KH mới (tháng)
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${newCustomers ?: 0}">
+                            45
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            KH bị khóa
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${blockedCustomers ?: 0}">
+                            15
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="m-0 font-weight-bold text-primary">Danh sách khách hàng</h6>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" class="form-control form-control-sm" id="searchCustomer" 
+                               placeholder="Tìm theo tên, email, SĐT...">
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Khách hàng</th>
+                                <th>Email</th>
+                                <th>Số điện thoại</th>
+                                <th>Đơn hàng</th>
+                                <th>Tổng chi</th>
+                                <th>Ngày đăng ký</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="customer : ${customers}">
+                                <td th:text="${customer.userId}">1</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img th:src="${customer.avatar ?: '/images/default-avatar.png'}" 
+                                             class="rounded-circle me-2"
+                                             style="width: 40px; height: 40px; object-fit: cover;"
+                                             alt="Avatar">
+                                        <div>
+                                            <strong th:text="${customer.fullName}">Nguyễn Văn A</strong>
+                                            <br>
+                                            <small class="text-muted" th:if="${customer.isVip}">
+                                                <i class="fas fa-crown text-warning"></i> VIP
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td th:text="${customer.email}">user@example.com</td>
+                                <td th:text="${customer.phone}">0123456789</td>
+                                <td>
+                                    <span class="badge bg-info" th:text="${customer.orderCount ?: 0}">12</span>
+                                </td>
+                                <td>
+                                    <strong class="text-success" 
+                                            th:text="${#numbers.formatDecimal(customer.totalSpent ?: 0, 0, 0)} + 'đ'">
+                                        5,000,000đ
+                                    </strong>
+                                </td>
+                                <td th:text="${#temporals.format(customer.createdAt, 'dd/MM/yyyy')}">
+                                    01/01/2026
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               th:checked="${customer.isActive}"
+                                               th:onclick="'toggleCustomerStatus(' + ${customer.userId} + ')'">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{/admin/customers/{id}(id=${customer.userId})}" 
+                                           class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-outline-warning" 
+                                                th:onclick="'sendEmail(' + ${customer.userId} + ')'">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav th:if="${totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/admin/customers(page=${currentPage - 1})}">&laquo;</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${i == currentPage ? 'active' : ''}">
+                            <a class="page-link" th:href="@{/admin/customers(page=${i})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/admin/customers(page=${currentPage + 1})}">&raquo;</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function toggleCustomerStatus(userId) {
+                $.post('/admin/customers/' + userId + '/toggle-status', function() {
+                    console.log('Toggled status');
+                });
+            }
+
+            function sendEmail(userId) {
+                alert('Chức năng gửi email đang được phát triển!');
+            }
+
+            function exportCustomers() {
+                window.location.href = '/admin/customers/export';
+            }
+
+            $('#searchCustomer').on('keyup', function() {
+                const value = $(this).val().toLowerCase();
+                $('tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html>

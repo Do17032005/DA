@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/admin-layout}">
+<head>
+    <title>Quản lý đơn hàng</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-shopping-cart me-2"></i>Quản lý Đơn hàng
+            </h1>
+            <button class="btn btn-success" onclick="exportOrders()">
+                <i class="fas fa-file-excel me-2"></i>Xuất báo cáo
+            </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Chờ xác nhận
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${pendingCount ?: 0}">
+                                    12
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clock fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Đang xử lý
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${processingCount ?: 0}">
+                                    25
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-cog fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Đang giao
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${shippingCount ?: 0}">
+                                    18
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-truck fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Hoàn thành
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${completedCount ?: 0}">
+                                    234
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-check fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Tabs -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <ul class="nav nav-pills card-header-pills">
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${status == null || status == '' ? 'active' : ''}" 
+                           th:href="@{/admin/orders}">Tất cả</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${status == 'PENDING' ? 'active' : ''}" 
+                           th:href="@{/admin/orders(status='PENDING')}">Chờ xác nhận</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${status == 'PROCESSING' ? 'active' : ''}" 
+                           th:href="@{/admin/orders(status='PROCESSING')}">Đang xử lý</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${status == 'SHIPPING' ? 'active' : ''}" 
+                           th:href="@{/admin/orders(status='SHIPPING')}">Đang giao</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${status == 'COMPLETED' ? 'active' : ''}" 
+                           th:href="@{/admin/orders(status='COMPLETED')}">Hoàn thành</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${status == 'CANCELLED' ? 'active' : ''}" 
+                           th:href="@{/admin/orders(status='CANCELLED')}">Đã hủy</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <!-- Search -->
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" id="searchOrder" 
+                               placeholder="Tìm theo mã đơn, tên khách hàng, SĐT...">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="date" class="form-control" id="filterDate">
+                    </div>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Sản phẩm</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày đặt</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="order : ${orders}">
+                                <td>
+                                    <a th:href="@{/admin/orders/{id}(id=${order.orderId})}" class="text-primary fw-bold">
+                                        <span th:text="${order.orderCode}">#ORD-001</span>
+                                    </a>
+                                </td>
+                                <td>
+                                    <div th:text="${order.customerName}">Nguyễn Văn A</div>
+                                    <small class="text-muted" th:text="${order.phone}">0123456789</small>
+                                </td>
+                                <td>
+                                    <span th:text="${order.itemCount}">3</span> sản phẩm
+                                </td>
+                                <td>
+                                    <strong class="text-danger" 
+                                            th:text="${#numbers.formatDecimal(order.total, 0, 0)} + 'đ'">
+                                        500,000đ
+                                    </strong>
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm" 
+                                            th:onchange="'updateOrderStatus(' + ${order.orderId} + ', this.value)'">
+                                        <option value="PENDING" th:selected="${order.status == 'PENDING'}">Chờ xác nhận</option>
+                                        <option value="PROCESSING" th:selected="${order.status == 'PROCESSING'}">Đang xử lý</option>
+                                        <option value="SHIPPING" th:selected="${order.status == 'SHIPPING'}">Đang giao</option>
+                                        <option value="COMPLETED" th:selected="${order.status == 'COMPLETED'}">Hoàn thành</option>
+                                        <option value="CANCELLED" th:selected="${order.status == 'CANCELLED'}">Đã hủy</option>
+                                    </select>
+                                </td>
+                                <td th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">
+                                    01/02/2026
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{/admin/orders/{id}(id=${order.orderId})}" 
+                                           class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-outline-success" 
+                                                th:onclick="'printInvoice(' + ${order.orderId} + ')'">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav th:if="${totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/admin/orders(page=${currentPage - 1}, status=${status})}">&laquo;</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${i == currentPage ? 'active' : ''}">
+                            <a class="page-link" th:href="@{/admin/orders(page=${i}, status=${status})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/admin/orders(page=${currentPage + 1}, status=${status})}">&raquo;</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function updateOrderStatus(orderId, newStatus) {
+                $.post('/admin/orders/' + orderId + '/update-status', {status: newStatus}, function() {
+                    alert('Đã cập nhật trạng thái đơn hàng!');
+                    location.reload();
+                });
+            }
+
+            function printInvoice(orderId) {
+                window.open('/admin/orders/' + orderId + '/invoice', '_blank');
+            }
+
+            function exportOrders() {
+                window.location.href = '/admin/orders/export';
+            }
+
+            $('#searchOrder').on('keyup', function() {
+                const value = $(this).val().toLowerCase();
+                $('tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html>

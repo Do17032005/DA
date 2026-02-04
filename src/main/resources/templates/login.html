@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -11,6 +11,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
 
     <style>
@@ -147,13 +149,15 @@
     <header class="bg-white py-3 border-bottom">
         <div class="container">
             <div class="d-flex align-items-center justify-content-between">
-                <a href="index.html" class="navbar-brand">\r\n <img src="/images/logo.png" alt="Clothes Shop"
-                        height="36" style="max-width: 120px; object-fit: contain;">\r\n </a>
+                <a href="/" class="navbar-brand">
+                    <img src="/images/logo.svg" alt="Clothes Shop" height="36"
+                        style="max-width: 160px; object-fit: contain;">
+                </a>
                 <nav class="d-none d-md-flex gap-4">
-                    <a href="index.html" class="text-decoration-none text-secondary">Trang chủ</a>
-                    <a href="products.html" class="text-decoration-none text-secondary">Sản phẩm</a>
+                    <a href="/" class="text-decoration-none text-secondary">Trang chủ</a>
+                    <a href="/products" class="text-decoration-none text-secondary">Sản phẩm</a>
                 </nav>
-                <a href="cart.html" class="text-decoration-none text-secondary d-flex align-items-center gap-2">
+                <a href="/cart" class="text-decoration-none text-secondary d-flex align-items-center gap-2">
                     <i class="bi bi-bag fs-5"></i>
                     <span class="d-none d-md-inline">Giỏ hàng</span>
                 </a>
@@ -171,14 +175,24 @@
             </div>
 
             <div class="login-body">
+                <!-- Error Messages -->
+                <div class="alert alert-danger" th:if="${error}">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                </div>
+                <div class="alert alert-success" th:if="${success}">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${success}"></span>
+                </div>
+
                 <!-- Login Form -->
-                <form id="loginForm">
+                <form th:action="@{/login}" method="post">
                     <div class="mb-3">
-                        <label for="username" class="form-label fw-semibold">Tên đăng nhập</label>
+                        <label for="username" class="form-label fw-semibold">Tên đăng nhập / Email</label>
                         <div class="input-group">
                             <span class="input-group-text border-end-0"><i class="bi bi-person"></i></span>
-                            <input type="text" class="form-control border-start-0" id="username"
-                                placeholder="Nhập tên đăng nhập" required>
+                            <input type="text" class="form-control border-start-0" id="username" name="username"
+                                placeholder="Nhập tên đăng nhập hoặc email" required th:value="${username}">
                         </div>
                     </div>
 
@@ -187,7 +201,7 @@
                         <div class="input-group">
                             <span class="input-group-text border-end-0"><i class="bi bi-lock"></i></span>
                             <input type="password" class="form-control border-start-0 border-end-0" id="password"
-                                placeholder="Nhập mật khẩu" required>
+                                name="password" placeholder="Nhập mật khẩu" required>
                             <span class="input-group-text" onclick="togglePassword()">
                                 <i class="bi bi-eye" id="toggleIcon"></i>
                             </span>
@@ -196,7 +210,7 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="remember"
+                            <input class="form-check-input" type="checkbox" id="remember" name="rememberMe"
                                 style="accent-color: #DA291C;">
                             <label class="form-check-label small" for="remember">Ghi nhớ đăng nhập</label>
                         </div>
@@ -223,7 +237,7 @@
                 <div class="text-center mt-4">
                     <p class="mb-0 text-muted">
                         Chưa có tài khoản?
-                        <a href="register.html" class="text-danger fw-semibold text-decoration-none">Đăng ký ngay</a>
+                        <a href="/register" class="text-danger fw-semibold text-decoration-none">Đăng ký ngay</a>
                     </p>
                 </div>
             </div>
@@ -239,6 +253,62 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .invalid-feedback {
+            display: block;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+
+        .form-control.is-valid {
+            border-color: #198754;
+        }
+
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spinner 0.6s linear infinite;
+        }
+
+        @keyframes spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .alert {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 
     <script>
         // Toggle password visibility
@@ -257,53 +327,191 @@
             }
         }
 
+        // Validation functions
+        function validateUsername(username) {
+            const usernameInput = document.getElementById('username');
+            const errors = [];
+
+            if (!username) {
+                errors.push('Vui lòng nhập tên đăng nhập');
+            } else if (username.length < 3) {
+                errors.push('Tên đăng nhập phải có ít nhất 3 ký tự');
+            }
+
+            if (errors.length > 0) {
+                showFieldError(usernameInput, errors[0]);
+                return false;
+            } else {
+                clearFieldError(usernameInput);
+                return true;
+            }
+        }
+
+        function validatePassword(password) {
+            const passwordInput = document.getElementById('password');
+            const errors = [];
+
+            if (!password) {
+                errors.push('Vui lòng nhập mật khẩu');
+            } else if (password.length < 6) {
+                errors.push('Mật khẩu phải có ít nhất 6 ký tự');
+            }
+
+            if (errors.length > 0) {
+                showFieldError(passwordInput, errors[0]);
+                return false;
+            } else {
+                clearFieldError(passwordInput);
+                return true;
+            }
+        }
+
+        function showFieldError(input, message) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+
+            let feedback = input.parentElement.querySelector('.invalid-feedback');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                input.parentElement.appendChild(feedback);
+            }
+            feedback.textContent = message;
+        }
+
+        function clearFieldError(input) {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+
+            const feedback = input.parentElement.querySelector('.invalid-feedback');
+            if (feedback) {
+                feedback.remove();
+            }
+        }
+
+        function showAlert(message, type = 'danger') {
+            const existingAlert = document.querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            const form = document.getElementById('loginForm');
+            form.parentElement.insertBefore(alert, form);
+
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Real-time validation
+        document.getElementById('username').addEventListener('blur', function () {
+            validateUsername(this.value.trim());
+        });
+
+        document.getElementById('password').addEventListener('blur', function () {
+            validatePassword(this.value);
+        });
+
+        document.getElementById('username').addEventListener('input', function () {
+            if (this.classList.contains('is-invalid')) {
+                validateUsername(this.value.trim());
+            }
+        });
+
+        document.getElementById('password').addEventListener('input', function () {
+            if (this.classList.contains('is-invalid')) {
+                validatePassword(this.value);
+            }
+        });
+
         // Login form submission
         document.getElementById('loginForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
 
-            // Get stored users
-            const users = JSON.parse(localStorage.getItem('users')) || [];
+            // Validate all fields
+            const isUsernameValid = validateUsername(username);
+            const isPasswordValid = validatePassword(password);
 
-            // Find user
-            const user = users.find(u => u.username === username && u.password === password);
-
-            if (user) {
-                // Store logged in user
-                localStorage.setItem('currentUser', JSON.stringify(user));
-
-                alert('Đăng nhập thành công! Chào mừng ' + user.fullname);
-                window.location.href = 'index.html';
-            } else {
-                alert('Tên đăng nhập hoặc mật khẩu không đúng!');
+            if (!isUsernameValid || !isPasswordValid) {
+                showAlert('Vui lòng kiểm tra lại thông tin đăng nhập!', 'danger');
+                return;
             }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.classList.add('btn-loading');
+            const btnText = submitBtn.textContent;
+            submitBtn.textContent = '';
+
+            // Call API to login
+            Auth.login(username, password).then(result => {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.textContent = btnText;
+
+                if (result.success) {
+                    showAlert('Đăng nhập thành công! Đang chuyển hướng...', 'success');
+
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    showAlert(result.error || 'Tên đăng nhập hoặc mật khẩu không đúng!', 'danger');
+                }
+            }).catch(error => {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.textContent = btnText;
+                showAlert('Đã xảy ra lỗi kết nối. Vui lòng kiểm tra backend!', 'danger');
+                console.error('Login error:', error);
+            });
         });
 
         // Google login (simulated)
         function loginWithGoogle() {
-            // Simulate Google login
-            const googleUser = {
-                username: 'google_user_' + Date.now(),
-                fullname: 'Google User',
-                email: 'user@gmail.com',
-                loginType: 'google'
-            };
+            const googleBtn = event.target.closest('button');
+            googleBtn.disabled = true;
+            googleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang kết nối...';
 
-            localStorage.setItem('currentUser', JSON.stringify(googleUser));
+            // Simulate Google login delay
+            setTimeout(() => {
+                const googleUser = {
+                    username: 'google_user_' + Date.now(),
+                    fullname: 'Google User',
+                    email: 'user@gmail.com',
+                    loginType: 'google'
+                };
 
-            alert('Đăng nhập bằng Google thành công!');
-            window.location.href = 'index.html';
+                localStorage.setItem('currentUser', JSON.stringify(googleUser));
+
+                showAlert('Đăng nhập bằng Google thành công!', 'success');
+
+                setTimeout(() => {
+                    window.location.href = "/index";
+                }, 1000);
+            }, 1000);
         }
 
         // Check if already logged in
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (currentUser) {
             // Already logged in, redirect to home
-            // window.location.href = 'index.html';
+            // window.location.href="/index";
         }
     </script>
+
+    <!-- API Service Layer -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
 </body>
 
 </html>

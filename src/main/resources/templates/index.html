@@ -1,812 +1,399 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clothes Shop | Fashion For All</title>
-    <meta name="description"
-        content="Clothes Shop - Dự án website bán hàng thời trang. Thực hiện bởi Nguyễn Tiến Doanh và Hoàng Văn Độ - ĐH Phenikaa.">
+    <title>Trang chủ</title>
+    <style>
+        .category-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
 
-    <!-- Google Fonts - Montserrat -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+        .category-card img {
+            transition: transform 0.3s;
+        }
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/style.css">
+        .category-card:hover img {
+            transform: scale(1.05);
+        }
 
-    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+        .category-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+            padding: 20px;
+            color: white;
+        }
+
+        .product-card {
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .badge-sale {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+        }
+
+        .wishlist-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1;
+        }
+    </style>
 </head>
 
 <body>
-    <!-- Top Promo Banner -->
-    <div class="top-banner bg-danger py-2">
-        <div class="container">
-            <a href="#"
-                class="text-white text-decoration-none d-flex align-items-center justify-content-center gap-3 small fw-semibold text-uppercase">
-                <span class="fw-bold">CLOTHES SHOP SHOPPING DAYS</span>
-                <span class="opacity-50">|</span>
-                <span>GIẢM TỚI 50%</span>
-                <span class="opacity-50">|</span>
-                <span>MUA 2 NHẬN 3</span>
-                <span class="opacity-50">|</span>
-                <span>14/1 - 25/1</span>
-            </a>
-        </div>
-    </div>
-
-    <!-- Sub Header Carousel -->
-    <div class="sub-header bg-light py-2 border-bottom">
-        <div class="container">
-            <div class="d-flex align-items-center justify-content-center gap-2 small text-secondary">
-                <span>🔄</span>
-                <span>ĐỔI HÀNG MIỄN PHÍ - TẠI TẤT CẢ CỬA HÀNG TRONG 30 NGÀY</span>
-                <span class="mx-3">|</span>
-                <span>✓</span>
-                <span>100% HÀNG CHÍNH HÃNG</span>
-                <span class="mx-3">|</span>
-                <span>🚚</span>
-                <span>FREESHIP ĐƠN TỪ 499K</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Header -->
-    <header class="main-header bg-white py-3 border-bottom sticky-top">
-        <div class="container">
-            <div class="d-flex align-items-center justify-content-between gap-4">
-                <!-- Logo -->
-                <a href="index.html" class="navbar-brand">
-                    <img src="/images/logo.png" alt="Clothes Shop" height="36"
-                        style="max-width: 120px; object-fit: contain;">
-                </a>
-
-                <!-- Search Bar -->
-                <div class="search-bar flex-grow-1" style="max-width: 500px;">
-                    <div class="input-group">
-                        <input type="text" class="form-control rounded-pill rounded-end border-end-0"
-                            placeholder="Tìm kiếm">
-                        <button class="btn btn-outline-secondary rounded-pill rounded-start border-start-0 bg-white"
-                            type="button">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Header Icons -->
-                <div class="d-flex align-items-center gap-4">
-                    <a href="#"
-                        class="text-decoration-none text-secondary d-flex flex-column align-items-center small header-icon-link">
-                        <i class="bi bi-geo-alt fs-5"></i>
-                        <span>Cửa hàng</span>
-                    </a>
-                    <a href="login.html"
-                        class="text-decoration-none text-secondary d-flex flex-column align-items-center small header-icon-link"
-                        id="loginBtn">
-                        <i class="bi bi-person fs-5"></i>
-                        <span>Tài khoản</span>
-                    </a>
-                    <a href="cart.html"
-                        class="text-decoration-none text-secondary d-flex flex-column align-items-center small header-icon-link position-relative">
-                        <i class="bi bi-bag fs-5"></i>
-                        <span>Giỏ hàng</span>
-                        <span
-                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-count">0</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Navigation Menu -->
-    <nav class="navbar navbar-expand-lg bg-white border-bottom py-0 sticky-nav">
-        <div class="container">
-            <button class="navbar-toggler border-0 py-3" type="button" data-bs-toggle="collapse"
-                data-bs-target="#mainNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-center" id="mainNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link text-danger fw-bold text-uppercase px-3 py-3" href="#">CLOTHES SHOP DAY</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link text-dark fw-semibold text-uppercase px-3 py-3 dropdown-toggle" href="#"
-                            data-bs-toggle="dropdown">NỮ</a>
-                        <div class="dropdown-menu mega-menu p-4 shadow-lg border-0 rounded-0 rounded-bottom">
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <h6 class="fw-bold text-uppercase mb-3">Áo</h6>
-                                    <ul class="list-unstyled">
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Áo thun</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Áo sơ mi</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Áo len</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Áo khoác</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Áo hoodie</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-3">
-                                    <h6 class="fw-bold text-uppercase mb-3">Quần</h6>
-                                    <ul class="list-unstyled">
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Quần jean</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Quần kaki</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Quần short</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Quần jogger</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-3">
-                                    <h6 class="fw-bold text-uppercase mb-3">Váy & Đầm</h6>
-                                    <ul class="list-unstyled">
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Váy</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Đầm</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Chân váy</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-3">
-                                    <h6 class="fw-bold text-uppercase mb-3">Đồ mặc nhà</h6>
-                                    <ul class="list-unstyled">
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Bộ mặc nhà</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Đồ ngủ</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link text-dark fw-semibold text-uppercase px-3 py-3 dropdown-toggle" href="#"
-                            data-bs-toggle="dropdown">NAM</a>
-                        <div class="dropdown-menu mega-menu p-4 shadow-lg border-0 rounded-0 rounded-bottom">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h6 class="fw-bold text-uppercase mb-3">Áo</h6>
-                                    <ul class="list-unstyled">
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Áo thun</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Áo polo</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Áo sơ mi</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Áo khoác</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6 class="fw-bold text-uppercase mb-3">Quần</h6>
-                                    <ul class="list-unstyled">
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Quần jean</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Quần kaki</a></li>
-                                        <li><a class="dropdown-item px-0 py-1" href="products.html">Quần short</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-semibold text-uppercase px-3 py-3" href="#">BÉ GÁI</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-semibold text-uppercase px-3 py-3" href="#">BÉ TRAI</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-semibold text-uppercase px-3 py-3" href="products.html">SẢN PHẨM
-                            MỚI</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-semibold text-uppercase px-3 py-3" href="#">BST MỚI</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-semibold text-uppercase px-3 py-3" href="#">LICENSE</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Banner Carousel -->
-    <section class="hero-section">
-        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+    <main layout:fragment="content">
+        <!-- Hero Slider -->
+        <div id="heroSlider" class="carousel slide mb-5" data-bs-ride="carousel">
             <div class="carousel-indicators">
-                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
-                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+                <button type="button" data-bs-target="#heroSlider" data-bs-slide-to="0" class="active"></button>
+                <button type="button" data-bs-target="#heroSlider" data-bs-slide-to="1"></button>
+                <button type="button" data-bs-target="#heroSlider" data-bs-slide-to="2"></button>
             </div>
             <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <div class="hero-banner text-white d-flex align-items-center justify-content-center"
-                        style="min-height: 400px; background: linear-gradient(135deg, #c41e3a 0%, #8b0000 100%);">
-                        <div class="container">
-                            <div class="row align-items-center text-center">
-                                <div class="col-md-4">
-                                    <h2 class="display-5 fw-bold text-uppercase mb-2">LỄ HỘI MUA SẮM</h2>
-                                    <p class="fs-5 fw-semibold opacity-75">CLOTHES SHOP SHOPPING DAYS</p>
-                                </div>
-                                <div class="col-md-4">
-                                    <span
-                                        class="d-block small bg-dark bg-opacity-25 rounded px-3 py-1 mb-2 d-inline-block">Giảm
-                                        tới</span>
-                                    <div class="display-1 fw-bold">50<span class="fs-2">%</span></div>
-                                </div>
-                                <div class="col-md-4">
-                                    <h3 class="h4 fw-bold mb-2">ĐẶC BIỆT</h3>
-                                    <p class="h3 fw-bold mb-2">MUA 2 NHẬN 3</p>
-                                    <p class="small opacity-75 mb-2">Hàng ngàn sản phẩm hấp dẫn</p>
-                                    <p class="small opacity-75 mb-1">Online: 14/1 - 25/1</p>
-                                    <p class="small opacity-75 mb-3">Hệ thống: 16/1 - 25/1</p>
-                                    <a href="products.html"
-                                        class="btn btn-light text-danger fw-bold rounded-pill px-4">Mua ngay</a>
-                                </div>
-                            </div>
-                        </div>
+                <div class="carousel-item active" th:if="${banners != null && !banners.empty}"
+                    th:each="banner, iterStat : ${banners}" th:classappend="${iterStat.index == 0 ? 'active' : ''}">
+                    <img th:src="${banner.imageUrl}" class="d-block w-100" th:alt="${banner.title}"
+                        style="max-height: 500px; object-fit: cover;">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h2 th:text="${banner.title}">Banner Title</h2>
+                        <p th:text="${banner.subtitle}">Banner Subtitle</p>
+                        <a th:href="${banner.linkUrl}" class="btn btn-light btn-lg" th:if="${banner.linkUrl != null}">
+                            Xem ngay
+                        </a>
                     </div>
                 </div>
-                <div class="carousel-item">
-                    <div class="hero-banner text-white d-flex align-items-center justify-content-center"
-                        style="min-height: 400px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
-                        <div class="container text-center">
-                            <h2 class="display-4 fw-bold mb-3">BỘ SƯU TẬP MỚI</h2>
-                            <p class="fs-5 mb-4">Khám phá xu hướng thời trang Xuân Hè 2026</p>
-                            <a href="products.html" class="btn btn-outline-light rounded-pill px-4">Khám phá ngay</a>
-                        </div>
+                <!-- Default slides if no banners -->
+                <div class="carousel-item active" th:if="${banners == null || banners.empty}">
+                    <img src="/images/banner1.png" class="d-block w-100" alt="Banner 1"
+                        style="max-height: 500px; object-fit: cover;">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h2>Bộ sưu tập mới 2026</h2>
+                        <p>Khám phá phong cách thời trang hiện đại</p>
+                        <a href="/products" class="btn btn-light btn-lg">Xem ngay</a>
                     </div>
                 </div>
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroSlider" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon"></span>
             </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <button class="carousel-control-next" type="button" data-bs-target="#heroSlider" data-bs-slide="next">
                 <span class="carousel-control-next-icon"></span>
             </button>
         </div>
-    </section>
 
-    <!-- Voucher Section -->
-    <section class="voucher-section py-4 bg-white">
-        <div class="container">
-            <div class="row g-3">
-                <div class="col-md-3 col-6">
-                    <div
-                        class="voucher-card d-flex rounded-3 overflow-hidden border border-2 border-danger border-dashed h-100">
-                        <div
-                            class="voucher-left bg-danger text-white d-flex align-items-center justify-content-center px-3">
-                            <span class="h4 fw-bold mb-0">30%</span>
+        <!-- Categories Section -->
+        <section class="container mb-5">
+            <h2 class="text-center mb-4 fw-bold">Danh mục nổi bật</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <a href="/products?gender=nam" class="text-decoration-none">
+                        <div class="category-card shadow">
+                            <img src="/images/Áo len nam.png" alt="Thời trang Nam" class="w-100"
+                                style="height: 350px; object-fit: cover;">
+                            <div class="category-overlay">
+                                <h3 class="mb-0">Thời trang Nam</h3>
+                                <p class="mb-0 small">Phong cách lịch lãm</p>
+                            </div>
                         </div>
-                        <div class="voucher-right flex-grow-1 p-3 d-flex flex-column justify-content-center">
-                            <p class="fw-bold mb-1 small">Giảm 30%</p>
-                            <p class="text-muted mb-2 small">Đơn từ 899K</p>
-                            <button class="btn btn-danger btn-sm rounded-pill px-3 align-self-start">Lưu</button>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/products?gender=nu" class="text-decoration-none">
+                        <div class="category-card shadow">
+                            <img src="/images/Áo len nữ.png" alt="Thời trang Nữ" class="w-100"
+                                style="height: 350px; object-fit: cover;">
+                            <div class="category-overlay">
+                                <h3 class="mb-0">Thời trang Nữ</h3>
+                                <p class="mb-0 small">Thanh lịch, hiện đại</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/products?gender=tre-em" class="text-decoration-none">
+                        <div class="category-card shadow">
+                            <img src="/images/Ao-khoac-gio-be-gai-chong-nuoc.png" alt="Thời trang Trẻ em" class="w-100"
+                                style="height: 350px; object-fit: cover;">
+                            <div class="category-overlay">
+                                <h3 class="mb-0">Thời trang Trẻ em</h3>
+                                <p class="mb-0 small">Đáng yêu, năng động</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Products -->
+        <section class="container mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold mb-0">Sản phẩm nổi bật</h2>
+                <a href="/products" class="btn btn-outline-primary">
+                    Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-3 col-sm-6" th:each="product : ${featuredProducts}">
+                    <div class="card product-card h-100 position-relative">
+                        <!-- Sale Badge -->
+                        <span class="badge bg-danger badge-sale"
+                            th:if="${product.discountPrice != null && product.discountPrice < product.price}">
+                            -<span
+                                th:text="${#numbers.formatDecimal((1 - product.discountPrice / product.price) * 100, 0, 0)}">20</span>%
+                        </span>
+
+                        <!-- Wishlist Button -->
+                        <button class="btn btn-light btn-sm rounded-circle wishlist-btn"
+                            th:onclick="'toggleWishlist(' + ${product.productId} + ')'">
+                            <i class="far fa-heart"></i>
+                        </button>
+
+                        <a th:href="@{/products/{id}(id=${product.productId})}">
+                            <img th:src="${product.imageUrl}" th:alt="${product.productName}" class="card-img-top"
+                                style="height: 280px; object-fit: cover;">
+                        </a>
+
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a th:href="@{/products/{id}(id=${product.productId})}"
+                                    class="text-decoration-none text-dark" th:text="${product.productName}">
+                                </a>
+                            </h6>
+
+                            <div class="mb-2">
+                                <span class="h5 text-danger mb-0"
+                                    th:if="${product.discountPrice != null && product.discountPrice < product.price}">
+                                    <span
+                                        th:text="${#numbers.formatDecimal(product.discountPrice, 0, 0)}">199,000</span>đ
+                                </span>
+                                <span class="text-muted text-decoration-line-through small"
+                                    th:if="${product.discountPrice != null && product.discountPrice < product.price}"
+                                    th:text="${#numbers.formatDecimal(product.price, 0, 0)} + 'đ'">
+                                </span>
+                                <span class="h5 text-danger mb-0"
+                                    th:if="${product.discountPrice == null || product.discountPrice >= product.price}">
+                                    <span th:text="${#numbers.formatDecimal(product.price, 0, 0)}">299,000</span>đ
+                                </span>
+                            </div>
+
+                            <!-- Rating -->
+                            <div class="mb-2" th:if="${product.averageRating != null}">
+                                <span class="text-warning">
+                                    <i class="fas fa-star" th:each="i : ${#numbers.sequence(1, 5)}"
+                                        th:classappend="${i <= product.averageRating ? 'fas' : 'far'}"></i>
+                                </span>
+                                <span class="small text-muted ms-1">
+                                    (<span th:text="${product.reviewCount}">0</span>)
+                                </span>
+                            </div>
+
+                            <button class="btn btn-primary btn-sm w-100"
+                                th:onclick="'addToCart(' + ${product.productId} + ')'">
+                                <i class="fas fa-shopping-cart me-1"></i>Thêm vào giỏ
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-6">
-                    <div
-                        class="voucher-card d-flex rounded-3 overflow-hidden border border-2 border-danger border-dashed h-100">
-                        <div
-                            class="voucher-left bg-danger text-white d-flex align-items-center justify-content-center px-3">
-                            <span class="h4 fw-bold mb-0">50%</span>
-                        </div>
-                        <div class="voucher-right flex-grow-1 p-3 d-flex flex-column justify-content-center">
-                            <p class="fw-bold mb-1 small">Giảm 50%</p>
-                            <p class="text-muted mb-2 small">Đơn từ 1.499K</p>
-                            <button class="btn btn-danger btn-sm rounded-pill px-3 align-self-start">Lưu</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div
-                        class="voucher-card d-flex rounded-3 overflow-hidden border border-2 border-danger border-dashed h-100">
-                        <div
-                            class="voucher-left bg-danger text-white d-flex align-items-center justify-content-center px-3">
-                            <span class="h4 fw-bold mb-0">30%</span>
-                        </div>
-                        <div class="voucher-right flex-grow-1 p-3 d-flex flex-column justify-content-center">
-                            <p class="fw-bold mb-1 small">Giảm 30%</p>
-                            <p class="text-muted mb-2 small">Đơn từ 599K</p>
-                            <button class="btn btn-danger btn-sm rounded-pill px-3 align-self-start">Lưu</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div
-                        class="voucher-card d-flex rounded-3 overflow-hidden border border-2 border-danger border-dashed h-100">
-                        <div
-                            class="voucher-left bg-warning text-white d-flex align-items-center justify-content-center px-3">
-                            <i class="bi bi-truck fs-4"></i>
-                        </div>
-                        <div class="voucher-right flex-grow-1 p-3 d-flex flex-column justify-content-center">
-                            <p class="fw-bold mb-1 small">Freeship</p>
-                            <p class="text-muted mb-2 small">Đơn từ 499K</p>
-                            <button
-                                class="btn btn-warning btn-sm rounded-pill px-3 align-self-start text-white">Lưu</button>
-                        </div>
-                    </div>
-                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- New Products Section -->
-    <section class="products-section py-5 bg-white">
-        <div class="container">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <h2 class="h4 fw-bold text-uppercase mb-0">SẢN PHẨM MỚI</h2>
-                <ul class="nav nav-pills" id="productTabs">
-                    <li class="nav-item">
-                        <button class="nav-link active rounded-pill px-4" data-bs-toggle="pill"
-                            data-tab="nu">Nữ</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link rounded-pill px-4" data-bs-toggle="pill" data-tab="nam">Nam</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link rounded-pill px-4" data-bs-toggle="pill" data-tab="treem">Trẻ
-                            em</button>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
-                <!-- Product Card 1 -->
-                <div class="col">
-                    <a href="product-detail.html"
-                        class="card product-card h-100 border-0 shadow-sm text-decoration-none">
-                        <div class="position-relative overflow-hidden">
-                            <span class="badge bg-danger position-absolute top-0 start-0 m-2">-30%</span>
-                            <span class="badge bg-primary position-absolute start-0 m-2" style="top: 35px;">Online
-                                Only</span>
-                            <img src="https://media.canifa.com/catalog/product/cache/400x/6TS24W003-SJ146-L.webp"
-                                class="card-img-top" alt="Áo thun nữ">
-                            <div
-                                class="product-actions position-absolute bottom-0 end-0 m-2 d-flex flex-column gap-2 opacity-0">
-                                <button class="btn btn-light btn-sm rounded-circle shadow-sm"><i
-                                        class="bi bi-heart"></i></button>
-                                <button class="btn btn-light btn-sm rounded-circle shadow-sm"><i
-                                        class="bi bi-eye"></i></button>
-                            </div>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="d-flex gap-1 mb-2">
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#1a1a2e;border:1px solid #ddd;"></span>
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#f5f5dc;border:1px solid #ddd;"></span>
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#8b4513;border:1px solid #ddd;"></span>
-                            </div>
-                            <h5 class="card-title fs-6 fw-semibold text-dark mb-2">Áo Thun Nữ Phối Màu</h5>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-danger fw-bold">299,000đ</span>
-                                <span class="text-muted text-decoration-line-through small">429,000đ</span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Product Card 2 -->
-                <div class="col">
-                    <a href="product-detail.html"
-                        class="card product-card h-100 border-0 shadow-sm text-decoration-none">
-                        <div class="position-relative overflow-hidden">
-                            <span class="badge bg-warning position-absolute top-0 start-0 m-2">Freeship</span>
-                            <img src="https://media.canifa.com/catalog/product/cache/400x/6AT24W011-SK010-L.webp"
-                                class="card-img-top" alt="Áo khoác nữ">
-                            <div
-                                class="product-actions position-absolute bottom-0 end-0 m-2 d-flex flex-column gap-2 opacity-0">
-                                <button class="btn btn-light btn-sm rounded-circle shadow-sm"><i
-                                        class="bi bi-heart"></i></button>
-                                <button class="btn btn-light btn-sm rounded-circle shadow-sm"><i
-                                        class="bi bi-eye"></i></button>
-                            </div>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="d-flex gap-1 mb-2">
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#000;border:1px solid #ddd;"></span>
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#4a4a4a;border:1px solid #ddd;"></span>
-                            </div>
-                            <h5 class="card-title fs-6 fw-semibold text-dark mb-2">Áo Khoác Nữ Dáng Ngắn</h5>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-danger fw-bold">599,000đ</span>
-                                <span class="text-muted text-decoration-line-through small">899,000đ</span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Product Card 3 -->
-                <div class="col">
-                    <a href="product-detail.html"
-                        class="card product-card h-100 border-0 shadow-sm text-decoration-none">
-                        <div class="position-relative overflow-hidden">
-                            <span class="badge bg-danger position-absolute top-0 start-0 m-2">-40%</span>
-                            <img src="https://media.canifa.com/catalog/product/cache/400x/6AL24W001-SK055-L.webp"
-                                class="card-img-top" alt="Áo len nữ">
-                            <div
-                                class="product-actions position-absolute bottom-0 end-0 m-2 d-flex flex-column gap-2 opacity-0">
-                                <button class="btn btn-light btn-sm rounded-circle shadow-sm"><i
-                                        class="bi bi-heart"></i></button>
-                                <button class="btn btn-light btn-sm rounded-circle shadow-sm"><i
-                                        class="bi bi-eye"></i></button>
-                            </div>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="d-flex gap-1 mb-2">
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#f5deb3;border:1px solid #ddd;"></span>
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#8b0000;border:1px solid #ddd;"></span>
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#2f4f4f;border:1px solid #ddd;"></span>
-                            </div>
-                            <h5 class="card-title fs-6 fw-semibold text-dark mb-2">Áo Len Nữ Cổ Tròn</h5>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-danger fw-bold">359,000đ</span>
-                                <span class="text-muted text-decoration-line-through small">599,000đ</span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Product Card 4 -->
-                <div class="col">
-                    <a href="product-detail.html"
-                        class="card product-card h-100 border-0 shadow-sm text-decoration-none">
-                        <div class="position-relative overflow-hidden">
-                            <span class="badge bg-success position-absolute top-0 start-0 m-2">Mới</span>
-                            <img src="https://media.canifa.com/catalog/product/cache/400x/6QJ24W001-SB055-L.webp"
-                                class="card-img-top" alt="Quần jean nữ">
-                            <div
-                                class="product-actions position-absolute bottom-0 end-0 m-2 d-flex flex-column gap-2 opacity-0">
-                                <button class="btn btn-light btn-sm rounded-circle shadow-sm"><i
-                                        class="bi bi-heart"></i></button>
-                                <button class="btn btn-light btn-sm rounded-circle shadow-sm"><i
-                                        class="bi bi-eye"></i></button>
-                            </div>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="d-flex gap-1 mb-2">
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#4169e1;border:1px solid #ddd;"></span>
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#191970;border:1px solid #ddd;"></span>
-                            </div>
-                            <h5 class="card-title fs-6 fw-semibold text-dark mb-2">Quần Jean Nữ Ống Rộng</h5>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-danger fw-bold">499,000đ</span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Product Card 5 -->
-                <div class="col">
-                    <a href="product-detail.html"
-                        class="card product-card h-100 border-0 shadow-sm text-decoration-none">
-                        <div class="position-relative overflow-hidden">
-                            <span class="badge bg-danger position-absolute top-0 start-0 m-2">-25%</span>
-                            <img src="https://media.canifa.com/catalog/product/cache/400x/6AS24W001-SW807-L.webp"
-                                class="card-img-top" alt="Áo sơ mi nữ">
-                            <div
-                                class="product-actions position-absolute bottom-0 end-0 m-2 d-flex flex-column gap-2 opacity-0">
-                                <button class="btn btn-light btn-sm rounded-circle shadow-sm"><i
-                                        class="bi bi-heart"></i></button>
-                                <button class="btn btn-light btn-sm rounded-circle shadow-sm"><i
-                                        class="bi bi-eye"></i></button>
-                            </div>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="d-flex gap-1 mb-2">
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#fff;border:1px solid #ddd;"></span>
-                                <span class="color-dot rounded-circle"
-                                    style="width:16px;height:16px;background:#add8e6;border:1px solid #ddd;"></span>
-                            </div>
-                            <h5 class="card-title fs-6 fw-semibold text-dark mb-2">Áo Sơ Mi Nữ Tay Dài</h5>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-danger fw-bold">449,000đ</span>
-                                <span class="text-muted text-decoration-line-through small">599,000đ</span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Category Banners Women -->
-    <section class="category-banners py-4">
-        <div class="container">
-            <div class="row g-3">
-                <div class="col-lg-6">
-                    <a href="products.html" class="position-relative d-block rounded-3 overflow-hidden banner-item">
-                        <img src="https://media.canifa.com/Simiconnector/banner_woman_jacket.webp" alt="Áo khoác nữ"
-                            class="w-100">
-                        <div class="position-absolute bottom-0 start-0 p-4 text-white">
-                            <h3 class="h4 fw-bold text-uppercase">ÁO KHOÁC NỮ</h3>
-                            <span class="fw-semibold">Xem ngay →</span>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <a href="products.html" class="position-relative d-block rounded-3 overflow-hidden banner-item">
-                        <img src="https://media.canifa.com/Simiconnector/banner_woman_sweater.webp" alt="Áo len nữ"
-                            class="w-100">
-                        <div class="position-absolute bottom-0 start-0 p-3 text-white">
-                            <h3 class="h5 fw-bold text-uppercase">ÁO LEN NỮ</h3>
-                            <span class="small">Xem ngay →</span>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <a href="products.html" class="position-relative d-block rounded-3 overflow-hidden banner-item">
-                        <img src="https://media.canifa.com/Simiconnector/banner_homewear.webp" alt="Đồ mặc nhà"
-                            class="w-100">
-                        <div class="position-absolute bottom-0 start-0 p-3 text-white">
-                            <h3 class="h5 fw-bold text-uppercase">ĐỒ MẶC NHÀ</h3>
-                            <span class="small">Xem ngay →</span>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Category Banners Men -->
-    <section class="category-banners py-4">
-        <div class="container">
-            <div class="row g-3">
-                <div class="col-lg-3 col-6">
-                    <a href="products.html" class="position-relative d-block rounded-3 overflow-hidden banner-item">
-                        <img src="https://media.canifa.com/Simiconnector/banner_man_jacket.webp" alt="Áo khoác nam"
-                            class="w-100">
-                        <div class="position-absolute bottom-0 start-0 p-3 text-white">
-                            <h3 class="h5 fw-bold text-uppercase">ÁO KHOÁC NAM</h3>
-                            <span class="small">Xem ngay →</span>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <a href="products.html" class="position-relative d-block rounded-3 overflow-hidden banner-item">
-                        <img src="https://media.canifa.com/Simiconnector/banner_man_sweater.webp" alt="Áo len nam"
-                            class="w-100">
-                        <div class="position-absolute bottom-0 start-0 p-3 text-white">
-                            <h3 class="h5 fw-bold text-uppercase">ÁO LEN NAM</h3>
-                            <span class="small">Xem ngay →</span>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-lg-6">
-                    <a href="products.html" class="position-relative d-block rounded-3 overflow-hidden banner-item">
-                        <img src="https://media.canifa.com/Simiconnector/banner_man_homewear.webp" alt="Đồ mặc nhà nam"
-                            class="w-100">
-                        <div class="position-absolute bottom-0 start-0 p-4 text-white">
-                            <h3 class="h4 fw-bold text-uppercase">ĐỒ MẶC NHÀ NAM</h3>
-                            <span class="fw-semibold">Xem ngay →</span>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Kids Section -->
-    <section class="kids-section py-5 bg-light">
-        <div class="container">
-            <h2 class="h4 fw-bold text-uppercase text-center mb-4">THỜI TRANG TRẺ EM</h2>
+        <!-- Promotion Banner -->
+        <section class="container mb-5">
             <div class="row g-4">
                 <div class="col-md-6">
-                    <a href="products.html" class="position-relative d-block rounded-3 overflow-hidden banner-item">
-                        <img src="https://media.canifa.com/Simiconnector/banner_girl.webp" alt="Bé gái" class="w-100">
-                        <div class="position-absolute bottom-0 start-0 p-4 text-white">
-                            <h3 class="h4 fw-bold text-uppercase">BÉ GÁI</h3>
-                            <span>Xem ngay →</span>
+                    <div class="card bg-primary text-white border-0 h-100">
+                        <div class="card-body p-5">
+                            <h3 class="fw-bold mb-3">Ưu đãi đặc biệt</h3>
+                            <p class="mb-4">Giảm giá tới 50% cho các sản phẩm mới</p>
+                            <a href="/products?discount=true" class="btn btn-light">
+                                Mua ngay
+                            </a>
                         </div>
-                    </a>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <a href="products.html" class="position-relative d-block rounded-3 overflow-hidden banner-item">
-                        <img src="https://media.canifa.com/Simiconnector/banner_boy.webp" alt="Bé trai" class="w-100">
-                        <div class="position-absolute bottom-0 start-0 p-4 text-white">
-                            <h3 class="h4 fw-bold text-uppercase">BÉ TRAI</h3>
-                            <span>Xem ngay →</span>
+                    <div class="card bg-dark text-white border-0 h-100">
+                        <div class="card-body p-5">
+                            <h3 class="fw-bold mb-3">Miễn phí vận chuyển</h3>
+                            <p class="mb-4">
+                                Cho đơn hàng từ
+                                <span
+                                    th:text="${#numbers.formatDecimal(@settingsService.getSettingAsDouble('free_shipping_threshold', 500000), 0, 0)}">500,000</span>đ
+                            </p>
+                            <a href="/products" class="btn btn-light">
+                                Khám phá
+                            </a>
                         </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Blog Section -->
-    <section class="blog-section py-5">
-        <div class="container">
-            <h2 class="h4 fw-bold text-uppercase text-center mb-4">TIN TỨC & CẢM HỨNG</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <a href="#" class="card h-100 border-0 shadow-sm text-decoration-none blog-card">
-                        <div class="overflow-hidden rounded-top">
-                            <img src="https://media.canifa.com/Simiconnector/blog1.webp" class="card-img-top"
-                                alt="Blog post">
-                        </div>
-                        <div class="card-body">
-                            <span class="text-muted small">15/01/2026</span>
-                            <h5 class="card-title fw-bold text-dark mt-2">Xu hướng thời trang xuân hè 2026</h5>
-                            <p class="card-text text-muted small">Khám phá những xu hướng thời trang mới nhất cho mùa
-                                xuân hè năm nay...</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="#" class="card h-100 border-0 shadow-sm text-decoration-none blog-card">
-                        <div class="overflow-hidden rounded-top">
-                            <img src="https://media.canifa.com/Simiconnector/blog2.webp" class="card-img-top"
-                                alt="Blog post">
-                        </div>
-                        <div class="card-body">
-                            <span class="text-muted small">12/01/2026</span>
-                            <h5 class="card-title fw-bold text-dark mt-2">Cách phối đồ đi làm chuẩn công sở</h5>
-                            <p class="card-text text-muted small">Những gợi ý phối đồ thanh lịch, chuyên nghiệp cho môi
-                                trường công sở...</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="#" class="card h-100 border-0 shadow-sm text-decoration-none blog-card">
-                        <div class="overflow-hidden rounded-top">
-                            <img src="https://media.canifa.com/Simiconnector/blog3.webp" class="card-img-top"
-                                alt="Blog post">
-                        </div>
-                        <div class="card-body">
-                            <span class="text-muted small">10/01/2026</span>
-                            <h5 class="card-title fw-bold text-dark mt-2">Mix & Match cùng áo len mùa đông</h5>
-                            <p class="card-text text-muted small">Hướng dẫn cách phối áo len theo nhiều phong cách khác
-                                nhau...</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="main-footer bg-dark text-white py-5">
-        <div class="container">
-            <div class="row g-4">
-                <!-- Column 1 -->
-                <div class="col-lg-4 col-md-6">
-                    <h5 class="fw-bold mb-3">DỰ ÁN WEBSITE BÁN HÀNG THỜI TRANG</h5>
-                    <p class="small"><strong>Tên dự án:</strong> Clothes Shop Demo</p>
-                    <p class="small"><strong>Thực hiện bởi:</strong> Nguyễn Tiến Doanh, Hoàng Văn Độ</p>
-                    <p class="small"><strong>Mục đích:</strong> Dự án học tập – không sử dụng cho mục đích thương mại
-                    </p>
-                    <p class="small"><strong>Địa chỉ:</strong> ĐH Phenikaa / Thành phố Hà Nội</p>
-                    <p class="small"><strong>Email:</strong> fashiondemo@gmail.com</p>
-                </div>
-
-                <!-- Column 2 -->
-                <div class="col-lg-2 col-md-6">
-                    <h5 class="fw-bold mb-3">VỀ CHÚNG TÔI</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Giới thiệu</a></li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Hệ thống cửa hàng</a>
-                        </li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Tin tức & Sự kiện</a>
-                        </li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Liên hệ</a></li>
-                    </ul>
-                </div>
-
-                <!-- Column 3 -->
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="fw-bold mb-3">HỖ TRỢ KHÁCH HÀNG</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Hướng dẫn chọn size</a>
-                        </li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Chính sách đổi/trả</a>
-                        </li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Chính sách bảo mật</a>
-                        </li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Chính sách vận
-                                chuyển</a></li>
-                    </ul>
-                </div>
-
-                <!-- Column 4 -->
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="fw-bold mb-3">TÀI KHOẢN</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="profile.html" class="text-white-50 text-decoration-none">Đăng
-                                nhập/Đăng ký</a></li>
-                        <li class="mb-2"><a href="profile.html" class="text-white-50 text-decoration-none">Chi tiết tài
-                                khoản</a></li>
-                        <li class="mb-2"><a href="orders.html" class="text-white-50 text-decoration-none">Lịch sử mua
-                                hàng</a></li>
-                    </ul>
-                    <h5 class="fw-bold mb-3 mt-4">MẠNG XÃ HỘI</h5>
-                    <div class="d-flex gap-3">
-                        <a href="#" class="text-white fs-5"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="text-white fs-5"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="text-white fs-5"><i class="bi bi-youtube"></i></a>
-                        <a href="#" class="text-white fs-5"><i class="bi bi-tiktok"></i></a>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Payment Methods -->
-            <div class="border-top border-secondary mt-4 pt-4">
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="text-white-50 small">Phương thức thanh toán:</span>
-                        <span class="badge bg-primary">VISA</span>
-                        <span class="badge bg-warning text-dark">Mastercard</span>
-                        <span class="badge bg-info">VNPay</span>
-                        <span class="badge bg-danger">MoMo</span>
+        <!-- New Arrivals -->
+        <section class="container mb-5" th:if="${newProducts != null && !newProducts.empty}">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold mb-0">Sản phẩm mới về</h2>
+                <a href="/products?sort=newest" class="btn btn-outline-primary">
+                    Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-3 col-sm-6" th:each="product : ${newProducts}">
+                    <div class="card product-card h-100 position-relative">
+                        <span class="badge bg-success badge-sale">Mới</span>
+
+                        <button class="btn btn-light btn-sm rounded-circle wishlist-btn"
+                            th:onclick="'toggleWishlist(' + ${product.productId} + ')'">
+                            <i class="far fa-heart"></i>
+                        </button>
+
+                        <a th:href="@{/products/{id}(id=${product.productId})}">
+                            <img th:src="${product.imageUrl}" th:alt="${product.productName}" class="card-img-top"
+                                style="height: 280px; object-fit: cover;">
+                        </a>
+
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a th:href="@{/products/{id}(id=${product.productId})}"
+                                    class="text-decoration-none text-dark" th:text="${product.productName}">
+                                </a>
+                            </h6>
+
+                            <div class="mb-2">
+                                <span class="h5 text-danger">
+                                    <span th:text="${#numbers.formatDecimal(product.price, 0, 0)}">299,000</span>đ
+                                </span>
+                            </div>
+
+                            <button class="btn btn-primary btn-sm w-100"
+                                th:onclick="'addToCart(' + ${product.productId} + ')'">
+                                <i class="fas fa-shopping-cart me-1"></i>Thêm vào giỏ
+                            </button>
+                        </div>
                     </div>
-                    <p class="text-white-50 small mb-0">© 2026 Clothes Shop Demo - Dự án học tập ĐH Phenikaa</p>
                 </div>
             </div>
-        </div>
-    </footer>
+        </section>
 
-    <!-- Toast Container -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <strong class="me-auto">Thông báo</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        <!-- Why Choose Us -->
+        <section class="bg-light py-5 mb-5">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-md-3 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-shipping-fast fa-3x text-primary"></i>
+                        </div>
+                        <h5>Giao hàng nhanh chóng</h5>
+                        <p class="text-muted small">Giao hàng toàn quốc từ 2-5 ngày</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-undo fa-3x text-primary"></i>
+                        </div>
+                        <h5>Đổi trả dễ dàng</h5>
+                        <p class="text-muted small">Đổi trả miễn phí trong 30 ngày</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-lock fa-3x text-primary"></i>
+                        </div>
+                        <h5>Thanh toán an toàn</h5>
+                        <p class="text-muted small">Nhiều hình thức thanh toán</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-headset fa-3x text-primary"></i>
+                        </div>
+                        <h5>Hỗ trợ 24/7</h5>
+                        <p class="text-muted small">Luôn sẵn sàng hỗ trợ bạn</p>
+                    </div>
+                </div>
             </div>
-            <div class="toast-body"></div>
-        </div>
-    </div>
+        </section>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Blog Section -->
+        <section class="container mb-5" th:if="${blogPosts != null && !blogPosts.empty}">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold mb-0">Tin tức & Xu hướng</h2>
+                <a href="/blog" class="btn btn-outline-primary">
+                    Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4" th:each="post : ${blogPosts}">
+                    <div class="card border-0 shadow-sm">
+                        <img th:src="${post.imageUrl}" th:alt="${post.title}" class="card-img-top"
+                            style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <p class="small text-muted mb-2">
+                                <i class="far fa-calendar me-1"></i>
+                                <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy')}"></span>
+                            </p>
+                            <h5 class="card-title">
+                                <a th:href="@{/blog/{slug}(slug=${post.slug})}" class="text-decoration-none text-dark"
+                                    th:text="${post.title}">
+                                </a>
+                            </h5>
+                            <p class="card-text text-muted small" th:text="${#strings.abbreviate(post.excerpt, 100)}">
+                            </p>
+                            <a th:href="@{/blog/{slug}(slug=${post.slug})}" class="btn btn-link p-0">
+                                Đọc thêm <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
-    <!-- Custom JS -->
-    <script src="/js/main.js"></script>
+    <th:block layout:fragment="scripts">
+        <script>
+            function addToCart(productId) {
+                // AJAX add to cart
+                $.post('/cart/add', { productId: productId, quantity: 1 }, function (response) {
+                    if (response.success) {
+                        // Update cart count
+                        $('.fa-shopping-cart').parent().find('.badge').text(response.cartItemCount);
+                        alert('Đã thêm vào giỏ hàng!');
+                    }
+                }).fail(function () {
+                    alert('Có lỗi xảy ra, vui lòng thử lại!');
+                });
+            }
 
-    <script>
-        // Product card hover effects
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.addEventListener('mouseenter', function () {
-                this.querySelector('.product-actions')?.classList.remove('opacity-0');
-            });
-            card.addEventListener('mouseleave', function () {
-                this.querySelector('.product-actions')?.classList.add('opacity-0');
-            });
-        });
-
-        // Banner hover effects
-        document.querySelectorAll('.banner-item').forEach(item => {
-            item.style.transition = 'transform 0.3s ease';
-            item.addEventListener('mouseenter', function () {
-                this.style.transform = 'scale(1.02)';
-            });
-            item.addEventListener('mouseleave', function () {
-                this.style.transform = 'scale(1)';
-            });
-        });
-
-        // Toast function
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('liveToast');
-            const toastBody = toast.querySelector('.toast-body');
-            toastBody.textContent = message;
-            toast.classList.remove('bg-success', 'bg-danger');
-            toast.classList.add(type === 'success' ? 'bg-success' : 'bg-danger');
-            toast.classList.add('text-white');
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-        }
-
-        // Update cart count
-        function updateCartCount() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const count = cart.reduce((sum, item) => sum + item.qty, 0);
-            document.querySelectorAll('.cart-count').forEach(el => el.textContent = count);
-        }
-        updateCartCount();
-    </script>
+            function toggleWishlist(productId) {
+                $.post('/wishlist/toggle', { productId: productId }, function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        if (!response.loggedIn) {
+                            window.location.href = '/login';
+                        }
+                    }
+                });
+            }
+        </script>
+    </th:block>
 </body>
 
 </html>

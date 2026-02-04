@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Liên hệ</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <div class="container my-5">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+                    <li class="breadcrumb-item active">Liên hệ</li>
+                </ol>
+            </nav>
+
+            <!-- Page Title -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold">Liên hệ với chúng tôi</h1>
+                <p class="lead text-muted">Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn</p>
+            </div>
+
+            <div class="row">
+                <!-- Contact Info -->
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <h5 class="card-title mb-4">
+                                <i class="fas fa-info-circle text-primary me-2"></i>
+                                Thông tin liên hệ
+                            </h5>
+                            
+                            <!-- Address -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    Địa chỉ
+                                </h6>
+                                <p class="text-muted mb-0" 
+                                   th:text="${@settingsService.getSetting('contact_address', 'Hà Nội, Việt Nam')}">
+                                    Hà Nội, Việt Nam
+                                </p>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold">
+                                    <i class="fas fa-phone text-success me-2"></i>
+                                    Điện thoại
+                                </h6>
+                                <p class="mb-0">
+                                    <a th:href="'tel:' + ${@settingsService.getSetting('contact_phone', '')}" 
+                                       class="text-decoration-none text-muted"
+                                       th:text="${@settingsService.getSetting('contact_phone', '0123456789')}">
+                                        0123456789
+                                    </a>
+                                </p>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold">
+                                    <i class="fas fa-envelope text-primary me-2"></i>
+                                    Email
+                                </h6>
+                                <p class="mb-0">
+                                    <a th:href="'mailto:' + ${@settingsService.getSetting('contact_email', '')}" 
+                                       class="text-decoration-none text-muted"
+                                       th:text="${@settingsService.getSetting('contact_email', 'contact@clothesshop.com')}">
+                                        contact@clothesshop.com
+                                    </a>
+                                </p>
+                            </div>
+
+                            <!-- Business Hours -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold">
+                                    <i class="fas fa-clock text-warning me-2"></i>
+                                    Giờ làm việc
+                                </h6>
+                                <p class="text-muted mb-0"
+                                   th:text="${@settingsService.getSetting('business_hours', 'T2-CN: 8:00-22:00')}">
+                                    Thứ 2 - Chủ nhật: 8:00 - 22:00
+                                </p>
+                            </div>
+
+                            <!-- Social Media -->
+                            <div>
+                                <h6 class="fw-bold mb-3">Mạng xã hội</h6>
+                                <div class="d-flex gap-2">
+                                    <a th:href="${@settingsService.getSetting('facebook_url', '#')}" 
+                                       class="btn btn-outline-primary btn-sm" target="_blank">
+                                        <i class="fab fa-facebook fa-lg"></i>
+                                    </a>
+                                    <a th:href="${@settingsService.getSetting('instagram_url', '#')}" 
+                                       class="btn btn-outline-danger btn-sm" target="_blank">
+                                        <i class="fab fa-instagram fa-lg"></i>
+                                    </a>
+                                    <a th:href="${@settingsService.getSetting('youtube_url', '#')}" 
+                                       class="btn btn-outline-danger btn-sm" target="_blank">
+                                        <i class="fab fa-youtube fa-lg"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div class="col-md-8 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h5 class="card-title mb-4">
+                                <i class="fas fa-paper-plane text-primary me-2"></i>
+                                Gửi tin nhắn cho chúng tôi
+                            </h5>
+
+                            <form th:action="@{/contact/send}" method="post" id="contactForm">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="name" class="form-label">
+                                            Họ và tên <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="name" name="name" 
+                                               required placeholder="Nguyễn Văn A"
+                                               th:value="${session.fullName}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">
+                                            Email <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="email" class="form-control" id="email" name="email" 
+                                               required placeholder="example@email.com"
+                                               th:value="${session.email}">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="phone" class="form-label">
+                                            Số điện thoại
+                                        </label>
+                                        <input type="tel" class="form-control" id="phone" name="phone" 
+                                               placeholder="0123456789">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="subject" class="form-label">
+                                            Chủ đề <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select" id="subject" name="subject" required>
+                                            <option value="">-- Chọn chủ đề --</option>
+                                            <option value="order">Hỏi về đơn hàng</option>
+                                            <option value="product">Hỏi về sản phẩm</option>
+                                            <option value="shipping">Vận chuyển</option>
+                                            <option value="return">Đổi trả hàng</option>
+                                            <option value="warranty">Bảo hành</option>
+                                            <option value="feedback">Góp ý, phản hồi</option>
+                                            <option value="other">Khác</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">
+                                        Nội dung <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" id="message" name="message" 
+                                              rows="6" required 
+                                              placeholder="Nhập nội dung tin nhắn của bạn..."></textarea>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Tối thiểu 20 ký tự
+                                    </div>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="agreePolicy" required>
+                                    <label class="form-check-label" for="agreePolicy">
+                                        Tôi đã đọc và đồng ý với 
+                                        <a href="/policy-privacy" target="_blank">Chính sách bảo mật</a>
+                                    </label>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="reset" class="btn btn-outline-secondary">
+                                        <i class="fas fa-redo me-1"></i>Nhập lại
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane me-1"></i>Gửi tin nhắn
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-0">
+                            <iframe 
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.096811103271!2d105.78466931540255!3d21.028770793492635!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab86cece9ac5%3A0x5ae835a2b·c2ff3!2zSOG6oSBOw7RpLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1234567890123!5m2!1svi!2s" 
+                                width="100%" 
+                                height="450" 
+                                style="border:0;" 
+                                allowfullscreen="" 
+                                loading="lazy">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h3 class="text-center mb-4">Câu hỏi thường gặp</h3>
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    Làm sao để kiểm tra trạng thái đơn hàng?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" 
+                                 data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Bạn có thể đăng nhập vào tài khoản và truy cập mục 
+                                    <a href="/user/orders">"Đơn hàng của tôi"</a> để xem chi tiết.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Chính sách đổi trả như thế nào?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" 
+                                 data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Bạn có thể đổi trả trong vòng 7 ngày kể từ ngày nhận hàng. 
+                                    Xem chi tiết tại <a href="/policy-return">Chính sách đổi trả</a>.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Thời gian giao hàng là bao lâu?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" 
+                                 data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Thời gian giao hàng từ 2-5 ngày làm việc tùy theo khu vực. 
+                                    Nội thành Hà Nội, TP.HCM thường nhận trong 1-2 ngày.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    Có những hình thức thanh toán nào?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" 
+                                 data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Chúng tôi hỗ trợ: COD (thanh toán khi nhận hàng), 
+                                    chuyển khoản ngân hàng, MoMo, VNPay.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            // Form validation
+            document.getElementById('contactForm').addEventListener('submit', function(e) {
+                const message = document.getElementById('message').value;
+                if (message.length < 20) {
+                    e.preventDefault();
+                    alert('Nội dung tin nhắn phải có ít nhất 20 ký tự');
+                    return false;
+                }
+            });
+
+            // Character counter
+            document.getElementById('message').addEventListener('input', function() {
+                const length = this.value.length;
+                const formText = this.nextElementSibling;
+                if (length < 20) {
+                    formText.innerHTML = '<i class="fas fa-info-circle me-1"></i>Còn ' + 
+                                        (20 - length) + ' ký tự nữa';
+                    formText.className = 'form-text text-warning';
+                } else {
+                    formText.innerHTML = '<i class="fas fa-check-circle me-1"></i>OK';
+                    formText.className = 'form-text text-success';
+                }
+            });
+        </script>
+    </th:block>
+</body>
+</html>

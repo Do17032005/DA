@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Danh sách yêu thích</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <div class="container my-5">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+                    <li class="breadcrumb-item active">Yêu thích</li>
+                </ol>
+            </nav>
+
+            <!-- Page Title -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h2 class="mb-0">
+                        <i class="far fa-heart text-danger me-2"></i>
+                        Sản phẩm yêu thích
+                    </h2>
+                    <p class="text-muted" th:if="${wishlistItems != null && !wishlistItems.empty}">
+                        Bạn có <strong th:text="${wishlistItems.size()}">0</strong> sản phẩm trong danh sách yêu thích
+                    </p>
+                </div>
+            </div>
+
+            <!-- Empty Wishlist -->
+            <div class="text-center py-5" th:if="${wishlistItems == null || wishlistItems.empty}">
+                <i class="far fa-heart fa-5x text-muted mb-4"></i>
+                <h4>Danh sách yêu thích trống</h4>
+                <p class="text-muted mb-4">Bạn chưa có sản phẩm yêu thích nào.</p>
+                <a th:href="@{/products}" class="btn btn-primary">
+                    <i class="fas fa-shopping-bag me-2"></i>Khám phá sản phẩm
+                </a>
+            </div>
+
+            <!-- Wishlist Items -->
+            <div class="row" th:if="${wishlistItems != null && !wishlistItems.empty}">
+                <div class="col-md-3 mb-4" th:each="item : ${wishlistItems}">
+                    <div class="card h-100 product-card position-relative">
+                        <!-- Remove from Wishlist Button -->
+                        <button type="button" class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 shadow-sm"
+                                th:onclick="'removeFromWishlist(' + ${item.productId} + ')'">
+                            <i class="fas fa-times"></i>
+                        </button>
+
+                        <!-- Product Image -->
+                        <a th:href="@{/products/{id}(id=${item.productId})}" class="text-decoration-none">
+                            <img th:src="${item.imageUrl}" 
+                                 th:alt="${item.productName}"
+                                 class="card-img-top" style="height: 300px; object-fit: cover;">
+                        </a>
+
+                        <div class="card-body">
+                            <!-- Product Name -->
+                            <h6 class="card-title">
+                                <a th:href="@{/products/{id}(id=${item.productId})}" 
+                                   class="text-decoration-none text-dark"
+                                   th:text="${item.productName}">
+                                    Tên sản phẩm
+                                </a>
+                            </h6>
+
+                            <!-- Price -->
+                            <div class="mb-2">
+                                <span class="h5 text-danger mb-0" 
+                                      th:if="${item.discountPrice != null && item.discountPrice < item.price}">
+                                    <span th:text="${#numbers.formatDecimal(item.discountPrice, 0, 0)}">199,000</span>đ
+                                </span>
+                                <span class="text-muted text-decoration-line-through small ms-2" 
+                                      th:if="${item.discountPrice != null && item.discountPrice < item.price}"
+                                      th:text="${#numbers.formatDecimal(item.price, 0, 0)} + 'đ'">
+                                    299,000đ
+                                </span>
+                                <span class="h5 text-danger mb-0" 
+                                      th:if="${item.discountPrice == null || item.discountPrice >= item.price}">
+                                    <span th:text="${#numbers.formatDecimal(item.price, 0, 0)}">299,000</span>đ
+                                </span>
+                            </div>
+
+                            <!-- Stock Status -->
+                            <div class="mb-3">
+                                <span class="badge bg-success" th:if="${item.stockQuantity > 10}">
+                                    <i class="fas fa-check me-1"></i>Còn hàng
+                                </span>
+                                <span class="badge bg-warning text-dark" th:if="${item.stockQuantity > 0 && item.stockQuantity <= 10}">
+                                    <i class="fas fa-exclamation me-1"></i>Sắp hết
+                                </span>
+                                <span class="badge bg-danger" th:if="${item.stockQuantity <= 0}">
+                                    <i class="fas fa-times me-1"></i>Hết hàng
+                                </span>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-primary btn-sm"
+                                        th:disabled="${item.stockQuantity <= 0}"
+                                        th:onclick="'addToCart(' + ${item.productId} + ')'">
+                                    <i class="fas fa-shopping-cart me-1"></i>
+                                    Thêm vào giỏ
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Added Date -->
+                        <div class="card-footer bg-transparent border-0 small text-muted">
+                            <i class="far fa-clock me-1"></i>
+                            Đã thêm: <span th:text="${#temporals.format(item.createdAt, 'dd/MM/yyyy')}">01/01/2026</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommended Products -->
+            <div class="mt-5" th:if="${recommendedProducts != null && !recommendedProducts.empty}">
+                <h4 class="mb-4">Có thể bạn cũng thích</h4>
+                <div class="row">
+                    <div class="col-md-3 mb-4" th:each="product : ${recommendedProducts}">
+                        <div class="card h-100">
+                            <a th:href="@{/products/{id}(id=${product.productId})}" class="text-decoration-none">
+                                <img th:src="${product.imageUrl}" 
+                                     th:alt="${product.productName}"
+                                     class="card-img-top" style="height: 250px; object-fit: cover;">
+                            </a>
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <a th:href="@{/products/{id}(id=${product.productId})}" 
+                                       class="text-decoration-none text-dark"
+                                       th:text="${product.productName}">
+                                    </a>
+                                </h6>
+                                <p class="h6 text-danger mb-0">
+                                    <span th:text="${#numbers.formatDecimal(product.price, 0, 0)}">299,000</span>đ
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden form for removing from wishlist -->
+        <form id="removeWishlistForm" method="post" style="display: none;">
+            <input type="hidden" id="removeProductId" name="productId">
+        </form>
+
+        <!-- Hidden form for adding to cart -->
+        <form id="addToCartForm" th:action="@{/cart/add}" method="post" style="display: none;">
+            <input type="hidden" id="cartProductId" name="productId">
+            <input type="hidden" name="quantity" value="1">
+        </form>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function removeFromWishlist(productId) {
+                if (confirm('Bạn có chắc muốn xóa sản phẩm này khỏi danh sách yêu thích?')) {
+                    document.getElementById('removeProductId').value = productId;
+                    document.getElementById('removeWishlistForm').action = '/wishlist/remove/' + productId;
+                    document.getElementById('removeWishlistForm').submit();
+                }
+            }
+
+            function addToCart(productId) {
+                document.getElementById('cartProductId').value = productId;
+                document.getElementById('addToCartForm').submit();
+            }
+        </script>
+    </th:block>
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Chính sách đổi trả</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <!-- Page Header -->
+        <div class="bg-primary text-white py-4">
+            <div class="container">
+                <h1 class="mb-0">Chính sách đổi trả hàng</h1>
+            </div>
+        </div>
+
+        <div class="container my-5">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm sticky-top" style="top: 100px;">
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                <a href="#conditions" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-check-circle me-2"></i>Điều kiện đổi trả
+                                </a>
+                                <a href="#process" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-sync-alt me-2"></i>Quy trình đổi trả
+                                </a>
+                                <a href="#time" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-clock me-2"></i>Thời gian đổi trả
+                                </a>
+                                <a href="#fees" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-money-bill-wave me-2"></i>Chi phí đổi trả
+                                </a>
+                                <a href="#exceptions" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Trường hợp đặc biệt
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="col-md-9">
+                    <!-- Introduction -->
+                    <div class="mb-5">
+                        <p class="lead">
+                            <strong th:text="${@settingsService.getSetting('site_name', 'Clothes Shop')}">Clothes Shop</strong> 
+                            cam kết mang đến cho quý khách hàng trải nghiệm mua sắm tuyệt vời nhất. 
+                            Chúng tôi hỗ trợ đổi/trả hàng trong vòng <strong>7 ngày</strong> kể từ ngày nhận hàng.
+                        </p>
+                    </div>
+
+                    <!-- Conditions -->
+                    <section id="conditions" class="mb-5">
+                        <h3 class="mb-4">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Điều kiện đổi trả hàng
+                        </h3>
+
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Sản phẩm đủ điều kiện đổi/trả:</h5>
+                                <ul class="mb-0">
+                                    <li>Sản phẩm còn nguyên tem, mác, nhãn hiệu của công ty</li>
+                                    <li>Sản phẩm chưa qua sử dụng, không có dấu hiệu giặt ủi</li>
+                                    <li>Sản phẩm không có mùi lạ (nước hoa, khói thuốc...)</li>
+                                    <li>Sản phẩm không bị dơ, bẩn, hư hỏng bởi tác động bên ngoài</li>
+                                    <li>Có hóa đơn mua hàng hoặc email xác nhận đơn hàng</li>
+                                    <li>Đổi size trong vòng 7 ngày kể từ ngày nhận hàng</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Sản phẩm KHÔNG đủ điều kiện đổi/trả:</h5>
+                                <ul class="mb-0">
+                                    <li>Sản phẩm đã qua sử dụng, đã giặt hoặc đã ủi</li>
+                                    <li>Sản phẩm bị bẩn, hư hỏng do lỗi khách hàng</li>
+                                    <li>Sản phẩm đã bị thay đổi so với tình trạng ban đầu</li>
+                                    <li>Sản phẩm trong chương trình khuyến mãi đặc biệt (trừ lỗi sản xuất)</li>
+                                    <li>Sản phẩm không có hóa đơn hoặc chứng từ mua hàng</li>
+                                    <li>Quá 7 ngày kể từ ngày nhận hàng</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Process -->
+                    <section id="process" class="mb-5">
+                        <h3 class="mb-4">
+                            <i class="fas fa-sync-alt text-primary me-2"></i>
+                            Quy trình đổi/trả hàng
+                        </h3>
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                 style="width: 40px; height: 40px;">
+                                                <strong>1</strong>
+                                            </div>
+                                            <h5 class="mb-0">Liên hệ với chúng tôi</h5>
+                                        </div>
+                                        <p class="mb-0">
+                                            Gọi hotline <strong th:text="${@settingsService.getSetting('contact_phone', '1900-xxxx')}">1900-xxxx</strong> 
+                                            hoặc gửi email đến 
+                                            <strong th:text="${@settingsService.getSetting('contact_email', 'support@example.com')}">support@example.com</strong> 
+                                            để thông báo đổi/trả hàng.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                 style="width: 40px; height: 40px;">
+                                                <strong>2</strong>
+                                            </div>
+                                            <h5 class="mb-0">Cung cấp thông tin</h5>
+                                        </div>
+                                        <p class="mb-0">
+                                            Cung cấp mã đơn hàng, thông tin sản phẩm cần đổi/trả, 
+                                            lý do đổi/trả và hình ảnh sản phẩm (nếu có lỗi).
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                 style="width: 40px; height: 40px;">
+                                                <strong>3</strong>
+                                            </div>
+                                            <h5 class="mb-0">Gửi hàng trả lại</h5>
+                                        </div>
+                                        <p class="mb-0">
+                                            Đóng gói sản phẩm cẩn thận, gửi về địa chỉ kho hàng của chúng tôi. 
+                                            Chúng tôi sẽ hướng dẫn chi tiết qua điện thoại.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                 style="width: 40px; height: 40px;">
+                                                <strong>4</strong>
+                                            </div>
+                                            <h5 class="mb-0">Nhận hàng mới/hoàn tiền</h5>
+                                        </div>
+                                        <p class="mb-0">
+                                            Sau khi kiểm tra sản phẩm, chúng tôi sẽ gửi sản phẩm mới (đổi hàng) 
+                                            hoặc hoàn tiền trong vòng 5-7 ngày làm việc.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Timeline -->
+                    <section id="time" class="mb-5">
+                        <h3 class="mb-4">
+                            <i class="fas fa-clock text-warning me-2"></i>
+                            Thời gian xử lý đổi/trả hàng
+                        </h3>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Loại yêu cầu</th>
+                                        <th>Thời gian xử lý</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Đổi size/màu sắc</strong></td>
+                                        <td>3-5 ngày làm việc (kể từ khi nhận hàng trả về)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Trả hàng - Hoàn tiền</strong></td>
+                                        <td>5-7 ngày làm việc (sau khi xác nhận sản phẩm hợp lệ)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Sản phẩm lỗi sản xuất</strong></td>
+                                        <td>2-3 ngày làm việc (ưu tiên xử lý nhanh nhất)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Giao sai sản phẩm</strong></td>
+                                        <td>2-3 ngày làm việc (miễn phí vận chuyển 2 chiều)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Lưu ý:</strong> Thời gian trên không bao gồm thời gian vận chuyển. 
+                            Đối với khu vực xa, thời gian có thể kéo dài thêm 1-2 ngày.
+                        </div>
+                    </section>
+
+                    <!-- Fees -->
+                    <section id="fees" class="mb-5">
+                        <h3 class="mb-4">
+                            <i class="fas fa-money-bill-wave text-success me-2"></i>
+                            Chi phí đổi/trả hàng
+                        </h3>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card border-success h-100">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0">MIỄN PHÍ đổi/trả</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="mb-0">
+                                            <li>Sản phẩm bị lỗi sản xuất</li>
+                                            <li>Giao sai sản phẩm, sai size, sai màu</li>
+                                            <li>Sản phẩm bị hư hỏng trong quá trình vận chuyển</li>
+                                            <li>Đổi size lần đầu tiên (trong vòng 3 ngày)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card border-warning h-100">
+                                    <div class="card-header bg-warning">
+                                        <h5 class="mb-0">Khách hàng chịu phí</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="mb-0">
+                                            <li>Đổi size/màu lần 2 trở đi: 30,000đ/lần</li>
+                                            <li>Trả hàng do không vừa ý: phí vận chuyển 2 chiều</li>
+                                            <li>Đổi sang sản phẩm khác: chênh lệch giá (nếu có)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Exceptions -->
+                    <section id="exceptions" class="mb-5">
+                        <h3 class="mb-4">
+                            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                            Trường hợp đặc biệt
+                        </h3>
+
+                        <div class="accordion" id="exceptionsAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#exception1">
+                                        Sản phẩm sale/khuyến mãi
+                                    </button>
+                                </h2>
+                                <div id="exception1" class="accordion-collapse collapse show" 
+                                     data-bs-parent="#exceptionsAccordion">
+                                    <div class="accordion-body">
+                                        <p>
+                                            Sản phẩm giảm giá từ 50% trở lên chỉ được đổi trong trường hợp 
+                                            lỗi sản xuất hoặc giao sai hàng. Không hỗ trợ đổi size/màu hoặc trả hàng 
+                                            vì lý do cá nhân.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#exception2">
+                                        Sản phẩm đặt hàng theo yêu cầu
+                                    </button>
+                                </h2>
+                                <div id="exception2" class="accordion-collapse collapse" 
+                                     data-bs-parent="#exceptionsAccordion">
+                                    <div class="accordion-body">
+                                        <p>
+                                            Sản phẩm may đo hoặc đặt hàng theo yêu cầu riêng không được đổi/trả, 
+                                            trừ trường hợp sản phẩm bị lỗi sản xuất hoặc không đúng theo yêu cầu đã thống nhất.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#exception3">
+                                        Đơn hàng mua tại cửa hàng
+                                    </button>
+                                </h2>
+                                <div id="exception3" class="accordion-collapse collapse" 
+                                     data-bs-parent="#exceptionsAccordion">
+                                    <div class="accordion-body">
+                                        <p>
+                                            Đơn hàng mua trực tiếp tại cửa hàng có thể đổi/trả tại cửa hàng đã mua 
+                                            hoặc gửi về kho online. Vui lòng mang theo hóa đơn khi đến cửa hàng.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Contact -->
+                    <div class="card border-0 shadow-sm bg-light">
+                        <div class="card-body p-4">
+                            <h5 class="mb-3">
+                                <i class="fas fa-headset me-2"></i>Cần hỗ trợ?
+                            </h5>
+                            <p>
+                                Nếu bạn có bất kỳ thắc mắc nào về chính sách đổi/trả hàng, 
+                                vui lòng liên hệ với chúng tôi:
+                            </p>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="fas fa-phone text-primary me-2"></i>
+                                    Hotline: <strong th:text="${@settingsService.getSetting('contact_phone', '1900-xxxx')}">1900-xxxx</strong>
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-envelope text-primary me-2"></i>
+                                    Email: <strong th:text="${@settingsService.getSetting('contact_email', 'support@example.com')}">support@example.com</strong>
+                                </li>
+                                <li>
+                                    <i class="fas fa-clock text-primary me-2"></i>
+                                    Thời gian: <strong>8:00 - 22:00 (Hàng ngày)</strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            // Smooth scroll to section
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html>

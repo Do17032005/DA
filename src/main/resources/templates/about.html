@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Về chúng tôi</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <!-- Page Header -->
+        <div class="bg-primary text-white py-5">
+            <div class="container text-center">
+                <h1 class="display-4 mb-3">Về chúng tôi</h1>
+                <p class="lead mb-0">
+                    Câu chuyện thương hiệu <span th:text="${@settingsService.getSetting('site_name', 'Clothes Shop')}">Clothes Shop</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Company Story -->
+        <div class="container my-5">
+            <div class="row align-items-center mb-5">
+                <div class="col-md-6">
+                    <img src="/images/about-story.jpg" 
+                         alt="Câu chuyện thương hiệu" 
+                         class="img-fluid rounded shadow">
+                </div>
+                <div class="col-md-6">
+                    <h2 class="mb-4">Câu chuyện của chúng tôi</h2>
+                    <p class="lead">
+                        Ra đời từ năm 2020, <strong th:text="${@settingsService.getSetting('site_name', 'Clothes Shop')}">Clothes Shop</strong> 
+                        được thành lập với mục tiêu mang đến những sản phẩm thời trang chất lượng cao với giá cả hợp lý.
+                    </p>
+                    <p>
+                        Với đam mê về thời trang và mong muốn phục vụ khách hàng Việt Nam, chúng tôi đã không ngừng nỗ lực 
+                        để xây dựng một thương hiệu uy tín, đáng tin cậy. Từ một cửa hàng nhỏ, đến nay chúng tôi đã phát triển 
+                        thành chuỗi cửa hàng với hệ thống phân phối rộng khắp cả nước.
+                    </p>
+                    <p class="mb-0">
+                        Mỗi sản phẩm của chúng tôi đều được tuyển chọn kỹ lưỡng, đảm bảo chất lượng tốt nhất để đến tay 
+                        người tiêu dùng. Chúng tôi tin rằng thời trang không chỉ là vẻ đẹp bên ngoài mà còn là sự tự tin 
+                        và phong cách sống.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mission & Vision -->
+        <div class="bg-light py-5">
+            <div class="container">
+                <div class="row text-center">
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <i class="fas fa-bullseye fa-3x text-primary mb-3"></i>
+                                <h4>Sứ mệnh</h4>
+                                <p class="mb-0">
+                                    Mang đến những sản phẩm thời trang chất lượng cao, phù hợp với xu hướng và 
+                                    phong cách sống hiện đại, giúp khách hàng tự tin thể hiện cá tính riêng.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <i class="fas fa-eye fa-3x text-primary mb-3"></i>
+                                <h4>Tầm nhìn</h4>
+                                <p class="mb-0">
+                                    Trở thành thương hiệu thời trang hàng đầu Việt Nam, được khách hàng tin tưởng 
+                                    và lựa chọn nhờ chất lượng sản phẩm và dịch vụ tận tâm.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <i class="fas fa-heart fa-3x text-primary mb-3"></i>
+                                <h4>Giá trị cốt lõi</h4>
+                                <p class="mb-0">
+                                    Chất lượng - Uy tín - Sáng tạo. Chúng tôi luôn đặt khách hàng làm trung tâm, 
+                                    không ngừng đổi mới để mang đến trải nghiệm mua sắm tốt nhất.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Why Choose Us -->
+        <div class="container my-5">
+            <div class="text-center mb-5">
+                <h2>Tại sao chọn chúng tôi?</h2>
+                <p class="lead text-muted">
+                    Những lý do khiến hàng ngàn khách hàng tin tưởng và lựa chọn
+                </p>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 col-sm-6 mb-4 text-center">
+                    <div class="p-4">
+                        <i class="fas fa-star fa-4x text-warning mb-3"></i>
+                        <h5>Chất lượng đảm bảo</h5>
+                        <p class="text-muted small">
+                            100% sản phẩm chính hãng, nguồn gốc rõ ràng
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4 text-center">
+                    <div class="p-4">
+                        <i class="fas fa-tags fa-4x text-success mb-3"></i>
+                        <h5>Giá cả hợp lý</h5>
+                        <p class="text-muted small">
+                            Chính sách giá tốt nhất thị trường
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4 text-center">
+                    <div class="p-4">
+                        <i class="fas fa-shipping-fast fa-4x text-primary mb-3"></i>
+                        <h5>Giao hàng nhanh</h5>
+                        <p class="text-muted small">
+                            Miễn phí vận chuyển cho đơn hàng trên 500k
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4 text-center">
+                    <div class="p-4">
+                        <i class="fas fa-headset fa-4x text-info mb-3"></i>
+                        <h5>Hỗ trợ 24/7</h5>
+                        <p class="text-muted small">
+                            Đội ngũ tư vấn nhiệt tình, chuyên nghiệp
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="bg-primary text-white py-5">
+            <div class="container">
+                <div class="row text-center">
+                    <div class="col-md-3 col-6 mb-4">
+                        <h2 class="display-4 mb-2">5+</h2>
+                        <p class="mb-0">Năm kinh nghiệm</p>
+                    </div>
+                    <div class="col-md-3 col-6 mb-4">
+                        <h2 class="display-4 mb-2">50K+</h2>
+                        <p class="mb-0">Khách hàng tin dùng</p>
+                    </div>
+                    <div class="col-md-3 col-6 mb-4">
+                        <h2 class="display-4 mb-2">1000+</h2>
+                        <p class="mb-0">Sản phẩm đa dạng</p>
+                    </div>
+                    <div class="col-md-3 col-6 mb-4">
+                        <h2 class="display-4 mb-2">20+</h2>
+                        <p class="mb-0">Cửa hàng toàn quốc</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team -->
+        <div class="container my-5">
+            <div class="text-center mb-5">
+                <h2>Đội ngũ của chúng tôi</h2>
+                <p class="lead text-muted">
+                    Những con người đam mê và tận tâm
+                </p>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body p-4">
+                            <img src="/images/team-1.jpg" 
+                                 alt="Team member" 
+                                 class="rounded-circle mb-3"
+                                 style="width: 120px; height: 120px; object-fit: cover;">
+                            <h5 class="mb-1">Nguyễn Văn A</h5>
+                            <p class="text-muted small mb-3">CEO & Founder</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="#" class="btn btn-sm btn-outline-primary rounded-circle">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-info rounded-circle">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-danger rounded-circle">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body p-4">
+                            <img src="/images/team-2.jpg" 
+                                 alt="Team member" 
+                                 class="rounded-circle mb-3"
+                                 style="width: 120px; height: 120px; object-fit: cover;">
+                            <h5 class="mb-1">Trần Thị B</h5>
+                            <p class="text-muted small mb-3">Creative Director</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="#" class="btn btn-sm btn-outline-primary rounded-circle">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-info rounded-circle">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-danger rounded-circle">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body p-4">
+                            <img src="/images/team-3.jpg" 
+                                 alt="Team member" 
+                                 class="rounded-circle mb-3"
+                                 style="width: 120px; height: 120px; object-fit: cover;">
+                            <h5 class="mb-1">Lê Văn C</h5>
+                            <p class="text-muted small mb-3">Marketing Manager</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="#" class="btn btn-sm btn-outline-primary rounded-circle">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-info rounded-circle">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-danger rounded-circle">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body p-4">
+                            <img src="/images/team-4.jpg" 
+                                 alt="Team member" 
+                                 class="rounded-circle mb-3"
+                                 style="width: 120px; height: 120px; object-fit: cover;">
+                            <h5 class="mb-1">Phạm Thị D</h5>
+                            <p class="text-muted small mb-3">Customer Service</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="#" class="btn btn-sm btn-outline-primary rounded-circle">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-info rounded-circle">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-danger rounded-circle">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="bg-light py-5">
+            <div class="container text-center">
+                <h2 class="mb-4">Hãy là một phần của câu chuyện!</h2>
+                <p class="lead mb-4">
+                    Khám phá bộ sưu tập thời trang mới nhất và tìm phong cách của riêng bạn
+                </p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <a th:href="@{/products}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-shopping-bag me-2"></i>Mua sắm ngay
+                    </a>
+                    <a th:href="@{/contact}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-envelope me-2"></i>Liên hệ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="css">
+        <style>
+            .display-4 {
+                font-weight: 700;
+            }
+            
+            .card {
+                transition: all 0.3s ease;
+            }
+            
+            .card:hover {
+                transform: translateY(-5px);
+            }
+        </style>
+    </th:block>
+</body>
+</html>

@@ -1,0 +1,515 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Tß║Ñt cß║ú sß║ún phß║⌐m</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Cß╗¡a h├áng thß╗¥i trang trß╗▒c tuyß║┐n">
+    <meta name="keywords" content="thß╗¥i trang, quß║ºn ├ío">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Additional CSS -->
+    
+    
+    <style>
+        .product-card {
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .filter-section:last-child {
+            border-bottom: none;
+        }
+
+        .filter-section h6 {
+            font-weight: bold;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .badge-sale {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+        }
+
+        .wishlist-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1;
+            background: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky-top">
+        <!-- Top Bar -->
+        <div class="bg-dark text-white py-2">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small>
+                            <i class="fas fa-phone me-2"></i>
+                            <span>1900-xxxx</span>
+                            <i class="fas fa-envelope ms-3 me-2"></i>
+                            <span>contact@clothesshop.com</span>
+                        </small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <small>
+                            <a href="https://facebook.com/clothesshop" class="text-white me-2"
+                                target="_blank">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            <a href="https://instagram.com/clothesshop" class="text-white me-2"
+                                target="_blank">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="" class="text-white"
+                                target="_blank">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Header -->
+        <div class="container py-3">
+            <div class="row align-items-center">
+                <!-- Logo -->
+                <div class="col-md-3">
+                    <a href="/" class="text-decoration-none">
+                        <img src="/images/logo.png"
+                            alt="Clothes Shop" height="50"
+                            class="d-none d-md-block">
+                        <h4 class="d-md-none mb-0 text-dark">Clothes Shop</h4>
+                    </a>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="col-md-5">
+                    <form action="/products" method="get" class="d-flex">
+                        <input type="text" name="keyword" class="form-control" placeholder="T├¼m kiß║┐m sß║ún phß║⌐m..."
+                            value="">
+                        <button type="submit" class="btn btn-primary ms-2">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- User Actions -->
+                <div class="col-md-4 text-end">
+                    <a href="/wishlist" class="btn btn-link text-dark position-relative">
+                        <i class="far fa-heart fa-lg"></i>
+                        
+                    </a>
+
+                    <a href="/cart" class="btn btn-link text-dark position-relative ms-2">
+                        <i class="fas fa-shopping-cart fa-lg"></i>
+                        
+                    </a>
+
+                    <div class="btn-group ms-2">
+                        <button type="button" class="btn btn-link text-dark dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-user fa-lg"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="/login">
+                                    <i class="fas fa-sign-in-alt me-2"></i>─É─âng nhß║¡p
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/register">
+                                    <i class="fas fa-user-plus me-2"></i>─É─âng k├╜
+                                </a>
+                            </li>
+                            
+                            
+                            
+                            
+                            
+                            
+                            <li>
+                                <a class="dropdown-item" href="/admin/login">
+                                    <i class="fas fa-user-shield me-2"></i>Quß║ún trß╗ï
+                                </a>
+                            </li>
+                            
+                            
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light border-top">
+            <div class="container">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">
+                                <i class="fas fa-home me-1"></i>Trang chß╗º
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                Sß║ún phß║⌐m
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/products?gender=nam">Nam</a></li>
+                                <li><a class="dropdown-item" href="/products?gender=nu">Nß╗»</a></li>
+                                <li><a class="dropdown-item" href="/products?gender=tre-em">Trß║╗ em</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="/products">Tß║Ñt cß║ú sß║ún phß║⌐m</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/blog">Blog</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/about">Giß╗¢i thiß╗çu</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contact">Li├¬n hß╗ç</a>
+                        </li>
+                    </ul>
+                    <span class="navbar-text text-danger fw-bold">
+                        <i class="fas fa-tag me-1"></i>
+                        Miß╗àn ph├¡ ship ─æ╞ín tß╗½
+                        <span>500000</span>─æ
+                    </span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Alert Messages -->
+    
+
+    <!-- Main Content -->
+    <main>
+        <!-- Breadcrumb -->
+        <div class="bg-light py-2 mb-4">
+            <div class="container">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Trang chß╗º</a></li>
+                        <li class="breadcrumb-item active">Sß║ún phß║⌐m</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="container mb-5">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm sticky-top" style="top: 100px; z-index: 10;">
+                        <div class="card-header bg-primary text-white py-3">
+                            <h5 class="mb-0 h6 fw-bold"><i class="fas fa-filter me-2"></i>Bß╗ÿ Lß╗îC</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Gender -->
+                            <div class="filter-section">
+                                <h6>Giß╗¢i t├¡nh</h6>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="gender" value="nam"
+                                        id="gendernam">
+                                    <label class="form-check-label" for="gendernam">Nam</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="gender" value="nu"
+                                        id="gendernu">
+                                    <label class="form-check-label" for="gendernu">Nß╗»</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="gender" value="tre-em"
+                                        id="gendertre-em">
+                                    <label class="form-check-label" for="gendertre-em">Trß║╗ em</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="gender" value="" id="genderAll">
+                                    <label class="form-check-label" for="genderAll">Tß║Ñt cß║ú</label>
+                                </div>
+                            </div>
+
+                            <!-- Categories -->
+                            <div class="filter-section">
+                                <h6>Danh mß╗Ñc</h6>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="category"
+                                        value="2" id="cat2">
+                                    <label class="form-check-label" for="cat2">Ao </label>
+                                </div>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="filter-section border-0 mb-0">
+                                <h6>Khoß║úng gi├í</h6>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6"><input type="number" class="form-control form-control-sm"
+                                            id="priceMin" placeholder="Tß╗½" value=""></div>
+                                    <div class="col-6"><input type="number" class="form-control form-control-sm"
+                                            id="priceMax" placeholder="─Éß║┐n" value=""></div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" onclick="applyFilters()">├üp dß╗Ñng</button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">X├│a
+                                        lß╗ìc</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid -->
+                <div class="col-md-9">
+                    
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="h4 mb-0 fw-bold">
+                            
+                            <span>Sß║ún phß║⌐m</span>
+                        </h2>
+                        <select class="form-select w-auto" id="sortSelect" onchange="applyFilters()">
+                            <option value="newest">Mß╗¢i nhß║Ñt</option>
+                            <option value="price_asc">Gi├í thß║Ñp ─æß║┐n cao</option>
+                            <option value="price_desc">Gi├í cao ─æß║┐n thß║Ñp</option>
+                        </select>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-4 col-sm-6">
+                            <div class="card product-card h-100 position-relative">
+                                
+                                <a href="/products/1">
+                                    <img src="/uploads/products/1770032434197_├üo kho├íc active nam.png" class="card-img-top"
+                                        alt="├üo kho├íc active nam" style="height: 250px; object-fit: cover;">
+                                </a>
+                                <div class="card-body">
+                                    <h6 class="card-title text-truncate">├üo kho├íc active nam</h6>
+                                    <div class="mb-2">
+                                        <span class="text-danger fw-bold">500000─æ</span>
+                                        
+                                    </div>
+                                    <button class="btn btn-sm btn-primary w-100">Th├¬m v├áo giß╗Å</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5">
+        <div class="container py-5">
+            <div class="row">
+                <!-- Company Info -->
+                <div class="col-md-4 mb-4">
+                    <h5>Clothes Shop</h5>
+                    <p class="small">123 ─É╞░ß╗¥ng ABC, Quß║¡n 1, TP.HCM</p>
+                    <p class="small">
+                        <i class="fas fa-phone me-2"></i>
+                        <span>1900-xxxx</span>
+                    </p>
+                    <p class="small">
+                        <i class="fas fa-envelope me-2"></i>
+                        <span>contact@clothesshop.com</span>
+                    </p>
+                    <p class="small">
+                        <i class="fas fa-clock me-2"></i>
+                        <span>Thß╗⌐ 2 - CN: 8:00 - 22:00</span>
+                    </p>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-md-2 mb-4">
+                    <h6>Vß╗ü ch├║ng t├┤i</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/about" class="text-white-50 text-decoration-none small">Giß╗¢i thiß╗çu</a></li>
+                        <li><a href="/stores" class="text-white-50 text-decoration-none small">Hß╗ç thß╗æng cß╗¡a h├áng</a>
+                        </li>
+                        <li><a href="/contact" class="text-white-50 text-decoration-none small">Li├¬n hß╗ç</a></li>
+                        <li><a href="/blog" class="text-white-50 text-decoration-none small">Blog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Customer Service -->
+                <div class="col-md-3 mb-4">
+                    <h6>Ch─âm s├│c kh├ích h├áng</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/policy-return" class="text-white-50 text-decoration-none small">Ch├¡nh s├ích ─æß╗òi
+                                trß║ú</a></li>
+                        <li><a href="/policy-privacy" class="text-white-50 text-decoration-none small">Ch├¡nh s├ích bß║úo
+                                mß║¡t</a></li>
+                        <li><a href="/policy-shipping" class="text-white-50 text-decoration-none small">Ch├¡nh s├ích vß║¡n
+                                chuyß╗ân</a></li>
+                        <li><a href="/faq" class="text-white-50 text-decoration-none small">C├óu hß╗Åi th╞░ß╗¥ng gß║╖p</a></li>
+                    </ul>
+                </div>
+
+                <!-- Newsletter -->
+                <div class="col-md-3 mb-4">
+                    <h6>─É─âng k├╜ nhß║¡n tin</h6>
+                    <p class="small">Nhß║¡n th├┤ng tin khuyß║┐n m├úi mß╗¢i nhß║Ñt</p>
+                    <form action="/newsletter/subscribe" method="post" class="mb-3">
+                        <div class="input-group input-group-sm">
+                            <input type="email" name="email" class="form-control" placeholder="Email cß╗ºa bß║ín" required>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                    <div>
+                        <h6>Kß║┐t nß╗æi vß╗¢i ch├║ng t├┤i</h6>
+                        <a href="https://facebook.com/clothesshop"
+                            class="btn btn-sm btn-outline-light me-2" target="_blank">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="https://instagram.com/clothesshop"
+                            class="btn btn-sm btn-outline-light me-2" target="_blank">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href=""
+                            class="btn btn-sm btn-outline-light" target="_blank">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copyright -->
+            <div class="row mt-4 pt-4 border-top border-secondary">
+                <div class="col-md-6">
+                    <p class="small mb-0">
+                        &copy; <span>2026</span>
+                        <span>Clothes Shop</span>.
+                        All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <img src="/images/payment-methods.png" alt="Payment methods" height="25" class="opacity-75">
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <a href="#" class="btn btn-primary btn-floating position-fixed bottom-0 end-0 m-4" id="backToTop"
+        style="display: none;">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="/js/main.js"></script>
+
+    <!-- Additional Scripts -->
+    
+        <script>
+            function applyFilters() {
+                const params = new URLSearchParams(window.location.search);
+                const gender = $('input[name="gender"]:checked').val();
+                const categories = $('input[name="category"]:checked').map(function () { return this.value; }).get();
+                const priceMin = $('#priceMin').val();
+                const priceMax = $('#priceMax').val();
+                const sort = $('#sortSelect').val();
+
+                const newParams = new URLSearchParams();
+                if (params.get('keyword')) newParams.set('keyword', params.get('keyword'));
+                if (gender) newParams.set('gender', gender);
+                if (priceMin) newParams.set('priceMin', priceMin);
+                if (priceMax) newParams.set('priceMax', priceMax);
+                if (sort) newParams.set('sortBy', sort);
+                categories.forEach(c => newParams.append('category', c));
+
+                window.location.href = '/products?' + newParams.toString();
+            }
+
+            function clearFilters() {
+                const params = new URLSearchParams(window.location.search);
+                const keyword = params.get('keyword');
+                window.location.href = '/products' + (keyword ? '?keyword=' + keyword : '');
+            }
+        </script>
+    
+
+    <script>
+        // Back to top button
+        $(window).scroll(function () {
+            if ($(this).scrollTop() > 100) {
+                $('#backToTop').fadeIn();
+            } else {
+                $('#backToTop').fadeOut();
+            }
+        });
+
+        $('#backToTop').click(function (e) {
+            e.preventDefault();
+            $('html, body').animate({ scrollTop: 0 }, 500);
+        });
+
+        // Auto dismiss alerts after 5 seconds
+        setTimeout(function () {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/admin-layout}">
+
+<head>
+    <title th:text="${product.productId != null ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'}">Quản lý sản phẩm</title>
+</head>
+
+<body>
+    <main layout:fragment="content">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800"
+                th:text="${product.productId != null ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'}">
+                Sản phẩm
+            </h1>
+            <a href="/admin/products" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại
+            </a>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <form th:action="@{/admin/products/save}" method="post" th:object="${product}"
+                    enctype="multipart/form-data">
+                    <input type="hidden" th:field="*{productId}">
+                    <!-- Hidden fields for audit -->
+                    <input type="hidden" th:field="*{viewCount}" th:if="${product.productId != null}">
+                    <input type="hidden" th:field="*{purchaseCount}" th:if="${product.productId != null}">
+                    <input type="hidden" th:field="*{createdAt}" th:if="${product.productId != null}">
+
+                    <div class="row">
+                        <!-- Left Column: Basic Info -->
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" th:field="*{productName}" required>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Mã sản phẩm (SKU) <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" th:field="*{sku}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Thương hiệu</label>
+                                    <input type="text" class="form-control" th:field="*{brand}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Mô tả chi tiết</label>
+                                <textarea class="form-control" th:field="*{description}" rows="5"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Giá bán <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" th:field="*{price}" required min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Giá khuyến mãi</label>
+                                    <input type="number" class="form-control" th:field="*{discountPrice}" min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Số lượng tồn kho <span
+                                            class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" th:field="*{stockQuantity}" required
+                                        min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Settings & Image -->
+                        <div class="col-md-4">
+                            <!-- Category -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2">
+                                    <h6 class="m-0 font-weight-bold text-primary">Phân loại</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                                        <select class="form-select" th:field="*{categoryId}" required>
+                                            <option value="">-- Chọn danh mục --</option>
+                                            <option th:each="cat : ${categories}" th:value="${cat.categoryId}"
+                                                th:text="${cat.categoryName}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Giới tính</label>
+                                        <select class="form-select" th:field="*{gender}">
+                                            <option value="UNISEX">Unisex</option>
+                                            <option value="MALE">Nam</option>
+                                            <option value="FEMALE">Nữ</option>
+                                            <option value="KIDS">Trẻ em</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Mùa</label>
+                                        <select class="form-select" th:field="*{season}">
+                                            <option value="ALL_SEASON">Tất cả</option>
+                                            <option value="SPRING">Xuân</option>
+                                            <option value="SUMMER">Hè</option>
+                                            <option value="FALL">Thu</option>
+                                            <option value="WINTER">Đông</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Attributes -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2">
+                                    <h6 class="m-0 font-weight-bold text-primary">Thuộc tính</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Màu sắc</label>
+                                        <input type="text" class="form-control" th:field="*{color}"
+                                            placeholder="Xanh, Đỏ...">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Kích thước</label>
+                                        <input type="text" class="form-control" th:field="*{size}"
+                                            placeholder="S, M, L...">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Chất liệu</label>
+                                        <input type="text" class="form-control" th:field="*{material}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Image -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2">
+                                    <h6 class="m-0 font-weight-bold text-primary">Hình ảnh</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <img th:src="*{imageUrl != null ? imageUrl : '/images/no-image.png'}"
+                                        class="img-fluid mb-3 rounded" id="imagePreview" style="max-height: 200px;">
+
+                                    <input type="hidden" th:field="*{imageUrl}">
+                                    <input type="file" class="form-control" name="imageFile" accept="image/*"
+                                        onchange="previewImage(this)">
+                                </div>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" th:field="*{isActive}">
+                                        <label class="form-check-label">Kích hoạt sản phẩm</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Lưu sản phẩm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function previewImage(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#imagePreview').attr('src', e.target.result);
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+        </script>
+    </th:block>
+</body>
+
+</html>

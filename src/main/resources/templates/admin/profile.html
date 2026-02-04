@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/admin-layout}">
+
+<head>
+    <title>Hồ sơ quản trị viên</title>
+</head>
+
+<body>
+    <main layout:fragment="content">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-user-circle me-2"></i>Hồ sơ cá nhân
+            </h1>
+        </div>
+
+        <div class="row">
+            <!-- Profile Info -->
+            <div class="col-xl-4 col-md-6 mb-4">
+                <div class="card shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <img class="img-profile rounded-circle mb-3" src="/images/default-avatar.png"
+                                style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #4e73df;">
+                            <h4 class="font-weight-bold text-dark" th:text="${adminUser.fullName}">Admin Name</h4>
+                            <p class="text-muted" th:text="${adminUser.email}">admin@example.com</p>
+                            <span class="badge bg-primary">Administrator</span>
+                        </div>
+
+                        <hr>
+
+                        <div class="mt-3">
+                            <div class="small text-muted mb-1">Tên đăng nhập:</div>
+                            <div class="h6 mb-3" th:text="${adminUser.username}">admin</div>
+
+                            <div class="small text-muted mb-1">Ngày tham gia:</div>
+                            <div class="h6 mb-3"
+                                th:text="${#temporals.format(adminUser.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</div>
+
+                            <div class="small text-muted mb-1">Số điện thoại:</div>
+                            <div class="h6 mb-0" th:text="${adminUser.phone ?: 'Chưa cập nhật'}">0901234567</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Profile & Change Password -->
+            <div class="col-xl-8 col-md-6 mb-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Cập nhật thông tin</h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- Alerts -->
+                        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <span th:text="${success}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
+                        <ul class="nav nav-tabs mb-3" id="profileTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="info-tab" data-bs-toggle="tab"
+                                    data-bs-target="#info" type="button" role="tab">Thông tin cơ bản</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="password-tab" data-bs-toggle="tab"
+                                    data-bs-target="#password" type="button" role="tab">Đổi mật khẩu</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="profileTabsContent">
+                            <!-- Update Info Form -->
+                            <div class="tab-pane fade show active" id="info" role="tabpanel">
+                                <form th:action="@{/admin/profile/update}" method="post">
+                                    <div class="mb-3">
+                                        <label class="form-label">Họ và tên</label>
+                                        <input type="text" class="form-control" name="fullName"
+                                            th:value="${adminUser.fullName}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="email"
+                                            th:value="${adminUser.email}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Số điện thoại</label>
+                                        <input type="text" class="form-control" name="phone"
+                                            th:value="${adminUser.phone}">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Lưu thay đổi
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Change Password Form -->
+                            <div class="tab-pane fade" id="password" role="tabpanel">
+                                <form th:action="@{/admin/profile/change-password}" method="post">
+                                    <div class="mb-3">
+                                        <label class="form-label">Mật khẩu hiện tại</label>
+                                        <input type="password" class="form-control" name="currentPassword" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Mật khẩu mới</label>
+                                        <input type="password" class="form-control" name="newPassword" required
+                                            minlength="6">
+                                        <div class="form-text">Tối thiểu 6 ký tự.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Xác nhận mật khẩu mới</label>
+                                        <input type="password" class="form-control" name="confirmPassword" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-key me-2"></i>Đổi mật khẩu
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

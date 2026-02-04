@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/admin-layout}">
+<head>
+    <title>Quản lý danh mục</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-list me-2"></i>Quản lý Danh mục
+            </h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal" onclick="resetForm()">
+                <i class="fas fa-plus me-2"></i>Thêm danh mục
+            </button>
+        </div>
+
+        <!-- DataTable Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h6 class="m-0 font-weight-bold text-primary">Danh sách danh mục</h6>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Tìm kiếm danh mục...">
+                            <button class="btn btn-primary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">ID</th>
+                                <th>Tên danh mục</th>
+                                <th>Danh mục cha</th>
+                                <th>Slug</th>
+                                <th>Số sản phẩm</th>
+                                <th>Trạng thái</th>
+                                <th>Thứ tự</th>
+                                <th style="width: 150px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="category : ${categories}">
+                                <td th:text="${category.categoryId}">1</td>
+                                <td>
+                                    <strong th:text="${category.categoryName}">Áo nam</strong>
+                                    <br>
+                                    <small class="text-muted" th:if="${category.description != null}">
+                                        <span th:text="${category.description}">Mô tả danh mục</span>
+                                    </small>
+                                </td>
+                                <td>
+                                    <span th:if="${category.parentCategory != null}" 
+                                          class="badge bg-secondary"
+                                          th:text="${category.parentCategory.categoryName}">
+                                        Danh mục cha
+                                    </span>
+                                    <span th:if="${category.parentCategory == null}" class="text-muted">
+                                        --
+                                    </span>
+                                </td>
+                                <td>
+                                    <code th:text="${category.slug}">ao-nam</code>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info" th:text="${category.productCount ?: 0}">15</span>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               th:checked="${category.isActive}"
+                                               th:onclick="'toggleStatus(' + ${category.categoryId} + ')'">
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:text="${category.displayOrder}">1</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" 
+                                                th:onclick="'editCategory(' + ${category.categoryId} + ')'">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" 
+                                                th:onclick="'deleteCategory(' + ${category.categoryId} + ')'"
+                                                th:disabled="${category.productCount > 0}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav th:if="${totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/admin/categories(page=${currentPage - 1})}">
+                                &laquo;
+                            </a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${i == currentPage ? 'active' : ''}">
+                            <a class="page-link" th:href="@{/admin/categories(page=${i})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/admin/categories(page=${currentPage + 1})}">
+                                &raquo;
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Category Modal -->
+        <div class="modal fade" id="categoryModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitle">Thêm danh mục mới</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="categoryForm" th:action="@{/admin/categories/save}" method="post">
+                        <input type="hidden" id="categoryId" name="categoryId">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Tên danh mục <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="categoryName" name="categoryName" 
+                                       required placeholder="Nhập tên danh mục">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Slug</label>
+                                <input type="text" class="form-control" id="slug" name="slug" 
+                                       placeholder="tu-dong-tao-tu-ten">
+                                <small class="text-muted">Để trống để tự động tạo từ tên danh mục</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Danh mục cha</label>
+                                <select class="form-select" id="parentCategoryId" name="parentCategoryId">
+                                    <option value="">-- Không có --</option>
+                                    <option th:each="cat : ${allCategories}" 
+                                            th:value="${cat.categoryId}"
+                                            th:text="${cat.categoryName}">
+                                        Category Name
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Mô tả</label>
+                                <textarea class="form-control" id="description" name="description" 
+                                          rows="3" placeholder="Mô tả ngắn về danh mục"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Thứ tự hiển thị</label>
+                                    <input type="number" class="form-control" id="displayOrder" 
+                                           name="displayOrder" value="0" min="0">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Trạng thái</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="isActive" name="isActive" checked>
+                                        <label class="form-check-label" for="isActive">
+                                            Hiển thị
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Icon (Font Awesome)</label>
+                                <input type="text" class="form-control" id="icon" name="icon" 
+                                       placeholder="fas fa-tshirt">
+                                <small class="text-muted">Ví dụ: fas fa-tshirt</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Hủy
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Lưu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function resetForm() {
+                $('#categoryForm')[0].reset();
+                $('#categoryId').val('');
+                $('#modalTitle').text('Thêm danh mục mới');
+            }
+
+            function editCategory(id) {
+                $.get('/admin/categories/' + id, function(data) {
+                    $('#categoryId').val(data.categoryId);
+                    $('#categoryName').val(data.categoryName);
+                    $('#slug').val(data.slug);
+                    $('#parentCategoryId').val(data.parentCategoryId || '');
+                    $('#description').val(data.description);
+                    $('#displayOrder').val(data.displayOrder);
+                    $('#isActive').prop('checked', data.isActive);
+                    $('#icon').val(data.icon);
+                    $('#modalTitle').text('Chỉnh sửa danh mục');
+                    $('#categoryModal').modal('show');
+                });
+            }
+
+            function deleteCategory(id) {
+                if (confirm('Bạn có chắc muốn xóa danh mục này?')) {
+                    $.ajax({
+                        url: '/admin/categories/' + id,
+                        type: 'DELETE',
+                        success: function() {
+                            alert('Đã xóa danh mục!');
+                            location.reload();
+                        },
+                        error: function() {
+                            alert('Không thể xóa danh mục này!');
+                        }
+                    });
+                }
+            }
+
+            function toggleStatus(id) {
+                $.post('/admin/categories/' + id + '/toggle-status', function() {
+                    console.log('Toggled status');
+                });
+            }
+
+            // Auto-generate slug
+            $('#categoryName').on('blur', function() {
+                if ($('#slug').val() === '') {
+                    const slug = $(this).val()
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/đ/g, 'd')
+                        .replace(/[^a-z0-9\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-')
+                        .trim();
+                    $('#slug').val(slug);
+                }
+            });
+
+            // Search
+            $('#searchInput').on('keyup', function() {
+                const value = $(this).val().toLowerCase();
+                $('tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html>

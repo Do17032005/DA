@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Admin Panel</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --topbar-height: 60px;
+            --primary-color: #4e73df;
+            --sidebar-bg: #343a40;
+            --sidebar-hover: #2c3136;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            background-color: #f8f9fc;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            z-index: 1000;
+            transition: all 0.3s;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: white;
+            background: var(--sidebar-hover);
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        /* Topbar */
+        .topbar {
+            height: var(--topbar-height);
+            background: white;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,.15);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: #6c757d;
+            cursor: pointer;
+        }
+
+        .topbar-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,.15);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background: white;
+            border-bottom: 1px solid #e3e6f0;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            border-left: 4px solid;
+            padding: 1.25rem;
+        }
+
+        .stats-card.primary { border-left-color: #4e73df; }
+        .stats-card.success { border-left-color: #1cc88a; }
+        .stats-card.info { border-left-color: #36b9cc; }
+        .stats-card.warning { border-left-color: #f6c23e; }
+
+        .stats-icon {
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+
+        /* Tables */
+        .table {
+            font-size: 0.875rem;
+        }
+
+        .table thead th {
+            border-bottom: 2px solid #e3e6f0;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: #858796;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 0.35rem 0.65rem;
+            font-weight: 600;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-left: calc(var(--sidebar-width) * -1);
+            }
+
+            .sidebar.show {
+                margin-left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* Custom Scrollbar */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+    </style>
+
+    <th:block layout:fragment="css"></th:block>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <a href="/admin/dashboard" class="sidebar-brand">
+            <i class="fas fa-store me-2"></i>
+            <span>ADMIN PANEL</span>
+        </a>
+
+        <ul class="sidebar-nav nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/dashboard">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/categories">
+                    <i class="fas fa-fw fa-list"></i>
+                    <span>Danh mục</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/products">
+                    <i class="fas fa-fw fa-box"></i>
+                    <span>Sản phẩm</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/orders">
+                    <i class="fas fa-fw fa-shopping-cart"></i>
+                    <span>Đơn hàng</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/customers">
+                    <i class="fas fa-fw fa-users"></i>
+                    <span>Khách hàng</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/vouchers">
+                    <i class="fas fa-fw fa-ticket-alt"></i>
+                    <span>Khuyến mãi</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/content">
+                    <i class="fas fa-fw fa-image"></i>
+                    <span>Nội dung</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/reports">
+                    <i class="fas fa-fw fa-chart-bar"></i>
+                    <span>Báo cáo</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/settings">
+                    <i class="fas fa-fw fa-cog"></i>
+                    <span>Cấu hình</span>
+                </a>
+            </li>
+
+            <hr class="sidebar-divider my-3" style="border-color: rgba(255,255,255,0.1);">
+
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/logout">
+                    <i class="fas fa-fw fa-sign-out-alt"></i>
+                    <span>Đăng xuất</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div class="topbar-right">
+                <!-- Notifications -->
+                <div class="dropdown">
+                    <button class="btn btn-link text-decoration-none position-relative" 
+                            type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell fa-fw text-muted"></i>
+                        <span class="badge bg-danger badge-sm position-absolute top-0 start-100 translate-middle rounded-pill">
+                            3
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li><h6 class="dropdown-header">Thông báo mới</h6></li>
+                        <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-shopping-cart text-primary me-2"></i>
+                            Đơn hàng mới #001
+                        </a></li>
+                        <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-user text-success me-2"></i>
+                            Khách hàng mới đăng ký
+                        </a></li>
+                        <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            Sản phẩm sắp hết hàng
+                        </a></li>
+                    </ul>
+                </div>
+
+                <!-- User Profile -->
+                <div class="dropdown">
+                    <button class="btn btn-link text-decoration-none d-flex align-items-center" 
+                            type="button" data-bs-toggle="dropdown">
+                        <img src="/images/default-avatar.png" 
+                             class="rounded-circle me-2" 
+                             style="width: 32px; height: 32px; object-fit: cover;"
+                             alt="Avatar">
+                        <span class="text-dark fw-bold" th:text="${session.adminName ?: 'Admin'}">Admin</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li><a class="dropdown-item" href="/admin/profile">
+                            <i class="fas fa-user me-2"></i>Hồ sơ
+                        </a></li>
+                        <li><a class="dropdown-item" href="/admin/settings">
+                            <i class="fas fa-cog me-2"></i>Cài đặt
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/admin/logout">
+                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="container-fluid p-4">
+            <div layout:fragment="content">
+                <!-- Page content goes here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap 5 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+
+        // Set active menu item
+        $(document).ready(function() {
+            const currentPath = window.location.pathname;
+            $('.nav-link').each(function() {
+                const href = $(this).attr('href');
+                if (currentPath === href || currentPath.startsWith(href + '/')) {
+                    $(this).addClass('active');
+                }
+            });
+        });
+    </script>
+
+    <th:block layout:fragment="scripts"></th:block>
+</body>
+</html>

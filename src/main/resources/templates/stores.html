@@ -1,0 +1,304 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Hệ thống cửa hàng</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <!-- Page Header -->
+        <div class="bg-primary text-white py-4">
+            <div class="container">
+                <h1 class="mb-0">Hệ thống cửa hàng</h1>
+                <p class="mb-0">Tìm cửa hàng gần bạn nhất</p>
+            </div>
+        </div>
+
+        <div class="container my-5">
+            <!-- Search & Filter -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-end">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <label class="form-label">Tỉnh/Thành phố</label>
+                            <select class="form-select" id="cityFilter" onchange="filterStores()">
+                                <option value="">-- Tất cả --</option>
+                                <option value="hanoi">Hà Nội</option>
+                                <option value="hcm">TP. Hồ Chí Minh</option>
+                                <option value="danang">Đà Nẵng</option>
+                                <option value="haiphong">Hải Phòng</option>
+                                <option value="cantho">Cần Thơ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <label class="form-label">Quận/Huyện</label>
+                            <select class="form-select" id="districtFilter" onchange="filterStores()">
+                                <option value="">-- Tất cả --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary w-100" onclick="filterStores()">
+                                <i class="fas fa-search me-2"></i>Tìm kiếm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Store List -->
+                <div class="col-lg-5">
+                    <div class="store-list" style="max-height: 600px; overflow-y: auto;">
+                        <!-- Hà Nội -->
+                        <div class="card border-0 shadow-sm mb-3 store-item" data-city="hanoi" data-district="hoankiem">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-store text-primary me-2"></i>
+                                        Clothes Shop - Hoàn Kiếm
+                                    </h5>
+                                    <span class="badge bg-success">Đang mở cửa</span>
+                                </div>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    123 Đường Tràng Tiền, Quận Hoàn Kiếm, Hà Nội
+                                </p>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-phone me-2"></i>
+                                    024 1234 5678
+                                </p>
+                                <p class="text-muted small mb-3">
+                                    <i class="fas fa-clock me-2"></i>
+                                    8:00 - 22:00 (Hàng ngày)
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <a href="tel:02412345678" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-phone me-1"></i>Gọi ngay
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-primary" onclick="showStoreOnMap(21.0285, 105.8542)">
+                                        <i class="fas fa-map me-1"></i>Xem bản đồ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm mb-3 store-item" data-city="hanoi" data-district="caugiay">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-store text-primary me-2"></i>
+                                        Clothes Shop - Cầu Giấy
+                                    </h5>
+                                    <span class="badge bg-success">Đang mở cửa</span>
+                                </div>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    456 Đường Trần Duy Hưng, Quận Cầu Giấy, Hà Nội
+                                </p>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-phone me-2"></i>
+                                    024 2345 6789
+                                </p>
+                                <p class="text-muted small mb-3">
+                                    <i class="fas fa-clock me-2"></i>
+                                    9:00 - 21:00 (Hàng ngày)
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <a href="tel:02423456789" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-phone me-1"></i>Gọi ngay
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-primary" onclick="showStoreOnMap(21.0245, 105.7979)">
+                                        <i class="fas fa-map me-1"></i>Xem bản đồ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TP. HCM -->
+                        <div class="card border-0 shadow-sm mb-3 store-item" data-city="hcm" data-district="quan1">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-store text-primary me-2"></i>
+                                        Clothes Shop - Quận 1
+                                    </h5>
+                                    <span class="badge bg-success">Đang mở cửa</span>
+                                </div>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    789 Đường Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh
+                                </p>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-phone me-2"></i>
+                                    028 3456 7890
+                                </p>
+                                <p class="text-muted small mb-3">
+                                    <i class="fas fa-clock me-2"></i>
+                                    8:00 - 22:00 (Hàng ngày)
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <a href="tel:02834567890" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-phone me-1"></i>Gọi ngay
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-primary" onclick="showStoreOnMap(10.7769, 106.7009)">
+                                        <i class="fas fa-map me-1"></i>Xem bản đồ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm mb-3 store-item" data-city="hcm" data-district="tanbinh">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-store text-primary me-2"></i>
+                                        Clothes Shop - Tân Bình
+                                    </h5>
+                                    <span class="badge bg-success">Đang mở cửa</span>
+                                </div>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    321 Đường Hoàng Văn Thụ, Quận Tân Bình, TP. HCM
+                                </p>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-phone me-2"></i>
+                                    028 4567 8901
+                                </p>
+                                <p class="text-muted small mb-3">
+                                    <i class="fas fa-clock me-2"></i>
+                                    9:00 - 21:30 (Hàng ngày)
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <a href="tel:02845678901" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-phone me-1"></i>Gọi ngay
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-primary" onclick="showStoreOnMap(10.7990, 106.6542)">
+                                        <i class="fas fa-map me-1"></i>Xem bản đồ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Đà Nẵng -->
+                        <div class="card border-0 shadow-sm mb-3 store-item" data-city="danang" data-district="haichau">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-store text-primary me-2"></i>
+                                        Clothes Shop - Hải Châu
+                                    </h5>
+                                    <span class="badge bg-success">Đang mở cửa</span>
+                                </div>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    654 Đường Trần Phú, Quận Hải Châu, Đà Nẵng
+                                </p>
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-phone me-2"></i>
+                                    0236 5678 901
+                                </p>
+                                <p class="text-muted small mb-3">
+                                    <i class="fas fa-clock me-2"></i>
+                                    8:30 - 21:30 (Hàng ngày)
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <a href="tel:02365678901" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-phone me-1"></i>Gọi ngay
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-primary" onclick="showStoreOnMap(16.0544, 108.2022)">
+                                        <i class="fas fa-map me-1"></i>Xem bản đồ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map -->
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm sticky-top" style="top: 100px;">
+                        <div class="card-body p-0">
+                            <div id="storeMap" style="height: 600px; border-radius: 8px;">
+                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3723.863981044296!2d105.84117541540353!3d21.028511793246955!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab9bd9861ca1%3A0xe7887f7b72ca17a9!2zSMOgIE7hu5lp!5e0!3m2!1svi!2s!4v1234567890123!5m2!1svi!2s" 
+                                        width="100%" 
+                                        height="600" 
+                                        style="border:0; border-radius: 8px;" 
+                                        allowfullscreen="" 
+                                        loading="lazy">
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Store Count -->
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    Hiển thị <strong id="storeCount">5</strong> cửa hàng
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function filterStores() {
+                const city = $('#cityFilter').val();
+                const district = $('#districtFilter').val();
+                let visibleCount = 0;
+
+                $('.store-item').each(function() {
+                    const $store = $(this);
+                    const storeCity = $store.data('city');
+                    const storeDistrict = $store.data('district');
+
+                    let show = true;
+
+                    if (city && storeCity !== city) {
+                        show = false;
+                    }
+
+                    if (district && storeDistrict !== district) {
+                        show = false;
+                    }
+
+                    if (show) {
+                        $store.show();
+                        visibleCount++;
+                    } else {
+                        $store.hide();
+                    }
+                });
+
+                $('#storeCount').text(visibleCount);
+            }
+
+            function showStoreOnMap(lat, lng) {
+                // TODO: Update map with store location
+                event.preventDefault();
+                showNotification('Đang cập nhật vị trí trên bản đồ...', 'info');
+            }
+
+            // Load districts based on city
+            $('#cityFilter').on('change', function() {
+                const city = $(this).val();
+                const $districtFilter = $('#districtFilter');
+                
+                $districtFilter.html('<option value="">-- Tất cả --</option>');
+
+                if (city === 'hanoi') {
+                    $districtFilter.append('<option value="hoankiem">Hoàn Kiếm</option>');
+                    $districtFilter.append('<option value="caugiay">Cầu Giấy</option>');
+                } else if (city === 'hcm') {
+                    $districtFilter.append('<option value="quan1">Quận 1</option>');
+                    $districtFilter.append('<option value="tanbinh">Tân Bình</option>');
+                } else if (city === 'danang') {
+                    $districtFilter.append('<option value="haichau">Hải Châu</option>');
+                }
+            });
+        </script>
+    </th:block>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/admin-layout}">
+<head>
+    <title>Quản lý khuyến mãi</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-ticket-alt me-2"></i>Quản lý Khuyến mãi
+            </h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#voucherModal" onclick="resetVoucherForm()">
+                <i class="fas fa-plus me-2"></i>Tạo voucher mới
+            </button>
+        </div>
+
+        <!-- Vouchers Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Danh sách mã giảm giá</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mã voucher</th>
+                                <th>Tên chương trình</th>
+                                <th>Giảm giá</th>
+                                <th>Điều kiện</th>
+                                <th>Số lượng</th>
+                                <th>Thời hạn</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="voucher : ${vouchers}">
+                                <td>
+                                    <code class="bg-light p-2 rounded" th:text="${voucher.voucherCode}">
+                                        SUMMER2026
+                                    </code>
+                                </td>
+                                <td>
+                                    <strong th:text="${voucher.voucherName}">Giảm giá mùa hè</strong>
+                                    <br>
+                                    <small class="text-muted" th:text="${voucher.description}"></small>
+                                </td>
+                                <td>
+                                    <span th:if="${voucher.discountType == 'PERCENTAGE'}">
+                                        <strong class="text-danger" th:text="${voucher.discountValue} + '%'">
+                                            20%
+                                        </strong>
+                                        <br>
+                                        <small class="text-muted" th:if="${voucher.maxDiscount != null}">
+                                            Tối đa: <span th:text="${#numbers.formatDecimal(voucher.maxDiscount, 0, 0)} + 'đ'"></span>
+                                        </small>
+                                    </span>
+                                    <strong th:if="${voucher.discountType == 'FIXED'}" class="text-danger"
+                                            th:text="${#numbers.formatDecimal(voucher.discountValue, 0, 0)} + 'đ'">
+                                        50,000đ
+                                    </strong>
+                                </td>
+                                <td>
+                                    <small>
+                                        Đơn tối thiểu: <strong th:text="${#numbers.formatDecimal(voucher.minOrderValue, 0, 0)} + 'đ'">
+                                            200,000đ
+                                        </strong>
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" 
+                                             th:style="'width: ' + ${(voucher.usedCount * 100.0 / voucher.quantity)} + '%'">
+                                            <span th:text="${voucher.usedCount} + '/' + ${voucher.quantity}">
+                                                5/100
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small>
+                                        Từ: <span th:text="${#temporals.format(voucher.startDate, 'dd/MM/yyyy')}"></span>
+                                        <br>
+                                        Đến: <span th:text="${#temporals.format(voucher.endDate, 'dd/MM/yyyy')}"></span>
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               th:checked="${voucher.isActive}"
+                                               th:onclick="'toggleVoucherStatus(' + ${voucher.voucherId} + ')'">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" 
+                                                th:onclick="'editVoucher(' + ${voucher.voucherId} + ')'">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" 
+                                                th:onclick="'deleteVoucher(' + ${voucher.voucherId} + ')'">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voucher Modal -->
+        <div class="modal fade" id="voucherModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="voucherModalTitle">Tạo voucher mới</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="voucherForm" th:action="@{/admin/vouchers/save}" method="post">
+                        <input type="hidden" id="voucherId" name="voucherId">
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Mã voucher <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="voucherCode" name="voucherCode" 
+                                           required placeholder="VD: SUMMER2026" style="text-transform: uppercase;">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Tên chương trình <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="voucherName" name="voucherName" 
+                                           required placeholder="Giảm giá mùa hè">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Mô tả</label>
+                                <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Loại giảm giá</label>
+                                    <select class="form-select" id="discountType" name="discountType" onchange="updateDiscountFields()">
+                                        <option value="PERCENTAGE">Phần trăm (%)</option>
+                                        <option value="FIXED">Số tiền cố định</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Giá trị giảm</label>
+                                    <input type="number" class="form-control" id="discountValue" name="discountValue" required>
+                                </div>
+                                <div class="col-md-4 mb-3" id="maxDiscountGroup">
+                                    <label class="form-label">Giảm tối đa (đ)</label>
+                                    <input type="number" class="form-control" id="maxDiscount" name="maxDiscount">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Đơn hàng tối thiểu (đ)</label>
+                                    <input type="number" class="form-control" id="minOrderValue" name="minOrderValue" value="0">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Số lượng</label>
+                                    <input type="number" class="form-control" id="quantity" name="quantity" required value="100">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ngày bắt đầu</label>
+                                    <input type="date" class="form-control" id="startDate" name="startDate" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ngày kết thúc</label>
+                                    <input type="date" class="form-control" id="endDate" name="endDate" required>
+                                </div>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked>
+                                <label class="form-check-label" for="isActive">
+                                    Kích hoạt ngay
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Lưu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function resetVoucherForm() {
+                $('#voucherForm')[0].reset();
+                $('#voucherId').val('');
+                $('#voucherModalTitle').text('Tạo voucher mới');
+                updateDiscountFields();
+            }
+
+            function editVoucher(id) {
+                $.get('/admin/vouchers/' + id, function(data) {
+                    $('#voucherId').val(data.voucherId);
+                    $('#voucherCode').val(data.voucherCode);
+                    $('#voucherName').val(data.voucherName);
+                    $('#description').val(data.description);
+                    $('#discountType').val(data.discountType);
+                    $('#discountValue').val(data.discountValue);
+                    $('#maxDiscount').val(data.maxDiscount);
+                    $('#minOrderValue').val(data.minOrderValue);
+                    $('#quantity').val(data.quantity);
+                    $('#startDate').val(data.startDate);
+                    $('#endDate').val(data.endDate);
+                    $('#isActive').prop('checked', data.isActive);
+                    $('#voucherModalTitle').text('Chỉnh sửa voucher');
+                    updateDiscountFields();
+                    $('#voucherModal').modal('show');
+                });
+            }
+
+            function deleteVoucher(id) {
+                if (confirm('Bạn có chắc muốn xóa voucher này?')) {
+                    $.ajax({
+                        url: '/admin/vouchers/' + id,
+                        type: 'DELETE',
+                        success: function() {
+                            alert('Đã xóa voucher!');
+                            location.reload();
+                        }
+                    });
+                }
+            }
+
+            function toggleVoucherStatus(id) {
+                $.post('/admin/vouchers/' + id + '/toggle-status');
+            }
+
+            function updateDiscountFields() {
+                const type = $('#discountType').val();
+                if (type === 'PERCENTAGE') {
+                    $('#maxDiscountGroup').show();
+                    $('#discountValue').attr('placeholder', 'VD: 20 (%)');
+                } else {
+                    $('#maxDiscountGroup').hide();
+                    $('#discountValue').attr('placeholder', 'VD: 50000 (đ)');
+                }
+            }
+
+            // Set default dates
+            $(document).ready(function() {
+                const today = new Date().toISOString().split('T')[0];
+                $('#startDate').val(today);
+                updateDiscountFields();
+            });
+        </script>
+    </th:block>
+</body>
+</html>

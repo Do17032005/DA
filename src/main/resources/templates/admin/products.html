@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/admin-layout}">
+
+<head>
+    <title>Quản lý sản phẩm</title>
+</head>
+
+<body>
+    <main layout:fragment="content">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-box me-2"></i>Quản lý Sản phẩm
+            </h1>
+            <a href="/admin/products/add" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Thêm sản phẩm
+            </a>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" name="keyword" placeholder="Tìm theo tên, SKU..."
+                            th:value="${param.keyword}">
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="categoryId">
+                            <option value="">-- Danh mục --</option>
+                            <option th:each="cat : ${categories}" th:value="${cat.categoryId}"
+                                th:text="${cat.categoryName}"
+                                th:selected="${param.categoryId != null && param.categoryId[0] == cat.categoryId.toString()}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="status">
+                            <option value="">-- Trạng thái --</option>
+                            <option value="active" th:selected="${param.status != null && param.status[0] == 'active'}">
+                                Đang bán</option>
+                            <option value="inactive"
+                                th:selected="${param.status != null && param.status[0] == 'inactive'}">Ngừng bán
+                            </option>
+                            <option value="out_of_stock"
+                                th:selected="${param.status != null && param.status[0] == 'out_of_stock'}">Hết hàng
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="sortBy">
+                            <option value="newest" th:selected="${param.sortBy == null || param.sortBy[0] == 'newest'}">
+                                Mới nhất</option>
+                            <option value="price_asc"
+                                th:selected="${param.sortBy != null && param.sortBy[0] == 'price_asc'}">Giá tăng dần
+                            </option>
+                            <option value="price_desc"
+                                th:selected="${param.sortBy != null && param.sortBy[0] == 'price_desc'}">Giá giảm dần
+                            </option>
+                            <option value="name" th:selected="${param.sortBy != null && param.sortBy[0] == 'name'}">Tên
+                                A-Z</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="fas fa-search me-1"></i>Tìm kiếm
+                            </button>
+                            <a href="/admin/products" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Products Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    Danh sách sản phẩm
+                    (<span th:text="${totalProducts}">0</span> sản phẩm)
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th style="width: 80px;">Hình ảnh</th>
+                                <th>Sản phẩm</th>
+                                <th>Danh mục</th>
+                                <th>Giá</th>
+                                <th>Tồn kho</th>
+                                <th>Trạng thái</th>
+                                <th style="width: 150px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="product : ${products}">
+                                <td>
+                                    <input type="checkbox" class="product-checkbox" th:value="${product.productId}">
+                                </td>
+                                <td>
+                                    <img th:src="${product.imageUrl}" th:alt="${product.productName}"
+                                        class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                                </td>
+                                <td>
+                                    <strong th:text="${product.productName}">Product Name</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        SKU: <code th:text="${product.sku}">PRD-001</code>
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${product.categoryName}">
+                                        Category
+                                    </span>
+                                </td>
+                                <td>
+                                    <div
+                                        th:if="${product.discountPrice != null && product.discountPrice < product.price}">
+                                        <strong class="text-danger"
+                                            th:text="${#numbers.formatDecimal(product.discountPrice, 0, 0)} + 'đ'">
+                                            250,000đ
+                                        </strong>
+                                        <br>
+                                        <small class="text-muted text-decoration-line-through"
+                                            th:text="${#numbers.formatDecimal(product.price, 0, 0)} + 'đ'">
+                                            299,000đ
+                                        </small>
+                                    </div>
+                                    <strong
+                                        th:if="${product.discountPrice == null || product.discountPrice >= product.price}"
+                                        th:text="${#numbers.formatDecimal(product.price, 0, 0)} + 'đ'">
+                                        299,000đ
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span
+                                        th:classappend="${product.stockQuantity <= 0 ? 'text-danger' : 
+                                                          (product.stockQuantity <= 10 ? 'text-warning' : 'text-success')}"
+                                        th:text="${product.stockQuantity}">
+                                        50
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" th:checked="${product.isActive}"
+                                            th:onclick="'toggleProductStatus(' + ${product.productId} + ')'">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{/admin/products/edit/{id}(id=${product.productId})}"
+                                            class="btn btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-outline-info"
+                                            th:onclick="'duplicateProduct(' + ${product.productId} + ')'">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger"
+                                            th:onclick="'deleteProduct(' + ${product.productId} + ')'">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Bulk Actions -->
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        <button class="btn btn-sm btn-danger" onclick="deleteSelected()">
+                            <i class="fas fa-trash me-1"></i>Xóa đã chọn
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="exportExcel()">
+                            <i class="fas fa-file-excel me-1"></i>Xuất Excel
+                        </button>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav th:if="${totalPages > 1}">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                <a class="page-link"
+                                    th:href="@{/admin/products(page=${currentPage - 1}, keyword=${param.keyword}, categoryId=${param.categoryId}, status=${param.status}, sortBy=${param.sortBy})}">
+                                    &laquo;
+                                </a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                                th:classappend="${i == currentPage ? 'active' : ''}"
+                                th:if="${i >= currentPage - 2 && i <= currentPage + 2}">
+                                <a class="page-link"
+                                    th:href="@{/admin/products(page=${i}, keyword=${param.keyword}, categoryId=${param.categoryId}, status=${param.status}, sortBy=${param.sortBy})}"
+                                    th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                                <a class="page-link"
+                                    th:href="@{/admin/products(page=${currentPage + 1}, keyword=${param.keyword}, categoryId=${param.categoryId}, status=${param.status}, sortBy=${param.sortBy})}">
+                                    &raquo;
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            // Select all checkbox
+            $('#selectAll').on('change', function () {
+                $('.product-checkbox').prop('checked', $(this).prop('checked'));
+            });
+
+            function toggleProductStatus(id) {
+                $.post('/admin/products/' + id + '/toggle-status', function () {
+                    console.log('Toggled status');
+                });
+            }
+
+            function deleteProduct(id) {
+                if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
+                    $.ajax({
+                        url: '/admin/products/' + id,
+                        type: 'DELETE',
+                        success: function () {
+                            alert('Đã xóa sản phẩm!');
+                            location.reload();
+                        },
+                        error: function () {
+                            alert('Không thể xóa sản phẩm!');
+                        }
+                    });
+                }
+            }
+
+            function duplicateProduct(id) {
+                if (confirm('Nhân bản sản phẩm này?')) {
+                    $.post('/admin/products/' + id + '/duplicate', function () {
+                        alert('Đã nhân bản sản phẩm!');
+                        location.reload();
+                    });
+                }
+            }
+
+            function deleteSelected() {
+                const selected = $('.product-checkbox:checked').map(function () {
+                    return $(this).val();
+                }).get();
+
+                if (selected.length === 0) {
+                    alert('Vui lòng chọn sản phẩm!');
+                    return;
+                }
+
+                if (confirm(`Xóa ${selected.length} sản phẩm đã chọn?`)) {
+                    $.ajax({
+                        url: '/admin/products/delete-multiple',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(selected),
+                        success: function () {
+                            alert('Đã xóa sản phẩm!');
+                            location.reload();
+                        }
+                    });
+                }
+            }
+
+            function exportExcel() {
+                window.location.href = '/admin/products/export';
+            }
+        </script>
+    </th:block>
+</body>
+
+</html>

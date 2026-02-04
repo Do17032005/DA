@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <title th:text="${pageTitle}">Blog - Fashion Store</title>
+</head>
+
+<body>
+    <div layout:fragment="content" class="container py-5">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Blog</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="mb-4 fw-bold" th:text="${pageTitle}">Tin tức thời trang</h1>
+
+                <div th:if="${posts.empty}" class="text-center py-5">
+                    <p class="text-muted">Chưa có bài viết nào.</p>
+                </div>
+
+                <div class="row g-4">
+                    <div th:each="post : ${posts}" class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm rounded-custom overflow-hidden">
+                            <a th:href="@{'/blog/' + ${post.slug}}">
+                                <img th:src="${post.featuredImage}" class="card-img-top" th:alt="${post.title}"
+                                    style="height: 200px; object-fit: cover;">
+                            </a>
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    <span class="badge bg-primary rounded-pill" th:text="${post.category}">Xu
+                                        hướng</span>
+                                    <small class="text-muted ms-2"
+                                        th:text="${#temporals.format(post.publishedAt, 'dd/MM/yyyy')}">01/01/2026</small>
+                                </div>
+                                <h5 class="card-title fw-bold">
+                                    <a th:href="@{'/blog/' + ${post.slug}}" class="text-dark text-decoration-none"
+                                        th:text="${post.title}">Tiêu đề bài viết</a>
+                                </h5>
+                                <p class="card-text text-muted small" th:text="${post.excerpt}">Mô tả ngắn về bài
+                                    viết...</p>
+                                <a th:href="@{'/blog/' + ${post.slug}}"
+                                    class="btn btn-outline-primary btn-sm rounded-pill">Đọc thêm</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-custom mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold mb-3">Bài viết mới nhất</h5>
+                        <div th:each="recent : ${recentPosts}" class="mb-3">
+                            <a th:href="@{'/blog/' + ${recent.slug}}"
+                                class="text-decoration-none d-flex align-items-center">
+                                <img th:src="${recent.featuredImage}" class="rounded"
+                                    style="width: 60px; height: 60px; object-fit: cover;">
+                                <div class="ms-3">
+                                    <h6 class="text-dark fw-bold mb-0 small" th:text="${recent.title}">Tiêu đề</h6>
+                                    <small class="text-muted"
+                                        th:text="${#temporals.format(recent.publishedAt, 'dd/MM/yyyy')}">01/01/2026</small>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
