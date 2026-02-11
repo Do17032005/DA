@@ -3,6 +3,7 @@ package com.clothes.service;
 import com.clothes.dao.OrderDAO;
 import com.clothes.dao.UserDAO;
 import com.clothes.model.Order;
+import com.clothes.model.OrderItem;
 import com.clothes.model.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,10 +22,12 @@ public class AdminOrderService {
 
     private final OrderDAO orderDAO;
     private final UserDAO userDAO;
+    private final OrderService orderService;
 
-    public AdminOrderService(OrderDAO orderDAO, UserDAO userDAO) {
+    public AdminOrderService(OrderDAO orderDAO, UserDAO userDAO, OrderService orderService) {
         this.orderDAO = orderDAO;
         this.userDAO = userDAO;
+        this.orderService = orderService;
     }
 
     public List<Order> getAllOrders() {
@@ -61,13 +64,25 @@ public class AdminOrderService {
     }
 
     public void updateOrderStatus(Long orderId, String status) {
-        System.out.println("Updating order " + orderId + " to status: " + status);
+        System.out.println("=== AdminOrderService.updateOrderStatus ===");
+        System.out.println("Order ID: " + orderId);
+        System.out.println("New Status (raw): " + status);
+        
+        if (status == null || status.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status cannot be null or empty");
+        }
+        
         Order.OrderStatus newStatus = Order.OrderStatus.fromValue(status.toUpperCase());
+        System.out.println("Parsed OrderStatus enum: " + newStatus);
+        
         int rowsUpdated = orderDAO.updateStatus(orderId, newStatus);
         System.out.println("Rows updated: " + rowsUpdated);
+        
         if (rowsUpdated == 0) {
-            throw new RuntimeException("Failed to update order status");
+            throw new RuntimeException("Failed to update order status - no rows affected. Order ID may not exist: " + orderId);
         }
+        
+        System.out.println("Order status updated successfully");
     }
 
     public Map<String, Long> getOrderStatusCounts() {
@@ -110,5 +125,12 @@ public class AdminOrderService {
                 order.setItemCount(0);
             }
         });
+    }
+    
+    /**
+     * Get order items with product details
+     */
+    public List<OrderItem> getOrderItems(Long orderId) {
+        return orderService.getOrderItems(orderId);
     }
 }

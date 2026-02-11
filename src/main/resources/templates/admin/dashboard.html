@@ -186,10 +186,10 @@
                                         </td>
                                         <td>
                                             <span class="badge" 
-                                                  th:classappend="${order.status == 'PENDING' ? 'bg-warning' : 
-                                                                   (order.status == 'PROCESSING' ? 'bg-info' :
-                                                                   (order.status == 'SHIPPING' ? 'bg-primary' :
-                                                                   (order.status == 'COMPLETED' ? 'bg-success' : 'bg-danger')))}">
+                                                  th:classappend="${order.status.name() == 'PENDING' ? 'bg-warning' : 
+                                                                   (order.status.name() == 'PROCESSING' ? 'bg-info' :
+                                                                   (order.status.name() == 'SHIPPING' ? 'bg-primary' :
+                                                                   (order.status.name() == 'COMPLETED' ? 'bg-success' : 'bg-danger')))}">
                                                 <span th:text="${order.statusText}">Chờ xác nhận</span>
                                             </span>
                                         </td>

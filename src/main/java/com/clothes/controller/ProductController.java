@@ -100,7 +100,10 @@ public class ProductController {
      * Show product detail page
      */
     @GetMapping("/{id}")
-    public String showProductDetail(@PathVariable Long id, HttpSession session, Model model) {
+        public String showProductDetail(@PathVariable Long id,
+            @RequestParam(name = "tab", required = false) String tab,
+            HttpSession session,
+            Model model) {
         Optional<Product> productOpt = productDAO.findById(id);
 
         if (productOpt.isEmpty()) {
@@ -126,6 +129,15 @@ public class ProductController {
         // Check if user is logged in and can review
         Long userId = (Long) session.getAttribute("userId");
         boolean canReview = userId != null && !reviewDAO.hasUserReviewed(userId, id);
+        Long userReviewId = null;
+        if (userId != null) {
+            for (Review review : reviews) {
+                if (review.getUserId() != null && review.getUserId().equals(userId)) {
+                    userReviewId = review.getReviewId();
+                    break;
+                }
+            }
+        }
         boolean isInWishlist = userId != null && wishlistDAO.exists(userId, id);
 
         // Get similar products by category
@@ -137,6 +149,8 @@ public class ProductController {
             similarProducts = similarProducts.subList(0, 4);
         }
 
+        String activeTab = (tab != null && !tab.isBlank()) ? tab : "description";
+
         model.addAttribute("product", product);
         model.addAttribute("category", category);
         model.addAttribute("reviews", reviews);
@@ -145,6 +159,9 @@ public class ProductController {
         model.addAttribute("canReview", canReview);
         model.addAttribute("isInWishlist", isInWishlist);
         model.addAttribute("similarProducts", similarProducts);
+        model.addAttribute("activeTab", activeTab);
+        model.addAttribute("loggedInUserId", userId);
+        model.addAttribute("userReviewId", userReviewId);
 
         return "product-detail";
     }

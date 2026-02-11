@@ -1,5 +1,7 @@
 package com.clothes.controller;
 
+import com.clothes.dao.BannerDAO;
+import com.clothes.dao.BlogPostDAO;
 import com.clothes.dao.ProductDAO;
 import com.clothes.service.CategoryService;
 import com.clothes.service.HybridRecommendationService;
@@ -18,12 +20,19 @@ public class HomeController {
     private final ProductDAO productDAO;
     private final CategoryService categoryService;
     private final HybridRecommendationService recommendationService;
+    private final BannerDAO bannerDAO;
+    private final BlogPostDAO blogPostDAO;
 
-    public HomeController(ProductDAO productDAO, CategoryService categoryService,
-            HybridRecommendationService recommendationService) {
+    public HomeController(ProductDAO productDAO,
+            CategoryService categoryService,
+            HybridRecommendationService recommendationService,
+            BannerDAO bannerDAO,
+            BlogPostDAO blogPostDAO) {
         this.productDAO = productDAO;
         this.categoryService = categoryService;
         this.recommendationService = recommendationService;
+        this.bannerDAO = bannerDAO;
+        this.blogPostDAO = blogPostDAO;
     }
 
     /**
@@ -59,11 +68,25 @@ public class HomeController {
         // Get categories
         var categories = categoryService.getRootCategories();
 
+        // Get active homepage banners (fallback to defaults handled in template)
+        var banners = bannerDAO.findByPosition("main");
+        if (banners.isEmpty()) {
+            banners = bannerDAO.findAllActive();
+        }
+
+        // Get featured blog posts for the news section
+        var blogPosts = blogPostDAO.findFeatured(3);
+        if (blogPosts.isEmpty()) {
+            blogPosts = blogPostDAO.findRecent(3);
+        }
+
         model.addAttribute("recommendedProducts", recommendedProducts);
         model.addAttribute("newProducts", newProducts);
         model.addAttribute("trendingProducts", trendingProducts);
         model.addAttribute("featuredProducts", trendingProducts);
         model.addAttribute("categories", categories);
+        model.addAttribute("banners", banners);
+        model.addAttribute("blogPosts", blogPosts);
 
         return "index";
     }

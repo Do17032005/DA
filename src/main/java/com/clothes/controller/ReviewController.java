@@ -44,13 +44,13 @@ public class ReviewController {
             // Validate rating
             if (rating < 1 || rating > 5) {
                 redirectAttributes.addFlashAttribute("error", "Đánh giá phải từ 1 đến 5 sao");
-                return "redirect:/products/" + productId;
+                return "redirect:/products/" + productId + "?tab=reviews#reviews";
             }
 
             // Check if user already reviewed
             if (reviewDAO.hasUserReviewed(userId, productId)) {
                 redirectAttributes.addFlashAttribute("error", "Bạn đã đánh giá sản phẩm này rồi");
-                return "redirect:/products/" + productId;
+                return "redirect:/products/" + productId + "?tab=reviews#reviews";
             }
 
             // Check if product exists
@@ -73,7 +73,7 @@ public class ReviewController {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
 
-        return "redirect:/products/" + productId;
+        return "redirect:/products/" + productId + "?tab=reviews#reviews";
     }
 
     /**
@@ -100,14 +100,65 @@ public class ReviewController {
             // Check if user owns this review
             if (!review.getUserId().equals(userId)) {
                 redirectAttributes.addFlashAttribute("error", "Không có quyền xóa đánh giá này");
-                return "redirect:/user/profile";
+                return "redirect:/products/" + review.getProductId() + "?tab=reviews#reviews";
             }
 
             reviewDAO.delete(id);
             redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá");
 
-            return "redirect:/products/" + review.getProductId();
+            return "redirect:/products/" + review.getProductId() + "?tab=reviews#reviews";
 
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+            return "redirect:/user/profile";
+        }
+    }
+
+    /**
+     * Update review
+     */
+    @PostMapping("/update/{id}")
+    public String updateReview(@PathVariable Long id,
+            @RequestParam Integer rating,
+            @RequestParam(required = false) String comment,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/user/login";
+        }
+
+        try {
+            var reviewOpt = reviewDAO.findById(id);
+            if (reviewOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Đánh giá không tồn tại");
+                return "redirect:/user/profile";
+            }
+
+            Review review = reviewOpt.get();
+
+            if (!review.getUserId().equals(userId)) {
+                redirectAttributes.addFlashAttribute("error", "Không có quyền chỉnh sửa đánh giá này");
+                return "redirect:/products/" + review.getProductId() + "?tab=reviews#reviews";
+            }
+
+            if (rating < 1 || rating > 5) {
+                redirectAttributes.addFlashAttribute("error", "Đánh giá phải từ 1 đến 5 sao");
+                return "redirect:/products/" + review.getProductId() + "?tab=reviews#reviews";
+            }
+
+            String sanitizedComment = comment != null ? comment.trim() : "";
+            if (sanitizedComment.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Nội dung đánh giá không được để trống");
+                return "redirect:/products/" + review.getProductId() + "#reviews";
+            }
+
+            review.setRating(rating);
+            review.setComment(sanitizedComment);
+            reviewDAO.update(review);
+
+            redirectAttributes.addFlashAttribute("success", "Đã cập nhật đánh giá của bạn");
+            return "redirect:/products/" + review.getProductId() + "?tab=reviews#reviews";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
             return "redirect:/user/profile";

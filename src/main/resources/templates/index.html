@@ -76,7 +76,7 @@
                         style="max-height: 500px; object-fit: cover;">
                     <div class="carousel-caption d-none d-md-block">
                         <h2 th:text="${banner.title}">Banner Title</h2>
-                        <p th:text="${banner.subtitle}">Banner Subtitle</p>
+                        <p th:text="${banner.description}">Banner Subtitle</p>
                         <a th:href="${banner.linkUrl}" class="btn btn-light btn-lg" th:if="${banner.linkUrl != null}">
                             Xem ngay
                         </a>
@@ -164,8 +164,11 @@
 
                         <!-- Wishlist Button -->
                         <button class="btn btn-light btn-sm rounded-circle wishlist-btn"
-                            th:onclick="'toggleWishlist(' + ${product.productId} + ')'">
-                            <i class="far fa-heart"></i>
+                            th:with="isFavorite=${wishlistProductIds != null && wishlistProductIds.contains(product.productId)}"
+                            th:classappend="${isFavorite} ? ' active' : ''"
+                            th:data-in-wishlist="${isFavorite}"
+                            th:onclick="'toggleWishlist(' + ${product.productId} + ', this)'">
+                            <i th:class="${isFavorite} ? 'fas fa-heart text-danger' : 'far fa-heart'"></i>
                         </button>
 
                         <a th:href="@{/products/{id}(id=${product.productId})}">
@@ -263,8 +266,11 @@
                         <span class="badge bg-success badge-sale">Mới</span>
 
                         <button class="btn btn-light btn-sm rounded-circle wishlist-btn"
-                            th:onclick="'toggleWishlist(' + ${product.productId} + ')'">
-                            <i class="far fa-heart"></i>
+                            th:with="isFavorite=${wishlistProductIds != null && wishlistProductIds.contains(product.productId)}"
+                            th:classappend="${isFavorite} ? ' active' : ''"
+                            th:data-in-wishlist="${isFavorite}"
+                            th:onclick="'toggleWishlist(' + ${product.productId} + ', this)'">
+                            <i th:class="${isFavorite} ? 'fas fa-heart text-danger' : 'far fa-heart'"></i>
                         </button>
 
                         <a th:href="@{/products/{id}(id=${product.productId})}">
@@ -280,7 +286,16 @@
                             </h6>
 
                             <div class="mb-2">
-                                <span class="h5 text-danger">
+                                <span class="h5 text-danger mb-0"
+                                    th:if="${product.discountPrice != null && product.discountPrice < product.price}">
+                                    <span th:text="${#numbers.formatDecimal(product.discountPrice, 0, 0)}">199,000</span>đ
+                                </span>
+                                <span class="text-muted text-decoration-line-through small ms-1"
+                                    th:if="${product.discountPrice != null && product.discountPrice < product.price}"
+                                    th:text="${#numbers.formatDecimal(product.price, 0, 0)} + 'đ'">
+                                </span>
+                                <span class="h5 text-danger mb-0"
+                                    th:if="${product.discountPrice == null || product.discountPrice >= product.price}">
                                     <span th:text="${#numbers.formatDecimal(product.price, 0, 0)}">299,000</span>đ
                                 </span>
                             </div>
@@ -342,7 +357,7 @@
             <div class="row g-4">
                 <div class="col-md-4" th:each="post : ${blogPosts}">
                     <div class="card border-0 shadow-sm">
-                        <img th:src="${post.imageUrl}" th:alt="${post.title}" class="card-img-top"
+                        <img th:src="${post.featuredImage}" th:alt="${post.title}" class="card-img-top"
                             style="height: 200px; object-fit: cover;">
                         <div class="card-body">
                             <p class="small text-muted mb-2">
@@ -381,17 +396,6 @@
                 });
             }
 
-            function toggleWishlist(productId) {
-                $.post('/wishlist/toggle', { productId: productId }, function (response) {
-                    if (response.success) {
-                        location.reload();
-                    } else {
-                        if (!response.loggedIn) {
-                            window.location.href = '/login';
-                        }
-                    }
-                });
-            }
         </script>
     </th:block>
 </body>

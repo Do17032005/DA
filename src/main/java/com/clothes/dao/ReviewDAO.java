@@ -105,6 +105,17 @@ public class ReviewDAO {
     }
 
     /**
+     * Update review content
+     */
+    public int update(Review review) {
+        String sql = "UPDATE product_reviews SET rating = ?, comment = ? WHERE review_id = ?";
+        return jdbcTemplate.update(sql,
+                review.getRating(),
+                review.getComment(),
+                review.getReviewId());
+    }
+
+    /**
      * Get average rating for product
      */
     public Double getAverageRating(Long productId) {

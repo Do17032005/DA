@@ -9,8 +9,11 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * DAO for Wishlist entity
@@ -120,5 +123,18 @@ public class WishlistDAO {
         String sql = "SELECT COUNT(*) FROM wishlists WHERE user_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
         return count != null ? count : 0;
+    }
+
+    /**
+     * Get product IDs currently in user's wishlist
+     */
+    public Set<Long> findProductIdsByUserId(Long userId) {
+        if (userId == null) {
+            return Collections.emptySet();
+        }
+
+        String sql = "SELECT product_id FROM wishlists WHERE user_id = ?";
+        List<Long> productIds = jdbcTemplate.queryForList(sql, Long.class, userId);
+        return productIds.isEmpty() ? Collections.emptySet() : new HashSet<>(productIds);
     }
 }

@@ -109,25 +109,38 @@ function showMiniCart() {
 
 // Wishlist functions
 function toggleWishlist(productId, button) {
+    const wasInWishlist = button ? $(button).attr('data-in-wishlist') === 'true' : false;
+    const desiredAction = wasInWishlist ? 'remove' : 'add';
+
     $.ajax({
         url: '/wishlist/toggle',
         type: 'POST',
-        data: { productId: productId },
+        data: {
+            productId: productId,
+            action: desiredAction
+        },
         success: function(response) {
             if (response.success) {
-                if (response.added) {
-                    $(button).find('i').removeClass('far').addClass('fas').css('color', '#dc3545');
-                    showNotification('Đã thêm vào danh sách yêu thích!', 'success');
-                } else {
-                    $(button).find('i').removeClass('fas').addClass('far').css('color', '');
-                    showNotification('Đã xóa khỏi danh sách yêu thích!', 'info');
-                }
+                const serverAction = response.action || (desiredAction === 'add' ? 'added' : 'removed');
+                const inWishlist = serverAction === 'added';
+                updateWishlistButtonState(button, inWishlist);
+                showNotification(
+                    inWishlist ? 'Đã thêm vào danh sách yêu thích!' : 'Đã gỡ khỏi danh sách yêu thích!',
+                    inWishlist ? 'success' : 'info'
+                );
                 loadWishlistCount();
+            } else if (response.loggedIn === false) {
+                showNotification('Vui lòng đăng nhập để sử dụng danh sách yêu thích', 'warning');
+                setTimeout(function() {
+                    window.location.href = '/user/login?redirect=' + encodeURIComponent(window.location.pathname);
+                }, 1500);
             } else {
+                updateWishlistButtonState(button, wasInWishlist);
                 showNotification(response.message || 'Có lỗi xảy ra!', 'error');
             }
         },
         error: function(xhr) {
+            updateWishlistButtonState(button, wasInWishlist);
             if (xhr.status === 401) {
                 showNotification('Vui lòng đăng nhập!', 'warning');
                 setTimeout(function() {
@@ -138,6 +151,26 @@ function toggleWishlist(productId, button) {
             }
         }
     });
+}
+
+function updateWishlistButtonState(button, inWishlist) {
+    if (!button) {
+        return;
+    }
+
+    const $button = $(button);
+    $button.toggleClass('active', inWishlist);
+    $button.attr('data-in-wishlist', inWishlist);
+
+    const $icon = $button.find('i.fa-heart');
+    if ($icon.length) {
+        $icon.toggleClass('fas', inWishlist);
+        $icon.toggleClass('far', !inWishlist);
+        $icon.toggleClass('text-danger', inWishlist);
+        if (!inWishlist) {
+            $icon.removeClass('text-danger');
+        }
+    }
 }
 
 function removeFromWishlist(wishlistId) {

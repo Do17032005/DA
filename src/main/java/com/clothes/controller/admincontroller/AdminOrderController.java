@@ -1,6 +1,7 @@
 package com.clothes.controller.admincontroller;
 
 import com.clothes.model.Order;
+import com.clothes.model.OrderItem;
 import com.clothes.service.AdminOrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -54,24 +55,45 @@ public class AdminOrderController {
             return "redirect:/admin/login";
         }
 
-        Optional<Order> order = orderService.getOrderById(id);
-        if (order.isEmpty()) {
+        Optional<Order> orderOpt = orderService.getOrderById(id);
+        if (orderOpt.isEmpty()) {
             return "redirect:/admin/orders";
         }
+        
+        Order order = orderOpt.get();
+        
+        // Load order items with product details
+        List<OrderItem> items = orderService.getOrderItems(id);
+        order.setOrderItems(items);
 
-        model.addAttribute("order", order.get());
+        model.addAttribute("order", order);
         return "admin/order-detail";
     }
 
     @PostMapping("/{id}/update-status")
     @ResponseBody
-    public ResponseEntity<Void> updateStatus(@PathVariable Long id,
-            @RequestParam String status) {
+    public ResponseEntity<String> updateStatus(@PathVariable Long id,
+            @RequestParam String status,
+            HttpSession session) {
+        System.out.println("=== POST /admin/orders/" + id + "/update-status ===");
+        System.out.println("Status parameter: " + status);
+        System.out.println("Session adminId: " + session.getAttribute("adminId"));
+        
+        if (session.getAttribute("adminId") == null) {
+            return ResponseEntity.status(401).body("Unauthorized - Admin login required");
+        }
+        
         try {
             orderService.updateOrderStatus(id, status);
-            return ResponseEntity.ok().build();
+            System.out.println("Status update successful");
+            return ResponseEntity.ok("Order status updated successfully");
+        } catch (IllegalArgumentException e) {
+            System.err.println("Validation error: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Invalid status: " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            System.err.println("Error updating order status: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
     }
 

@@ -45,14 +45,14 @@
                     <div class="card h-100 product-card position-relative">
                         <!-- Remove from Wishlist Button -->
                         <button type="button" class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 shadow-sm"
-                                th:onclick="'removeFromWishlist(' + ${item.productId} + ')'">
+                                th:onclick="'removeFromWishlist(' + ${item.wishlistId} + ')'">
                             <i class="fas fa-times"></i>
                         </button>
 
                         <!-- Product Image -->
                         <a th:href="@{/products/{id}(id=${item.productId})}" class="text-decoration-none">
-                            <img th:src="${item.imageUrl}" 
-                                 th:alt="${item.productName}"
+                            <img th:src="${item.product != null && item.product.imageUrl != null ? item.product.imageUrl : '/images/no-image.png'}" 
+                                 th:alt="${item.product != null ? item.product.productName : 'Sản phẩm'}"
                                  class="card-img-top" style="height: 300px; object-fit: cover;">
                         </a>
 
@@ -61,7 +61,7 @@
                             <h6 class="card-title">
                                 <a th:href="@{/products/{id}(id=${item.productId})}" 
                                    class="text-decoration-none text-dark"
-                                   th:text="${item.productName}">
+                                   th:text="${item.product != null ? item.product.productName : 'Sản phẩm'}">
                                     Tên sản phẩm
                                 </a>
                             </h6>
@@ -69,29 +69,29 @@
                             <!-- Price -->
                             <div class="mb-2">
                                 <span class="h5 text-danger mb-0" 
-                                      th:if="${item.discountPrice != null && item.discountPrice < item.price}">
-                                    <span th:text="${#numbers.formatDecimal(item.discountPrice, 0, 0)}">199,000</span>đ
+                                      th:if="${item.product != null && item.product.discountPrice != null && item.product.discountPrice < item.product.price}">
+                                    <span th:text="${#numbers.formatDecimal(item.product.discountPrice, 0, 0)}">199,000</span>đ
                                 </span>
                                 <span class="text-muted text-decoration-line-through small ms-2" 
-                                      th:if="${item.discountPrice != null && item.discountPrice < item.price}"
-                                      th:text="${#numbers.formatDecimal(item.price, 0, 0)} + 'đ'">
+                                      th:if="${item.product != null && item.product.discountPrice != null && item.product.discountPrice < item.product.price}"
+                                      th:text="${#numbers.formatDecimal(item.product.price, 0, 0)} + 'đ'">
                                     299,000đ
                                 </span>
                                 <span class="h5 text-danger mb-0" 
-                                      th:if="${item.discountPrice == null || item.discountPrice >= item.price}">
-                                    <span th:text="${#numbers.formatDecimal(item.price, 0, 0)}">299,000</span>đ
+                                      th:if="${item.product == null || item.product.discountPrice == null || item.product.discountPrice >= item.product.price}">
+                                    <span th:text="${#numbers.formatDecimal(item.product != null ? item.product.price : 0, 0, 0)}">299,000</span>đ
                                 </span>
                             </div>
 
                             <!-- Stock Status -->
                             <div class="mb-3">
-                                <span class="badge bg-success" th:if="${item.stockQuantity > 10}">
+                                <span class="badge bg-success" th:if="${item.product != null && item.product.stockQuantity > 10}">
                                     <i class="fas fa-check me-1"></i>Còn hàng
                                 </span>
-                                <span class="badge bg-warning text-dark" th:if="${item.stockQuantity > 0 && item.stockQuantity <= 10}">
+                                <span class="badge bg-warning text-dark" th:if="${item.product != null && item.product.stockQuantity > 0 && item.product.stockQuantity <= 10}">
                                     <i class="fas fa-exclamation me-1"></i>Sắp hết
                                 </span>
-                                <span class="badge bg-danger" th:if="${item.stockQuantity <= 0}">
+                                <span class="badge bg-danger" th:if="${item.product == null || item.product.stockQuantity <= 0}">
                                     <i class="fas fa-times me-1"></i>Hết hàng
                                 </span>
                             </div>
@@ -99,7 +99,7 @@
                             <!-- Actions -->
                             <div class="d-grid gap-2">
                                 <button type="button" class="btn btn-primary btn-sm"
-                                        th:disabled="${item.stockQuantity <= 0}"
+                                        th:disabled="${item.product == null || item.product.stockQuantity <= 0}"
                                         th:onclick="'addToCart(' + ${item.productId} + ')'">
                                     <i class="fas fa-shopping-cart me-1"></i>
                                     Thêm vào giỏ
@@ -146,7 +146,6 @@
 
         <!-- Hidden form for removing from wishlist -->
         <form id="removeWishlistForm" method="post" style="display: none;">
-            <input type="hidden" id="removeProductId" name="productId">
         </form>
 
         <!-- Hidden form for adding to cart -->
@@ -158,10 +157,9 @@
 
     <th:block layout:fragment="scripts">
         <script>
-            function removeFromWishlist(productId) {
+            function removeFromWishlist(wishlistId) {
                 if (confirm('Bạn có chắc muốn xóa sản phẩm này khỏi danh sách yêu thích?')) {
-                    document.getElementById('removeProductId').value = productId;
-                    document.getElementById('removeWishlistForm').action = '/wishlist/remove/' + productId;
+                    document.getElementById('removeWishlistForm').action = '/wishlist/remove/' + wishlistId;
                     document.getElementById('removeWishlistForm').submit();
                 }
             }

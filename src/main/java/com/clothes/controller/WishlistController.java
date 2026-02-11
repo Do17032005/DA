@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller for wishlist management
@@ -38,8 +40,11 @@ public class WishlistController {
         }
 
         List<Wishlist> wishlists = wishlistDAO.findByUserId(userId);
-        model.addAttribute("wishlists", wishlists);
+        model.addAttribute("wishlistItems", wishlists);
         model.addAttribute("totalItems", wishlists.size());
+
+        // Show recommended/trending products to encourage discovery when wishlist is empty
+        model.addAttribute("recommendedProducts", productDAO.findTrending(4));
 
         return "wishlist";
     }
@@ -49,8 +54,8 @@ public class WishlistController {
      */
     @GetMapping("/count")
     @ResponseBody
-    public java.util.Map<String, Object> getWishlistCount(HttpSession session) {
-        java.util.Map<String, Object> response = new java.util.HashMap<>();
+    public Map<String, Object> getWishlistCount(HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
         Long userId = (Long) session.getAttribute("userId");
 
         if (userId != null) {
@@ -146,25 +151,62 @@ public class WishlistController {
      */
     @PostMapping("/toggle")
     @ResponseBody
-    public String toggleWishlist(@RequestParam Long productId,
+    public Map<String, Object> toggleWishlist(@RequestParam Long productId,
+            @RequestParam(required = false, defaultValue = "toggle") String action,
             HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            return "login_required";
+            response.put("success", false);
+            response.put("loggedIn", false);
+            response.put("message", "Vui lòng đăng nhập để sử dụng danh sách yêu thích");
+            return response;
         }
 
         try {
-            if (wishlistDAO.exists(userId, productId)) {
-                wishlistDAO.deleteByUserAndProduct(userId, productId);
-                return "removed";
-            } else {
-                Wishlist wishlist = new Wishlist(userId, productId);
-                wishlistDAO.save(wishlist);
-                return "added";
+            String normalizedAction = action != null ? action.trim().toLowerCase() : "toggle";
+            boolean exists = wishlistDAO.exists(userId, productId);
+
+            switch (normalizedAction) {
+                case "add":
+                    if (!exists) {
+                        Wishlist wishlist = new Wishlist(userId, productId);
+                        wishlistDAO.save(wishlist);
+                    }
+                    response.put("action", "added");
+                    response.put("inWishlist", true);
+                    response.put("success", true);
+                    break;
+                case "remove":
+                    if (exists) {
+                        wishlistDAO.deleteByUserAndProduct(userId, productId);
+                    }
+                    response.put("action", "removed");
+                    response.put("inWishlist", false);
+                    response.put("success", true);
+                    break;
+                default:
+                    if (exists) {
+                        wishlistDAO.deleteByUserAndProduct(userId, productId);
+                        response.put("action", "removed");
+                        response.put("inWishlist", false);
+                    } else {
+                        Wishlist wishlist = new Wishlist(userId, productId);
+                        wishlistDAO.save(wishlist);
+                        response.put("action", "added");
+                        response.put("inWishlist", true);
+                    }
+                    response.put("success", true);
+                    break;
             }
+
+            response.put("wishlistCount", wishlistDAO.countByUserId(userId));
         } catch (Exception e) {
-            return "error";
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra, vui lòng thử lại");
         }
+
+        return response;
     }
 
     /**

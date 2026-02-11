@@ -173,13 +173,14 @@
                                     </strong>
                                 </td>
                                 <td>
-                                    <select class="form-select form-select-sm" 
-                                            th:onchange="'updateOrderStatus(' + ${order.orderId} + ', this.value)'">
-                                        <option value="PENDING" th:selected="${order.status == 'PENDING'}">Chờ xác nhận</option>
-                                        <option value="PROCESSING" th:selected="${order.status == 'PROCESSING'}">Đang xử lý</option>
-                                        <option value="SHIPPING" th:selected="${order.status == 'SHIPPING'}">Đang giao</option>
-                                        <option value="COMPLETED" th:selected="${order.status == 'COMPLETED'}">Hoàn thành</option>
-                                        <option value="CANCELLED" th:selected="${order.status == 'CANCELLED'}">Đã hủy</option>
+                                    <select class="form-select form-select-sm status-dropdown" 
+                                            th:data-order-id="${order.orderId}"
+                                            onchange="updateOrderStatus(this.dataset.orderId, this.value)">
+                                        <option value="PENDING" th:selected="${order.status.name() == 'PENDING'}">Chờ xác nhận</option>
+                                        <option value="PROCESSING" th:selected="${order.status.name() == 'PROCESSING'}">Đang xử lý</option>
+                                        <option value="SHIPPING" th:selected="${order.status.name() == 'SHIPPING'}">Đang giao</option>
+                                        <option value="COMPLETED" th:selected="${order.status.name() == 'COMPLETED'}">Hoàn thành</option>
+                                        <option value="CANCELLED" th:selected="${order.status.name() == 'CANCELLED'}">Đã hủy</option>
                                     </select>
                                 </td>
                                 <td th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">
@@ -224,34 +225,37 @@
     <th:block layout:fragment="scripts">
         <script>
             function updateOrderStatus(orderId, newStatus) {
+                console.log('Updating order', orderId, 'to status:', newStatus);
+                
                 if (!confirm('Bạn có chắc muốn cập nhật trạng thái đơn hàng?')) {
                     // Reset dropdown to original value
                     location.reload();
                     return;
                 }
 
-                // Create form data
-                const formData = new FormData();
-                formData.append('status', newStatus);
-
-                // Send POST request
-                fetch('/admin/orders/' + orderId + '/update-status', {
+                // Send POST request with query parameter
+                fetch('/admin/orders/' + orderId + '/update-status?status=' + newStatus, {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
                 })
                 .then(response => {
+                    console.log('Response status:', response.status);
                     if (response.ok) {
                         alert('Đã cập nhật trạng thái đơn hàng thành công!');
                         location.reload();
                     } else {
-                        alert('Có lỗi xảy ra: ' + response.status);
-                        console.error('Error:', response);
-                        location.reload();
+                        return response.text().then(text => {
+                            console.error('Error response:', text);
+                            alert('Có lỗi xảy ra: ' + response.status);
+                            location.reload();
+                        });
                     }
                 })
                 .catch(error => {
+                    console.error('Fetch error:', error);
                     alert('Lỗi kết nối: ' + error.message);
-                    console.error('Error:', error);
                     location.reload();
                 });
             }

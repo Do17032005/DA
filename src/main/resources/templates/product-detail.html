@@ -208,8 +208,10 @@
                                     Thêm vào giỏ hàng
                                 </button>
                                 <button type="button" class="btn btn-outline-danger btn-lg"
+                                        th:classappend="${isInWishlist} ? ' active' : ''"
+                                        th:data-in-wishlist="${isInWishlist}"
                                         th:onclick="'toggleWishlist(' + ${product.productId} + ', this)'">
-                                    <i class="far fa-heart"></i>
+                                    <i th:class="${isInWishlist} ? 'fas fa-heart text-danger' : 'far fa-heart'"></i>
                                 </button>
                             </div>
                         </form>
@@ -255,27 +257,35 @@
                 <div class="col-12">
                     <ul class="nav nav-tabs" id="productTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="description-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#description" type="button">
+                                <button class="nav-link" id="description-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#description" type="button" role="tab" aria-controls="description"
+                                    th:classappend="${activeTab == 'description'} ? ' active' : ''"
+                                    th:attr="aria-selected=${activeTab == 'description'}">
                                 <i class="fas fa-align-left me-1"></i>Mô tả
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="specs-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#specs" type="button">
+                                <button class="nav-link" id="specs-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#specs" type="button" role="tab" aria-controls="specs"
+                                    th:classappend="${activeTab == 'specs'} ? ' active' : ''"
+                                    th:attr="aria-selected=${activeTab == 'specs'}">
                                 <i class="fas fa-list me-1"></i>Thông số
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#reviews" type="button">
+                                <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews"
+                                    th:classappend="${activeTab == 'reviews'} ? ' active' : ''"
+                                    th:attr="aria-selected=${activeTab == 'reviews'}">
                                 <i class="fas fa-star me-1"></i>Đánh giá 
                                 (<span th:text="${reviewCount ?: 0}">0</span>)
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="shipping-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#shipping" type="button">
+                                <button class="nav-link" id="shipping-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#shipping" type="button" role="tab" aria-controls="shipping"
+                                    th:classappend="${activeTab == 'shipping'} ? ' active' : ''"
+                                    th:attr="aria-selected=${activeTab == 'shipping'}">
                                 <i class="fas fa-shipping-fast me-1"></i>Vận chuyển
                             </button>
                         </li>
@@ -283,7 +293,8 @@
 
                     <div class="tab-content border border-top-0 p-4" id="productTabsContent">
                         <!-- Description -->
-                        <div class="tab-pane fade show active" id="description">
+                        <div class="tab-pane fade" id="description" role="tabpanel" aria-labelledby="description-tab"
+                             th:classappend="${activeTab == 'description'} ? ' show active' : ''">
                             <div th:utext="${product.description}">
                                 <h4>Mô tả sản phẩm</h4>
                                 <p>Nội dung mô tả chi tiết về sản phẩm...</p>
@@ -291,7 +302,8 @@
                         </div>
 
                         <!-- Specifications -->
-                        <div class="tab-pane fade" id="specs">
+                            <div class="tab-pane fade" id="specs" role="tabpanel" aria-labelledby="specs-tab"
+                                th:classappend="${activeTab == 'specs'} ? ' show active' : ''">
                             <table class="table table-bordered">
                                 <tbody>
                                     <tr th:if="${product.material != null}">
@@ -319,7 +331,8 @@
                         </div>
 
                         <!-- Reviews -->
-                        <div class="tab-pane fade" id="reviews">
+                            <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab"
+                                th:classappend="${activeTab == 'reviews'} ? ' show active' : ''">
                             <div class="row">
                                 <div class="col-md-4 mb-4">
                                     <div class="card border-0 bg-light text-center p-4">
@@ -337,7 +350,8 @@
                                 <div class="col-md-8">
                                     <!-- Reviews List -->
                                     <div th:if="${reviews != null && !reviews.empty}">
-                                        <div class="review-item" th:each="review : ${reviews}">
+                                        <div class="review-item" th:each="review : ${reviews}"
+                                            th:attr="id='review-' + ${review.reviewId}">
                                             <div class="d-flex justify-content-between mb-2">
                                                 <div>
                                                     <strong th:text="${review.userName ?: 'Khách hàng'}">Customer</strong>
@@ -352,6 +366,55 @@
                                                 </small>
                                             </div>
                                             <p class="mb-0" th:text="${review.comment}">Review comment...</p>
+                                                    <div class="mt-2"
+                                                        th:if="${loggedInUserId != null and review.userId != null and review.userId.equals(loggedInUserId)}">
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                            data-bs-toggle="collapse"
+                                                            th:attr="data-bs-target='#editReview' + ${review.reviewId}, aria-controls='editReview' + ${review.reviewId}">
+                                                        <i class="fas fa-edit me-1"></i>Chỉnh sửa
+                                                    </button>
+                                                    <form class="d-inline"
+                                                          th:action="@{/reviews/delete/{id}(id=${review.reviewId})}"
+                                                          method="post"
+                                                          onsubmit="return confirm('Bạn chắc chắn muốn xóa đánh giá này?');">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                            <i class="fas fa-trash me-1"></i>Xóa
+                                                        </button>
+                                                    </form>
+                                                </div>
+
+                                                <div class="collapse mt-3" th:id="'editReview' + ${review.reviewId}">
+                                                    <form th:action="@{/reviews/update/{id}(id=${review.reviewId})}"
+                                                          method="post"
+                                                          class="border rounded p-3 bg-light">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Đánh giá:</label>
+                                                            <select class="form-select form-select-sm" name="rating" required>
+                                                                <option th:each="i : ${#numbers.sequence(1, 5)}"
+                                                                        th:value="${i}"
+                                                                        th:selected="${i == review.rating}"
+                                                                        th:text="${i} + ' sao'"></option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Nhận xét:</label>
+                                                            <textarea class="form-control" name="comment" rows="3" required
+                                                                      th:text="${review.comment}"></textarea>
+                                                        </div>
+                                                        <div class="d-flex justify-content-end gap-2">
+                                                            <button type="button" class="btn btn-light btn-sm"
+                                                                    data-bs-toggle="collapse"
+                                                                    th:attr="data-bs-target='#editReview' + ${review.reviewId}, aria-controls='editReview' + ${review.reviewId}">
+                                                                Hủy
+                                                            </button>
+                                                            <button type="submit" class="btn btn-primary btn-sm">
+                                                                <i class="fas fa-save me-1"></i>Cập nhật
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -364,21 +427,23 @@
 
                                     <!-- Write Review (if logged in) -->
                                     <div class="mt-4" th:if="${session.userId != null}">
+                                    <div th:if="${canReview != null and canReview}">
                                         <h5>Viết đánh giá của bạn</h5>
-                                        <form th:action="@{/products/{id}/review(id=${product.productId})}" method="post">
+                                        <form th:action="@{/reviews/add}" method="post">
+                                            <input type="hidden" name="productId" th:value="${product.productId}">
                                             <div class="mb-3">
                                                 <label class="form-label">Đánh giá:</label>
-                                                <div class="rating-input">
-                                                    <input type="radio" name="rating" value="5" id="star5" required>
-                                                    <label for="star5"><i class="fas fa-star"></i></label>
-                                                    <input type="radio" name="rating" value="4" id="star4">
-                                                    <label for="star4"><i class="fas fa-star"></i></label>
-                                                    <input type="radio" name="rating" value="3" id="star3">
-                                                    <label for="star3"><i class="fas fa-star"></i></label>
+                                                <div class="rating-input" role="radiogroup" aria-label="Chọn số sao">
+                                                    <input type="radio" name="rating" value="1" id="star1" required>
+                                                    <label for="star1" title="1 sao"><i class="fas fa-star"></i></label>
                                                     <input type="radio" name="rating" value="2" id="star2">
-                                                    <label for="star2"><i class="fas fa-star"></i></label>
-                                                    <input type="radio" name="rating" value="1" id="star1">
-                                                    <label for="star1"><i class="fas fa-star"></i></label>
+                                                    <label for="star2" title="2 sao"><i class="fas fa-star"></i></label>
+                                                    <input type="radio" name="rating" value="3" id="star3">
+                                                    <label for="star3" title="3 sao"><i class="fas fa-star"></i></label>
+                                                    <input type="radio" name="rating" value="4" id="star4">
+                                                    <label for="star4" title="4 sao"><i class="fas fa-star"></i></label>
+                                                    <input type="radio" name="rating" value="5" id="star5">
+                                                    <label for="star5" title="5 sao"><i class="fas fa-star"></i></label>
                                                 </div>
                                             </div>
                                             <div class="mb-3">
@@ -390,12 +455,20 @@
                                             </button>
                                         </form>
                                     </div>
+                                     <div class="alert alert-info" role="alert"
+                                         th:if="${canReview != null and !canReview}">
+                                        Bạn đã gửi đánh giá cho sản phẩm này. Hãy sử dụng nút <strong>Chỉnh sửa</strong> bên dưới đánh giá của bạn nếu muốn cập nhật nội dung.
+                                        <a class="ms-2" th:if="${userReviewId != null}"
+                                           th:href="'#review-' + ${userReviewId}">Xem đánh giá của bạn</a>
+                                     </div>
+                                </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Shipping Info -->
-                        <div class="tab-pane fade" id="shipping">
+                            <div class="tab-pane fade" id="shipping" role="tabpanel" aria-labelledby="shipping-tab"
+                                th:classappend="${activeTab == 'shipping'} ? ' show active' : ''">
                             <div class="row">
                                 <div class="col-md-6">
                                     <h5><i class="fas fa-shipping-fast me-2 text-primary"></i>Chính sách giao hàng</h5>
@@ -494,6 +567,142 @@
                 // Submit form normally
                 form.submit();
             }
+
+            function activateProductTab(target) {
+                if (!target) {
+                    return;
+                }
+
+                const tabButtons = document.querySelectorAll('#productTabs button[data-bs-toggle="tab"]');
+                const tabPanes = document.querySelectorAll('#productTabsContent .tab-pane');
+
+                tabButtons.forEach(function (button) {
+                    const isActive = button.getAttribute('data-bs-target') === target;
+                    button.classList.toggle('active', isActive);
+                    button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+
+                tabPanes.forEach(function (pane) {
+                    const paneSelector = '#' + pane.id;
+                    const isActive = paneSelector === target;
+                    pane.classList.toggle('show', isActive);
+                    pane.classList.toggle('active', isActive);
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const tabButtons = document.querySelectorAll('#productTabs button[data-bs-toggle="tab"]');
+
+                tabButtons.forEach(function (button) {
+                    button.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        const target = button.getAttribute('data-bs-target');
+
+                        if (window.bootstrap && window.bootstrap.Tab) {
+                            window.bootstrap.Tab.getOrCreateInstance(button).show();
+                        } else {
+                            activateProductTab(target);
+                        }
+
+                        if (target && window.history && window.history.replaceState) {
+                            window.history.replaceState(null, '', target);
+                        }
+                    });
+                });
+
+                if (window.bootstrap && window.bootstrap.Tab) {
+                    tabButtons.forEach(function (button) {
+                        button.addEventListener('shown.bs.tab', function (event) {
+                            const target = event.target.getAttribute('data-bs-target');
+                            if (target && window.history && window.history.replaceState) {
+                                window.history.replaceState(null, '', target);
+                            }
+                        });
+                    });
+                }
+
+                const hash = window.location.hash;
+                const tabParam = new URLSearchParams(window.location.search).get('tab');
+                let target = null;
+
+                if (hash) {
+                    target = hash;
+                } else if (tabParam) {
+                    target = '#' + tabParam;
+                }
+
+                if (target) {
+                    const tabButton = document.querySelector(
+                        '#productTabs button[data-bs-target="' + target + '"]'
+                    );
+
+                    if (tabButton) {
+                        if (window.bootstrap && window.bootstrap.Tab) {
+                            window.bootstrap.Tab.getOrCreateInstance(tabButton).show();
+                        } else {
+                            activateProductTab(target);
+                        }
+
+                        const pane = document.querySelector(target);
+                        if (pane) {
+                            pane.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                }
+
+                const ratingInputs = document.querySelectorAll('.rating-input');
+
+                ratingInputs.forEach(function (ratingInput) {
+                    const labels = Array.from(ratingInput.querySelectorAll('label'));
+                    const inputs = labels.map(function (label) {
+                        return ratingInput.querySelector('#' + label.getAttribute('for'));
+                    });
+
+                    function getValue(label) {
+                        const input = ratingInput.querySelector('#' + label.getAttribute('for'));
+                        return input ? Number(input.value) : 0;
+                    }
+
+                    function updateActive(value) {
+                        labels.forEach(function (label) {
+                            label.classList.toggle('is-active', getValue(label) <= value);
+                        });
+                    }
+
+                    function updateHover(value) {
+                        labels.forEach(function (label) {
+                            label.classList.toggle('is-hover', value > 0 && getValue(label) <= value);
+                        });
+                    }
+
+                    labels.forEach(function (label) {
+                        label.addEventListener('mouseenter', function () {
+                            updateHover(getValue(label));
+                        });
+                        label.addEventListener('mouseleave', function () {
+                            updateHover(0);
+                        });
+                    });
+
+                    ratingInput.addEventListener('mouseleave', function () {
+                        updateHover(0);
+                    });
+
+                    inputs.forEach(function (input) {
+                        if (!input) {
+                            return;
+                        }
+
+                        if (input.checked) {
+                            updateActive(Number(input.value));
+                        }
+
+                        input.addEventListener('change', function () {
+                            updateActive(Number(input.value));
+                        });
+                    });
+                });
+            });
         </script>
     </th:block>
 </body>

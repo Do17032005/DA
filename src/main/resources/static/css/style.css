@@ -443,6 +443,54 @@ footer ul li {
     margin-right: 2px;
 }
 
+.rating-input {
+    display: inline-flex;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+}
+
+.rating-input input[type="radio"] {
+    position: absolute;
+    left: -9999px;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.rating-input label {
+    cursor: pointer;
+    font-size: 1.4rem;
+    color: #d0d0d0;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.rating-input label.is-hover {
+    color: #ffb547;
+}
+
+.rating-input label.is-active {
+    color: #ffa41c;
+}
+
+.rating-input input[type="radio"]:focus-visible + label {
+    outline: 2px solid #ffb547;
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+.rating-input label:active {
+    transform: scale(0.95);
+}
+
 /* Quantity Input */
 .qty-control {
     display: inline-flex;

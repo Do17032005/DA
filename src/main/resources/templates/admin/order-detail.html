@@ -94,10 +94,7 @@
                         <h6 class="m-0 font-weight-bold text-primary">Thông tin đơn hàng</h6>
                         <span class="status-badge" 
                               th:classappend="'status-' + ${order.status.name()}"
-                              th:text="${order.status == 'PENDING' ? 'Chờ xác nhận' : 
-                                       (order.status == 'PROCESSING' ? 'Đang xử lý' :
-                                       (order.status == 'SHIPPING' ? 'Đang giao' :
-                                       (order.status == 'COMPLETED' ? 'Hoàn thành' : 'Đã hủy')))}">
+                              th:text="${order.statusText}">
                             Chờ xác nhận
                         </span>
                     </div>
@@ -122,20 +119,20 @@
                                                      class="me-3 rounded"
                                                      onerror="this.src='/images/no-image.png'">
                                                 <div>
-                                                    <div th:text="${item.productName}">Áo thun nam</div>
+                                                    <div th:text="${item.product != null ? item.product.productName : 'Sản phẩm'}">Áo thun nam</div>
                                                     <small class="text-muted">
-                                                        <span th:if="${item.size}" th:text="'Size: ' + ${item.size}"></span>
-                                                        <span th:if="${item.color}" th:text="' - Màu: ' + ${item.color}"></span>
+                                                        <span th:if="${item.size != null and !item.size.isEmpty()}" th:text="'Size: ' + ${item.size}"></span>
+                                                        <span th:if="${item.color != null and !item.color.isEmpty()}" th:text="(item.size != null and !item.size.isEmpty() ? ' - ' : '') + 'Màu: ' + ${item.color}"></span>
                                                     </small>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="text-end" th:text="${#numbers.formatDecimal(item.price, 0, 0)} + 'đ'">
+                                        <td class="text-end" th:text="${#numbers.formatDecimal(item.unitPrice, 0, 0)} + 'đ'">
                                             200,000đ
                                         </td>
                                         <td class="text-center" th:text="${item.quantity}">1</td>
                                         <td class="text-end" 
-                                            th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 0)} + 'đ'">
+                                            th:text="${#numbers.formatDecimal(item.subtotal != null ? item.subtotal : (item.unitPrice * item.quantity), 0, 0)} + 'đ'">
                                             200,000đ
                                         </td>
                                     </tr>
@@ -187,19 +184,19 @@
                     <div class="card-body">
                         <div class="timeline">
                             <div class="timeline-item" 
-                                 th:classappend="${order.status == 'PENDING' || order.status == 'PROCESSING' || order.status == 'SHIPPING' || order.status == 'COMPLETED' ? 'active' : ''}">
+                                 th:classappend="${order.status.name() == 'PENDING' || order.status.name() == 'PROCESSING' || order.status.name() == 'SHIPPING' || order.status.name() == 'COMPLETED' ? 'active' : ''}">
                                 <strong>Đơn hàng đã đặt</strong>
                                 <div class="text-muted" th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">
                                     10/02/2026 14:30
                                 </div>
                             </div>
                             <div class="timeline-item" 
-                                 th:classappend="${order.status == 'PROCESSING' || order.status == 'SHIPPING' || order.status == 'COMPLETED' ? 'active' : ''}">
+                                 th:classappend="${order.status.name() == 'PROCESSING' || order.status.name() == 'SHIPPING' || order.status.name() == 'COMPLETED' ? 'active' : ''}">
                                 <strong>Đã xác nhận</strong>
                                 <div class="text-muted">Chờ xử lý</div>
                             </div>
                             <div class="timeline-item" 
-                                 th:classappend="${order.status == 'SHIPPING' || order.status == 'COMPLETED' ? 'active' : ''}">
+                                 th:classappend="${order.status.name() == 'SHIPPING' || order.status.name() == 'COMPLETED' ? 'active' : ''}">
                                 <strong>Đang giao hàng</strong>
                                 <div class="text-muted">Đơn vị vận chuyển đang giao</div>
                             </div>
@@ -286,6 +283,7 @@
             
             function updateStatus() {
                 const newStatus = document.getElementById('orderStatus').value;
+                console.log('Updating order', orderId, 'to status:', newStatus);
                 
                 if (confirm('Bạn có chắc muốn cập nhật trạng thái đơn hàng?')) {
                     fetch('/admin/orders/' + orderId + '/update-status?status=' + newStatus, {
@@ -295,15 +293,19 @@
                         }
                     })
                     .then(response => {
+                        console.log('Response status:', response.status);
                         if (response.ok) {
                             alert('Đã cập nhật trạng thái thành công!');
                             location.reload();
                         } else {
-                            alert('Có lỗi xảy ra, vui lòng thử lại!');
+                            return response.text().then(text => {
+                                console.error('Error response:', text);
+                                alert('Có lỗi xảy ra, vui lòng thử lại!');
+                            });
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
+                        console.error('Fetch error:', error);
                         alert('Có lỗi xảy ra, vui lòng thử lại!');
                     });
                 }
