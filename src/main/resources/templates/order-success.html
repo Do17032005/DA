@@ -56,7 +56,7 @@
                                     </p>
                                     <p class="mb-0">
                                         <strong>Địa chỉ:</strong> 
-                                        <span th:text="${order.address}">
+                                        <span th:text="${order.shippingAddress}">
                                             123 Đường ABC, Phường XYZ, Quận 1, TP. HCM
                                         </span>
                                     </p>
@@ -79,19 +79,19 @@
                                         <tr th:each="item : ${order.items}">
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <img th:src="${item.imageUrl}" 
-                                                         th:alt="${item.productName}"
+                                                    <img th:src="${item.product != null ? item.product.imageUrl : '/images/default-product.jpg'}" 
+                                                         th:alt="${item.product != null ? item.product.productName : 'Product'}"
                                                          class="rounded me-3" 
                                                          style="width: 60px; height: 60px; object-fit: cover;">
                                                     <div>
-                                                        <h6 class="mb-1" th:text="${item.productName}">
+                                                        <h6 class="mb-1" th:text="${item.product != null ? item.product.productName : 'Sản phẩm'}">
                                                             Product Name
                                                         </h6>
                                                         <small class="text-muted">
-                                                            <span th:if="${item.size != null}" 
+                                                            <span th:if="${item.size != null and !item.size.isEmpty()}" 
                                                                   th:text="'Size: ' + ${item.size}"></span>
-                                                            <span th:if="${item.color != null}" 
-                                                                  th:text="', ' + ${item.color}"></span>
+                                                            <span th:if="${item.color != null and !item.color.isEmpty()}" 
+                                                                  th:text="(item.size != null and !item.size.isEmpty() ? ', ' : '') + ${item.color}"></span>
                                                         </small>
                                                     </div>
                                                 </div>
@@ -100,12 +100,12 @@
                                                 <span th:text="${item.quantity}">1</span>
                                             </td>
                                             <td class="text-end align-middle">
-                                                <span th:text="${#numbers.formatDecimal(item.price, 0, 0)} + 'đ'">
+                                                <span th:text="${#numbers.formatDecimal(item.unitPrice, 0, 0)} + 'đ'">
                                                     299,000đ
                                                 </span>
                                             </td>
                                             <td class="text-end align-middle">
-                                                <strong th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 0)} + 'đ'">
+                                                <strong th:text="${#numbers.formatDecimal(item.subtotal, 0, 0)} + 'đ'">
                                                     299,000đ
                                                 </strong>
                                             </td>
@@ -113,44 +113,10 @@
                                     </tbody>
                                     <tfoot class="table-light">
                                         <tr>
-                                            <td colspan="3" class="text-end"><strong>Tạm tính:</strong></td>
-                                            <td class="text-end">
-                                                <span th:text="${#numbers.formatDecimal(order.subtotal, 0, 0)} + 'đ'">
-                                                    299,000đ
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <tr th:if="${order.discount > 0}">
-                                            <td colspan="3" class="text-end">
-                                                <strong>Giảm giá:</strong>
-                                                <span class="text-muted small" 
-                                                      th:if="${order.voucherCode != null}"
-                                                      th:text="'(' + ${order.voucherCode} + ')'">
-                                                </span>
-                                            </td>
-                                            <td class="text-end text-success">
-                                                -<span th:text="${#numbers.formatDecimal(order.discount, 0, 0)} + 'đ'">
-                                                    30,000đ
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-end"><strong>Phí vận chuyển:</strong></td>
-                                            <td class="text-end">
-                                                <span th:if="${order.shippingFee > 0}" 
-                                                      th:text="${#numbers.formatDecimal(order.shippingFee, 0, 0)} + 'đ'">
-                                                    30,000đ
-                                                </span>
-                                                <span th:if="${order.shippingFee == 0}" class="text-success">
-                                                    Miễn phí
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <tr>
                                             <td colspan="3" class="text-end"><h5 class="mb-0">Tổng cộng:</h5></td>
                                             <td class="text-end">
                                                 <h5 class="text-danger mb-0" 
-                                                    th:text="${#numbers.formatDecimal(order.total, 0, 0)} + 'đ'">
+                                                    th:text="${#numbers.formatDecimal(order.totalAmount != null ? order.totalAmount : order.total, 0, 0)} + 'đ'">
                                                     299,000đ
                                                 </h5>
                                             </td>
@@ -167,9 +133,9 @@
                                         Thanh toán khi nhận hàng (COD)
                                     </p>
                                 </div>
-                                <div class="col-md-6" th:if="${order.note != null && !order.note.isEmpty()}">
+                                <div class="col-md-6" th:if="${order.notes != null and !order.notes.isEmpty()}">
                                     <h6>Ghi chú</h6>
-                                    <p class="mb-0" th:text="${order.note}">Ghi chú đơn hàng</p>
+                                    <p class="mb-0" th:text="${order.notes}">Ghi chú đơn hàng</p>
                                 </div>
                             </div>
                         </div>

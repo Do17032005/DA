@@ -182,7 +182,7 @@ public class ProductDAO {
      */
     public List<Product> findByGender(Product.Gender gender) {
         String sql = "SELECT * FROM products WHERE gender = ? AND is_active = TRUE ORDER BY created_at DESC";
-        return jdbcTemplate.query(sql, new ProductRowMapper(), gender.getValue());
+        return jdbcTemplate.query(sql, new ProductRowMapper(), gender.name());
     }
 
     /**
@@ -211,7 +211,7 @@ public class ProductDAO {
 
         if (gender != null) {
             sql.append(" AND gender = ?");
-            params.add(gender.getValue());
+            params.add(gender.name()); // Use enum name (KIDS) instead of value (kids)
         }
 
         if (minPrice != null && maxPrice != null) {
@@ -363,8 +363,8 @@ public class ProductDAO {
                 product.getColor(),
                 product.getSize(),
                 product.getMaterial(),
-                product.getGender() != null ? product.getGender().getValue() : null,
-                product.getSeason() != null ? product.getSeason().getValue() : null,
+                product.getGender() != null ? product.getGender().name() : null,
+                product.getSeason() != null ? product.getSeason().name() : null,
                 product.getSku(),
                 product.getIsActive(),
                 product.getProductId());
@@ -391,8 +391,8 @@ public class ProductDAO {
                 product.getColor(),
                 product.getSize(),
                 product.getMaterial(),
-                product.getGender() != null ? product.getGender().getValue() : null,
-                product.getSeason() != null ? product.getSeason().getValue() : null,
+                product.getGender() != null ? product.getGender().name() : null,
+                product.getSeason() != null ? product.getSeason().name() : null,
                 product.getSku(),
                 product.getIsActive());
 

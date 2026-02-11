@@ -112,6 +112,12 @@ public class ProductController {
         // Increment view count
         productDAO.incrementViewCount(id);
 
+        // Get category info
+        Category category = null;
+        if (product.getCategoryId() != null) {
+            category = categoryService.getCategoryById(product.getCategoryId()).orElse(null);
+        }
+
         // Get reviews
         List<Review> reviews = reviewDAO.findByProductId(id);
         Double avgRating = reviewDAO.getAverageRating(id);
@@ -123,13 +129,16 @@ public class ProductController {
         boolean isInWishlist = userId != null && wishlistDAO.exists(userId, id);
 
         // Get similar products by category
-        List<Product> similarProducts = productDAO.findByCategoryId(product.getCategoryId());
+        List<Product> similarProducts = product.getCategoryId() != null
+                ? productDAO.findByCategoryId(product.getCategoryId())
+                : productDAO.findAllActive();
         similarProducts.removeIf(p -> p.getProductId().equals(id));
         if (similarProducts.size() > 4) {
             similarProducts = similarProducts.subList(0, 4);
         }
 
         model.addAttribute("product", product);
+        model.addAttribute("category", category);
         model.addAttribute("reviews", reviews);
         model.addAttribute("avgRating", avgRating != null ? avgRating : 0.0);
         model.addAttribute("reviewCount", reviewCount);

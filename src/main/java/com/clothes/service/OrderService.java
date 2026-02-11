@@ -152,4 +152,11 @@ public class OrderService {
     public int getOrderCountByStatus(Order.OrderStatus status) {
         return orderDAO.countByStatus(status);
     }
+
+    /**
+     * Get order items with product details
+     */
+    public List<OrderItem> getOrderItems(Long orderId) {
+        return orderItemDAO.findByOrderId(orderId);
+    }
 }

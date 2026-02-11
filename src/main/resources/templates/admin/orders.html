@@ -224,8 +224,34 @@
     <th:block layout:fragment="scripts">
         <script>
             function updateOrderStatus(orderId, newStatus) {
-                $.post('/admin/orders/' + orderId + '/update-status', {status: newStatus}, function() {
-                    alert('Đã cập nhật trạng thái đơn hàng!');
+                if (!confirm('Bạn có chắc muốn cập nhật trạng thái đơn hàng?')) {
+                    // Reset dropdown to original value
+                    location.reload();
+                    return;
+                }
+
+                // Create form data
+                const formData = new FormData();
+                formData.append('status', newStatus);
+
+                // Send POST request
+                fetch('/admin/orders/' + orderId + '/update-status', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Đã cập nhật trạng thái đơn hàng thành công!');
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + response.status);
+                        console.error('Error:', response);
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    alert('Lỗi kết nối: ' + error.message);
+                    console.error('Error:', error);
                     location.reload();
                 });
             }
@@ -238,11 +264,19 @@
                 window.location.href = '/admin/orders/export';
             }
 
-            $('#searchOrder').on('keyup', function() {
-                const value = $(this).val().toLowerCase();
-                $('tbody tr').filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
-                });
+            // Search functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.getElementById('searchOrder');
+                if (searchInput) {
+                    searchInput.addEventListener('keyup', function() {
+                        const value = this.value.toLowerCase();
+                        const rows = document.querySelectorAll('tbody tr');
+                        rows.forEach(row => {
+                            const text = row.textContent.toLowerCase();
+                            row.style.display = text.includes(value) ? '' : 'none';
+                        });
+                    });
+                }
             });
         </script>
     </th:block>

@@ -61,11 +61,13 @@ public class AdminOrderService {
     }
 
     public void updateOrderStatus(Long orderId, String status) {
-        Optional<Order> order = orderDAO.findById(orderId);
-        order.ifPresent(o -> {
-            o.setStatus(Order.OrderStatus.fromValue(status.toUpperCase()));
-            orderDAO.update(o);
-        });
+        System.out.println("Updating order " + orderId + " to status: " + status);
+        Order.OrderStatus newStatus = Order.OrderStatus.fromValue(status.toUpperCase());
+        int rowsUpdated = orderDAO.updateStatus(orderId, newStatus);
+        System.out.println("Rows updated: " + rowsUpdated);
+        if (rowsUpdated == 0) {
+            throw new RuntimeException("Failed to update order status");
+        }
     }
 
     public Map<String, Long> getOrderStatusCounts() {

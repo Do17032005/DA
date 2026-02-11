@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/admin-layout}">
+<head>
+    <title>Quản lý Banner & Slider</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-images me-2"></i>Quản lý Banner & Slider
+            </h1>
+            <a href="/admin/banners/create" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Thêm Banner
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Tổng số Banner
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${totalBanners ?: 0}">
+                                    0
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-image fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Đang hiển thị
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${activeBanners ?: 0}">
+                                    0
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h6 class="m-0 font-weight-bold text-primary">Danh sách Banner</h6>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <select class="form-select" id="positionFilter" onchange="filterByPosition()">
+                                <option value="">Tất cả vị trí</option>
+                                <option value="main" th:selected="${selectedPosition == 'main'}">Trang chủ</option>
+                                <option value="sidebar" th:selected="${selectedPosition == 'sidebar'}">Sidebar</option>
+                                <option value="footer" th:selected="${selectedPosition == 'footer'}">Footer</option>
+                            </select>
+                            <select class="form-select" id="statusFilter" onchange="filterByStatus()">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="true" th:selected="${selectedActive}">Đang hiển thị</option>
+                                <option value="false">Đã ẩn</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="80">Hình ảnh</th>
+                                <th>Tiêu đề</th>
+                                <th>Mô tả</th>
+                                <th>Vị trí</th>
+                                <th>Thứ tự</th>
+                                <th>Trạng thái</th>
+                                <th>Thời gian</th>
+                                <th width="120">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="banner : ${banners}">
+                                <td>
+                                    <img th:src="${banner.imageUrl}" 
+                                         alt="Banner" 
+                                         style="width: 60px; height: 40px; object-fit: cover;"
+                                         class="rounded"
+                                         onerror="this.src='/images/no-image.png'">
+                                </td>
+                                <td>
+                                    <strong th:text="${banner.title}">Banner Title</strong>
+                                </td>
+                                <td>
+                                    <span th:text="${#strings.abbreviate(banner.description, 50)}">Description...</span>
+                                </td>
+                                <td>
+                                    <span th:switch="${banner.position}">
+                                        <span th:case="'main'" class="badge bg-primary">Trang chủ</span>
+                                        <span th:case="'sidebar'" class="badge bg-info">Sidebar</span>
+                                        <span th:case="'footer'" class="badge bg-secondary">Footer</span>
+                                        <span th:case="*" class="badge bg-light text-dark" th:text="${banner.position}">Khác</span>
+                                    </span>
+                                </td>
+                                <td th:text="${banner.displayOrder}">0</td>
+                                <td>
+                                    <span th:if="${banner.isActive}" class="badge bg-success">Hiển thị</span>
+                                    <span th:unless="${banner.isActive}" class="badge bg-secondary">Ẩn</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        <div th:if="${banner.startDate}">
+                                            Từ: <span th:text="${#temporals.format(banner.startDate, 'dd/MM/yyyy')}"></span>
+                                        </div>
+                                        <div th:if="${banner.endDate}">
+                                            Đến: <span th:text="${#temporals.format(banner.endDate, 'dd/MM/yyyy')}"></span>
+                                        </div>
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{/admin/banners/edit/{id}(id=${banner.bannerId})}" 
+                                           class="btn btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-outline-danger" 
+                                                th:onclick="'deleteBanner(' + ${banner.bannerId} + ')'">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <button class="btn btn-outline-warning" 
+                                                th:onclick="'toggleStatus(' + ${banner.bannerId} + ')'">
+                                            <i th:class="${banner.isActive ? 'fas fa-eye-slash' : 'fas fa-eye'}"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${banners == null || banners.isEmpty()}" class="text-center py-5">
+                    <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Chưa có banner nào. Hãy thêm banner đầu tiên!</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function filterByPosition() {
+                const position = document.getElementById('positionFilter').value;
+                if (position) {
+                    window.location.href = '/admin/banners?position=' + position;
+                } else {
+                    window.location.href = '/admin/banners';
+                }
+            }
+
+            function filterByStatus() {
+                const active = document.getElementById('statusFilter').value;
+                if (active) {
+                    window.location.href = '/admin/banners?active=' + active;
+                } else {
+                    window.location.href = '/admin/banners';
+                }
+            }
+
+            function deleteBanner(id) {
+                if (confirm('Bạn có chắc muốn xóa banner này?')) {
+                    fetch('/admin/banners/' + id + '/delete', {
+                        method: 'POST'
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Đã xóa banner thành công!');
+                            location.reload();
+                        } else {
+                            alert('Có lỗi xảy ra, vui lòng thử lại!');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra, vui lòng thử lại!');
+                    });
+                }
+            }
+
+            function toggleStatus(id) {
+                fetch('/admin/banners/' + id + '/toggle', {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra, vui lòng thử lại!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra, vui lòng thử lại!');
+                });
+            }
+        </script>
+    </th:block>
+</body>
+</html>

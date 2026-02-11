@@ -4,6 +4,7 @@ import com.clothes.model.Address;
 import com.clothes.model.Cart;
 import com.clothes.model.CartItem;
 import com.clothes.model.Order;
+import com.clothes.model.OrderItem;
 import com.clothes.model.Voucher;
 import com.clothes.service.*;
 import org.springframework.stereotype.Controller;
@@ -191,7 +192,42 @@ public class OrderController {
      * Show order success page
      */
     @GetMapping("/success")
-    public String showOrderSuccess() {
+    public String showOrderSuccess(HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        // Try to get orderId from flash attributes
+        Long orderId = (Long) model.asMap().get("orderId");
+
+        if (orderId == null) {
+            // No order ID, try to get the latest order for this user
+            Long userId = (Long) session.getAttribute("userId");
+            if (userId == null) {
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy đơn hàng");
+                return "redirect:/";
+            }
+
+            List<Order> orders = orderService.getOrdersByUserId(userId);
+            if (orders.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy đơn hàng");
+                return "redirect:/";
+            }
+            orderId = orders.get(0).getOrderId(); // Get most recent order
+        }
+
+        Optional<Order> orderOpt = orderService.getOrderById(orderId);
+        if (orderOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Không tìm thấy đơn hàng");
+            return "redirect:/";
+        }
+
+        Order order = orderOpt.get();
+
+        // Load order items with product details
+        List<OrderItem> items = orderService.getOrderItems(orderId);
+        order.setOrderItems(items);
+
+        model.addAttribute("order", order);
+
         return "order-success";
     }
 

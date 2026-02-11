@@ -41,7 +41,12 @@ public class OrderDAO {
 
             order.setTotalAmount(rs.getBigDecimal("total_amount"));
             order.setTotal(rs.getBigDecimal("total_amount")); // For Thymeleaf template compatibility
-            order.setStatus(Order.OrderStatus.fromValue(rs.getString("status")));
+
+            String statusFromDb = rs.getString("status");
+            System.out.println("Order " + order.getOrderId() + " status from DB: '" + statusFromDb + "'");
+            order.setStatus(Order.OrderStatus.fromValue(statusFromDb));
+            System.out.println("Order " + order.getOrderId() + " status mapped to: " + order.getStatus());
+
             order.setShippingAddress(rs.getString("shipping_address"));
             order.setPaymentMethod(rs.getString("payment_method"));
             order.setNotes(rs.getString("note"));

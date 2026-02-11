@@ -205,39 +205,15 @@ CREATE TABLE `cart_items` (
     `cart_id` BIGINT NOT NULL,
     `product_id` BIGINT NOT NULL,
     `quantity` INT NOT NULL DEFAULT 1,
-    `size` VARCHAR(50),
-    `color` VARCHAR(50),
+    `size` VARCHAR(50) DEFAULT NULL,
+    `color` VARCHAR(50) DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (`cart_id`) REFERENCES `shopping_carts`(`cart_id`) ON DELETE CASCADE,
     FOREIGN KEY (`product_id`) REFERENCES `products`(`product_id`) ON DELETE CASCADE,
-    -- Unique constraint should ideally include size and color, but handling NULLs in unique index varies.
-    -- For simplicity, we remove strict uniqueness on DB or just unique on cart_id + product_id if variants are Products themselves.
-    -- But since Products table has size/color columns, maybe product_id IS the variant?
-    -- Looking at Products table: `sku`, `color`, `size`. So `products` table stores Variants?
-    -- If `products` table stores variants, then `product_id` IS unique for that size/color.
-    -- User's Product table: has `color` and `size`. 
-    -- So `product_id` uniquely identifies a specific variant (e.g. Shirt Red M).
-    -- In that case, `unique_cart_product` (cart_id, product_id) IS CORRECT.
-    -- And `size`/`color` columns in `cart_items` are redundant but harmless (denormalization).
-    -- WAIT. If Product table has size/color, then do we need to store it in cart_items?
-    -- `CartItem` model has `size` and `color`.
-    -- `CartDAO` inserts them.
-    -- If I assume `product_id` is just the "Parent Style", then we need size/color in cart.
-    -- If `product_id` is the "SKU/Variant", then we don't need size/color in cart (it's properties of product).
-    -- The `CartService.addItem` takes `productId`, `size`, `color`.
-    -- If `products` table has `size`/`color`, then `productId` implies them.
-    -- However, often ecommerce has `product` as "Style" and `product_variant` table.
-    -- Here `products` table has `size`, `color`.
-    -- `sku` is unique.
-    -- If I have Shirt X in Red/S and Red/M, are they 2 rows in `products` table?
-    -- If yes, then `product_id` is unique variant.
-    -- If no (e.g. product is "Shirt X" and has lists of sizes?), but column `size` is `VARCHAR(50)`, not `TEXT` or `JSON`.
-    -- This implies 1 row per variant OR 1 row per style and size is just text description?
-    -- Let's assume 1 row per variant since `stock_quantity` is there.
-    -- IF 1 row per variant: `unique_cart_product` is correct. `size`/`color` in `cart_items` is redundant but useful for snapshot.
-    -- So I will add `size` and `color` columns to `cart_items` to match `CartDAO` code, but keep Unique key as is.
-    UNIQUE KEY `unique_cart_product` (`cart_id`, `product_id`)
+    -- Removed strict unique constraint to allow multiple variants (size/color) of same product
+    -- Using composite index for performance instead
+    INDEX `idx_cart_item_variant` (`cart_id`, `product_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================================

@@ -56,8 +56,8 @@
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
                     <li class="breadcrumb-item"><a th:href="@{/products}">Sản phẩm</a></li>
-                    <li class="breadcrumb-item" th:if="${product.categoryName != null}">
-                        <a th:href="@{/products(category=${product.categoryId})}" th:text="${product.categoryName}">Category</a>
+                    <li class="breadcrumb-item" th:if="${category != null}">
+                        <a th:href="@{/products(category=${product.categoryId})}" th:text="${category.categoryName}">Category</a>
                     </li>
                     <li class="breadcrumb-item active" th:text="${product.productName}">Product</li>
                 </ol>
@@ -78,15 +78,7 @@
                         <img th:src="${product.imageUrl}" 
                              th:alt="${product.productName}"
                              class="thumbnail-img active"
-                             th:onclick="'changeMainImage(\'' + ${product.imageUrl} + '\', this)'">
-                        
-                        <div th:each="image, iterStat : ${product.additionalImages}" 
-                             th:if="${iterStat.index < 5}">
-                            <img th:src="${image}" 
-                                 th:alt="${product.productName + ' ' + (iterStat.index + 2)}"
-                                 class="thumbnail-img"
-                                 th:onclick="'changeMainImage(\'' + ${image} + '\', this)'">
-                        </div>
+                             onclick="changeMainImage(this.src, this)">
                     </div>
 
                     <!-- Share Buttons -->
@@ -119,14 +111,14 @@
                         <div class="mb-3 d-flex align-items-center">
                             <div class="rating text-warning me-2">
                                 <i th:each="i : ${#numbers.sequence(1, 5)}" 
-                                   th:class="${i <= (product.averageRating ?: 0) ? 'fas fa-star' : 'far fa-star'}"></i>
+                                   th:class="${i <= (avgRating ?: 0) ? 'fas fa-star' : 'far fa-star'}"></i>
                             </div>
                             <span class="text-muted">
-                                (<span th:text="${product.reviewCount ?: 0}">0</span> đánh giá)
+                                (<span th:text="${reviewCount ?: 0}">0</span> đánh giá)
                             </span>
-                            <span class="mx-2">|</span>
-                            <span class="text-muted">
-                                Đã bán: <strong th:text="${product.soldCount ?: 0}">0</strong>
+                            <span class="mx-2" th:if="${product.purchaseCount != null}">|</span>
+                            <span class="text-muted" th:if="${product.purchaseCount != null}">
+                                Đã bán: <strong th:text="${product.purchaseCount}">0</strong>
                             </span>
                         </div>
 
@@ -165,7 +157,8 @@
                         </div>
 
                         <!-- Short Description -->
-                        <p class="text-muted mb-4" th:text="${product.shortDescription}">
+                        <p class="text-muted mb-4" th:if="${product.description != null}" 
+                           th:text="${#strings.abbreviate(product.description, 200)}">
                             Mô tả ngắn về sản phẩm
                         </p>
 
@@ -173,30 +166,20 @@
                             <input type="hidden" name="productId" th:value="${product.productId}">
                             
                             <!-- Size Selection -->
-                            <div class="mb-3" th:if="${product.sizesAvailable != null && !product.sizesAvailable.empty}">
+                            <div class="mb-3" th:if="${product.size != null and product.size != ''}">
                                 <h6 class="mb-2">Kích cỡ:</h6>
                                 <div class="d-flex gap-2 flex-wrap">
-                                    <div class="size-option" th:each="size : ${product.sizesAvailable}">
-                                        <input type="radio" class="btn-check" name="size" 
-                                               th:id="'size' + ${size}" th:value="${size}" required>
-                                        <label class="btn btn-outline-secondary" th:for="'size' + ${size}">
-                                            <span th:text="${size}">M</span>
-                                        </label>
-                                    </div>
+                                    <input type="hidden" name="size" th:value="${product.size}">
+                                    <span class="badge bg-secondary" th:text="${product.size}">M</span>
                                 </div>
                             </div>
 
                             <!-- Color Selection -->
-                            <div class="mb-3" th:if="${product.colorsAvailable != null && !product.colorsAvailable.empty}">
+                            <div class="mb-3" th:if="${product.color != null and product.color != ''}">
                                 <h6 class="mb-2">Màu sắc:</h6>
                                 <div class="d-flex gap-2 flex-wrap">
-                                    <div class="color-option" th:each="color : ${product.colorsAvailable}">
-                                        <input type="radio" class="btn-check" name="color" 
-                                               th:id="'color' + ${color}" th:value="${color}" required>
-                                        <label class="btn btn-outline-secondary" th:for="'color' + ${color}">
-                                            <span th:text="${color}">Đen</span>
-                                        </label>
-                                    </div>
+                                    <input type="hidden" name="color" th:value="${product.color}">
+                                    <span class="badge bg-secondary" th:text="${product.color}">Đen</span>
                                 </div>
                             </div>
 
@@ -247,10 +230,10 @@
                                         <strong>SKU:</strong> 
                                         <span th:text="${product.sku}">PRD-001</span>
                                     </li>
-                                    <li class="mb-2" th:if="${product.categoryName != null}">
+                                    <li class="mb-2" th:if="${category != null}">
                                         <strong>Danh mục:</strong> 
                                         <a th:href="@{/products(category=${product.categoryId})}" 
-                                           th:text="${product.categoryName}">Category</a>
+                                           th:text="${category.categoryName}">Category</a>
                                     </li>
                                     <li class="mb-2" th:if="${product.brand != null}">
                                         <strong>Thương hiệu:</strong> 
@@ -287,7 +270,7 @@
                             <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" 
                                     data-bs-target="#reviews" type="button">
                                 <i class="fas fa-star me-1"></i>Đánh giá 
-                                (<span th:text="${product.reviewCount ?: 0}">0</span>)
+                                (<span th:text="${reviewCount ?: 0}">0</span>)
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
@@ -319,17 +302,17 @@
                                         <th>Thương hiệu</th>
                                         <td th:text="${product.brand}">Brand Name</td>
                                     </tr>
-                                    <tr th:if="${product.origin != null}">
-                                        <th>Xuất xứ</th>
-                                        <td th:text="${product.origin}">Vietnam</td>
-                                    </tr>
-                                    <tr th:if="${product.sizesAvailable != null}">
+                                    <tr th:if="${product.size != null and product.size != ''}">
                                         <th>Kích cỡ</th>
-                                        <td th:text="${#strings.listJoin(product.sizesAvailable, ', ')}">S, M, L, XL</td>
+                                        <td th:text="${product.size}">M</td>
                                     </tr>
-                                    <tr th:if="${product.colorsAvailable != null}">
+                                    <tr th:if="${product.color != null and product.color != ''}">
                                         <th>Màu sắc</th>
-                                        <td th:text="${#strings.listJoin(product.colorsAvailable, ', ')}">Đen, Trắng, Xám</td>
+                                        <td th:text="${product.color}">Đen</td>
+                                    </tr>
+                                    <tr th:if="${product.gender != null}">
+                                        <th>Giới tính</th>
+                                        <td th:text="${product.gender}">UNISEX</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -340,13 +323,13 @@
                             <div class="row">
                                 <div class="col-md-4 mb-4">
                                     <div class="card border-0 bg-light text-center p-4">
-                                        <h2 class="mb-0" th:text="${product.averageRating ?: '0.0'}">4.5</h2>
+                                        <h2 class="mb-0" th:text="${avgRating ?: '0.0'}">4.5</h2>
                                         <div class="rating text-warning mb-2">
                                             <i th:each="i : ${#numbers.sequence(1, 5)}" 
-                                               th:class="${i <= (product.averageRating ?: 0) ? 'fas fa-star' : 'far fa-star'}"></i>
+                                               th:class="${i <= (avgRating ?: 0) ? 'fas fa-star' : 'far fa-star'}"></i>
                                         </div>
                                         <p class="text-muted mb-0">
-                                            <span th:text="${product.reviewCount ?: 0}">0</span> đánh giá
+                                            <span th:text="${reviewCount ?: 0}">0</span> đánh giá
                                         </p>
                                     </div>
                                 </div>
@@ -357,7 +340,7 @@
                                         <div class="review-item" th:each="review : ${reviews}">
                                             <div class="d-flex justify-content-between mb-2">
                                                 <div>
-                                                    <strong th:text="${review.customerName}">Customer</strong>
+                                                    <strong th:text="${review.userName ?: 'Khách hàng'}">Customer</strong>
                                                     <div class="rating text-warning small">
                                                         <i th:each="i : ${#numbers.sequence(1, 5)}" 
                                                            th:class="${i <= review.rating ? 'fas fa-star' : 'far fa-star'}"></i>

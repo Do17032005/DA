@@ -29,8 +29,7 @@ public class AdminBannerController {
      * Check if user is admin
      */
     private boolean isAdmin(HttpSession session) {
-        String role = (String) session.getAttribute("role");
-        return "ADMIN".equals(role) || "SUPER_ADMIN".equals(role);
+        return session.getAttribute("adminId") != null;
     }
 
     /**
