@@ -23,6 +23,37 @@ $(document).ready(function() {
     loadWishlistCount();
 });
 
+function getLoggedInUserId() {
+    if (window.appContext && window.appContext.userId) {
+        return window.appContext.userId;
+    }
+    return null;
+}
+
+function recordInteraction(productId, interactionType, value = null) {
+    const userId = getLoggedInUserId();
+    if (!userId || !productId || !interactionType) {
+        return;
+    }
+
+    const payload = {
+        userId: userId,
+        productId: Number(productId),
+        interactionType: interactionType
+    };
+
+    if (value !== null && value !== undefined) {
+        payload.value = value;
+    }
+
+    $.ajax({
+        url: '/api/recommendations/interaction',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(payload)
+    });
+}
+
 // Cart functions
 function addToCart(productId, quantity = 1, size = null, color = null) {
     $.ajax({
@@ -38,6 +69,7 @@ function addToCart(productId, quantity = 1, size = null, color = null) {
             if (response.success) {
                 showNotification('Đã thêm vào giỏ hàng!', 'success');
                 loadCartCount();
+                recordInteraction(productId, 'add_to_cart');
                 
                 // Show mini cart preview
                 showMiniCart();
@@ -124,6 +156,9 @@ function toggleWishlist(productId, button) {
                 const serverAction = response.action || (desiredAction === 'add' ? 'added' : 'removed');
                 const inWishlist = serverAction === 'added';
                 updateWishlistButtonState(button, inWishlist);
+                if (inWishlist) {
+                    recordInteraction(productId, 'wishlist');
+                }
                 showNotification(
                     inWishlist ? 'Đã thêm vào danh sách yêu thích!' : 'Đã gỡ khỏi danh sách yêu thích!',
                     inWishlist ? 'success' : 'info'

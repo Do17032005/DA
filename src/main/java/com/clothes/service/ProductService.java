@@ -26,9 +26,9 @@ public class ProductService {
         return productDAO.findAll();
     }
 
-    public List<Product> searchProducts(String keyword, Long categoryId, String status, String sortBy) {
-        // Implementation will use ProductDAO methods
-        return productDAO.findAll(); // Placeholder
+    public List<Product> searchProducts(String keyword, Long categoryId, String status,
+            String sortBy, Boolean isNew, Boolean isHot) {
+        return productDAO.findAdminWithFilters(keyword, categoryId, status, sortBy, isNew, isHot);
     }
 
     public Optional<Product> getProductById(Long id) {
@@ -55,6 +55,16 @@ public class ProductService {
             p.setIsActive(!Boolean.TRUE.equals(p.getIsActive()));
             productDAO.update(p);
         });
+    }
+
+    public void toggleProductNew(Long id) {
+        Optional<Product> product = productDAO.findById(id);
+        product.ifPresent(p -> productDAO.updateNewStatus(id, !Boolean.TRUE.equals(p.getIsNew())));
+    }
+
+    public void toggleProductHot(Long id) {
+        Optional<Product> product = productDAO.findById(id);
+        product.ifPresent(p -> productDAO.updateHotStatus(id, !Boolean.TRUE.equals(p.getIsHot())));
     }
 
     public Product duplicateProduct(Long id) {

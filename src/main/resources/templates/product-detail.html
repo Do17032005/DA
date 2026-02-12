@@ -106,6 +106,10 @@
                     <div class="product-info">
                         <!-- Product Name -->
                         <h2 class="mb-2" th:text="${product.productName}">Product Name</h2>
+                        <div class="mb-2">
+                            <span class="badge bg-success" th:if="${product.isNew}">Mới</span>
+                            <span class="badge bg-danger" th:if="${product.isHot}">Hot</span>
+                        </div>
 
                         <!-- Rating & Reviews -->
                         <div class="mb-3 d-flex align-items-center">
@@ -502,26 +506,26 @@
             </div>
 
             <!-- Related Products -->
-            <div class="row mt-5" th:if="${relatedProducts != null && !relatedProducts.empty}">
+            <div class="row mt-5" th:if="${similarProducts != null && !similarProducts.empty}">
                 <div class="col-12">
                     <h3 class="mb-4">Sản phẩm liên quan</h3>
                     <div class="row g-4">
-                        <div class="col-md-3 col-sm-6" th:each="relProduct : ${relatedProducts}">
+                        <div class="col-md-3 col-sm-6" th:each="similarProduct : ${similarProducts}">
                             <div class="card product-card h-100">
-                                <a th:href="@{/products/{id}(id=${relProduct.productId})}">
-                                    <img th:src="${relProduct.imageUrl}" 
-                                         th:alt="${relProduct.productName}"
+                                <a th:href="@{/products/{id}(id=${similarProduct.productId})}">
+                                    <img th:src="${similarProduct.imageUrl}" 
+                                         th:alt="${similarProduct.productName}"
                                          class="card-img-top" style="height: 250px; object-fit: cover;">
                                 </a>
                                 <div class="card-body">
                                     <h6 class="card-title">
-                                        <a th:href="@{/products/{id}(id=${relProduct.productId})}" 
+                                        <a th:href="@{/products/{id}(id=${similarProduct.productId})}" 
                                            class="text-decoration-none text-dark"
-                                           th:text="${relProduct.productName}">
+                                           th:text="${similarProduct.productName}">
                                         </a>
                                     </h6>
                                     <p class="h6 text-danger">
-                                        <span th:text="${#numbers.formatDecimal(relProduct.price, 0, 0)}">299,000</span>đ
+                                        <span th:text="${#numbers.formatDecimal(similarProduct.price, 0, 0)}">299,000</span>đ
                                     </p>
                                 </div>
                             </div>
@@ -533,7 +537,8 @@
     </main>
 
     <th:block layout:fragment="scripts">
-        <script>
+        <script th:inline="javascript">
+            const productId = /*[[${product.productId}]]*/ null;
             function changeMainImage(src, element) {
                 document.getElementById('mainProductImage').src = src;
                 document.querySelectorAll('.thumbnail-img').forEach(el => el.classList.remove('active'));
@@ -591,6 +596,9 @@
             }
 
             document.addEventListener('DOMContentLoaded', function () {
+                if (productId) {
+                    recordInteraction(productId, 'view');
+                }
                 const tabButtons = document.querySelectorAll('#productTabs button[data-bs-toggle="tab"]');
 
                 tabButtons.forEach(function (button) {

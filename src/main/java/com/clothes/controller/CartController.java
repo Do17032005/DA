@@ -4,6 +4,7 @@ import com.clothes.dao.ProductDAO;
 import com.clothes.model.Product;
 import com.clothes.model.Voucher;
 import com.clothes.service.CartService;
+import com.clothes.service.HybridRecommendationService;
 import com.clothes.service.VoucherService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -12,7 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Controller for shopping cart operations
@@ -24,11 +28,14 @@ public class CartController {
     private final CartService cartService;
     private final ProductDAO productDAO;
     private final VoucherService voucherService;
+    private final HybridRecommendationService hybridRecommendationService;
 
-    public CartController(CartService cartService, ProductDAO productDAO, VoucherService voucherService) {
+    public CartController(CartService cartService, ProductDAO productDAO, VoucherService voucherService,
+            HybridRecommendationService hybridRecommendationService) {
         this.cartService = cartService;
         this.productDAO = productDAO;
         this.voucherService = voucherService;
+        this.hybridRecommendationService = hybridRecommendationService;
     }
 
     /**
@@ -89,6 +96,29 @@ public class CartController {
 
         // Get valid vouchers for display
         model.addAttribute("availableVouchers", voucherService.getValidVouchers());
+
+        Long userId = (Long) session.getAttribute("userId");
+        List<Product> recommendedProducts;
+        if (userId != null) {
+            try {
+                List<Product> personalized = hybridRecommendationService.getRecommendations(userId, 8);
+                Set<Long> cartProductIds = items.stream()
+                        .map(com.clothes.model.CartItem::getProductId)
+                        .collect(Collectors.toSet());
+                recommendedProducts = personalized.stream()
+                        .filter(product -> !cartProductIds.contains(product.getProductId()))
+                        .limit(4)
+                        .collect(Collectors.toList());
+                if (recommendedProducts.isEmpty()) {
+                    recommendedProducts = productDAO.findTrending(4);
+                }
+            } catch (Exception e) {
+                recommendedProducts = productDAO.findTrending(4);
+            }
+        } else {
+            recommendedProducts = productDAO.findTrending(4);
+        }
+        model.addAttribute("recommendedProducts", recommendedProducts);
 
         return "cart";
     }

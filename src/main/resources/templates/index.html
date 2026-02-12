@@ -220,6 +220,66 @@
             </div>
         </section>
 
+        <!-- Recommended Products -->
+        <section class="container mb-5" th:if="${recommendedProducts != null && !recommendedProducts.empty}">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold mb-0">Gợi ý cho bạn</h2>
+                <a href="/products" class="btn btn-outline-primary">
+                    Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-3 col-sm-6" th:each="product : ${recommendedProducts}">
+                    <div class="card product-card h-100 position-relative">
+                        <span class="badge bg-danger badge-sale"
+                            th:if="${product.discountPrice != null && product.discountPrice < product.price}">
+                            -<span
+                                th:text="${#numbers.formatDecimal((1 - product.discountPrice / product.price) * 100, 0, 0)}">20</span>%
+                        </span>
+
+                        <button class="btn btn-light btn-sm rounded-circle wishlist-btn"
+                            th:with="isFavorite=${wishlistProductIds != null && wishlistProductIds.contains(product.productId)}"
+                            th:classappend="${isFavorite} ? ' active' : ''"
+                            th:data-in-wishlist="${isFavorite}"
+                            th:onclick="'toggleWishlist(' + ${product.productId} + ', this)'"><i
+                                th:class="${isFavorite} ? 'fas fa-heart text-danger' : 'far fa-heart'"></i></button>
+
+                        <a th:href="@{/products/{id}(id=${product.productId})}">
+                            <img th:src="${product.imageUrl}" th:alt="${product.productName}" class="card-img-top"
+                                style="height: 280px; object-fit: cover;">
+                        </a>
+
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a th:href="@{/products/{id}(id=${product.productId})}"
+                                    class="text-decoration-none text-dark" th:text="${product.productName}">
+                                </a>
+                            </h6>
+
+                            <div class="mb-2">
+                                <span class="h5 text-danger mb-0"
+                                    th:if="${product.discountPrice != null && product.discountPrice < product.price}">
+                                    <span th:text="${#numbers.formatDecimal(product.discountPrice, 0, 0)}">199,000</span>đ
+                                </span>
+                                <span class="text-muted text-decoration-line-through small ms-1"
+                                    th:if="${product.discountPrice != null && product.discountPrice < product.price}"
+                                    th:text="${#numbers.formatDecimal(product.price, 0, 0)} + 'đ'">
+                                </span>
+                                <span class="h5 text-danger mb-0"
+                                    th:if="${product.discountPrice == null || product.discountPrice >= product.price}">
+                                    <span th:text="${#numbers.formatDecimal(product.price, 0, 0)}">299,000</span>đ
+                                </span>
+                            </div>
+
+                            <button class="btn btn-primary btn-sm w-100"
+                                th:onclick="'addToCart(' + ${product.productId} + ')'"><i
+                                    class="fas fa-shopping-cart me-1"></i>Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Promotion Banner -->
         <section class="container mb-5">
             <div class="row g-4">
@@ -253,17 +313,17 @@
         </section>
 
         <!-- New Arrivals -->
-        <section class="container mb-5" th:if="${newProducts != null && !newProducts.empty}">
+        <section class="container mb-5">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="fw-bold mb-0">Sản phẩm mới về</h2>
                 <a href="/products?sort=newest" class="btn btn-outline-primary">
                     Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
-            <div class="row g-4">
+            <div class="row g-4" th:if="${newProducts != null && !newProducts.empty}">
                 <div class="col-md-3 col-sm-6" th:each="product : ${newProducts}">
                     <div class="card product-card h-100 position-relative">
-                        <span class="badge bg-success badge-sale">Mới</span>
+                        <span class="badge bg-success badge-sale" th:if="${product.isNew}">Mới</span>
 
                         <button class="btn btn-light btn-sm rounded-circle wishlist-btn"
                             th:with="isFavorite=${wishlistProductIds != null && wishlistProductIds.contains(product.productId)}"
@@ -307,6 +367,10 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="text-center py-4" th:if="${newProducts == null || newProducts.empty}">
+                <p class="text-muted mb-0">Chưa có sản phẩm mới để hiển thị.</p>
             </div>
         </section>
 

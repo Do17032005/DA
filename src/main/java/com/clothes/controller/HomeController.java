@@ -55,15 +55,21 @@ public class HomeController {
                 ? recommendationService.getHomepageRecommendations(userId, 8)
                 : productDAO.findTrending(8);
 
-        // Get new arrivals
-        var newProducts = productDAO.findAllActive();
-        newProducts.sort((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()));
-        if (newProducts.size() > 8) {
-            newProducts = newProducts.subList(0, 8);
+        // Get new arrivals (manual flag, fallback to newest)
+        var newProducts = productDAO.findNewProducts(8);
+        if (newProducts.isEmpty()) {
+            newProducts = productDAO.findAllActive();
+            newProducts.sort((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()));
+            if (newProducts.size() > 8) {
+                newProducts = newProducts.subList(0, 8);
+            }
         }
 
-        // Get trending products
-        var trendingProducts = productDAO.findTrending(8);
+        // Get hot products (manual flag, fallback to trending)
+        var hotProducts = productDAO.findHotProducts(8);
+        if (hotProducts.isEmpty()) {
+            hotProducts = productDAO.findTrending(8);
+        }
 
         // Get categories
         var categories = categoryService.getRootCategories();
@@ -82,8 +88,8 @@ public class HomeController {
 
         model.addAttribute("recommendedProducts", recommendedProducts);
         model.addAttribute("newProducts", newProducts);
-        model.addAttribute("trendingProducts", trendingProducts);
-        model.addAttribute("featuredProducts", trendingProducts);
+        model.addAttribute("trendingProducts", hotProducts);
+        model.addAttribute("featuredProducts", hotProducts);
         model.addAttribute("categories", categories);
         model.addAttribute("banners", banners);
         model.addAttribute("blogPosts", blogPosts);

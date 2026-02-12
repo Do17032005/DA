@@ -34,6 +34,7 @@ public class Product {
     private Integer percentage;
     private Boolean inWishlist = false;
     private Boolean isNew = false;
+    private Boolean isHot = false;
     private Double averageRating = 0.0;
     private Integer reviewCount = 0;
     private java.util.List<String> colorsAvailable;
@@ -331,6 +332,14 @@ public class Product {
 
     public void setIsNew(Boolean isNew) {
         this.isNew = isNew;
+    }
+
+    public Boolean getIsHot() {
+        return isHot;
+    }
+
+    public void setIsHot(Boolean isHot) {
+        this.isHot = isHot;
     }
 
     public Double getAverageRating() {

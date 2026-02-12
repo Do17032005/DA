@@ -37,13 +37,15 @@ public class AdminProductController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) Boolean isNew,
+            @RequestParam(required = false) Boolean isHot,
             HttpSession session,
             Model model) {
         if (session.getAttribute("adminId") == null) {
             return "redirect:/admin/login";
         }
 
-        List<Product> products = productService.searchProducts(keyword, categoryId, status, sortBy);
+        List<Product> products = productService.searchProducts(keyword, categoryId, status, sortBy, isNew, isHot);
         List<Category> categories = categoryService.getAllCategories();
 
         model.addAttribute("products", products);
@@ -133,6 +135,20 @@ public class AdminProductController {
     @ResponseBody
     public ResponseEntity<Void> toggleStatus(@PathVariable Long id) {
         productService.toggleProductStatus(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/toggle-new")
+    @ResponseBody
+    public ResponseEntity<Void> toggleNew(@PathVariable Long id) {
+        productService.toggleProductNew(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/toggle-hot")
+    @ResponseBody
+    public ResponseEntity<Void> toggleHot(@PathVariable Long id) {
+        productService.toggleProductHot(id);
         return ResponseEntity.ok().build();
     }
 

@@ -344,6 +344,12 @@
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
+    <script th:inline="javascript">
+        window.appContext = {
+            userId: /*[[${session.userId}]]*/ null
+        };
+    </script>
+
     <!-- Custom JS -->
     <script th:src="@{/js/main.js}"></script>
 

@@ -2,7 +2,9 @@ package com.clothes.controller;
 
 import com.clothes.dao.WishlistDAO;
 import com.clothes.dao.ProductDAO;
+import com.clothes.model.Product;
 import com.clothes.model.Wishlist;
+import com.clothes.service.HybridRecommendationService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +24,13 @@ public class WishlistController {
 
     private final WishlistDAO wishlistDAO;
     private final ProductDAO productDAO;
+    private final HybridRecommendationService hybridRecommendationService;
 
-    public WishlistController(WishlistDAO wishlistDAO, ProductDAO productDAO) {
+    public WishlistController(WishlistDAO wishlistDAO, ProductDAO productDAO,
+            HybridRecommendationService hybridRecommendationService) {
         this.wishlistDAO = wishlistDAO;
         this.productDAO = productDAO;
+        this.hybridRecommendationService = hybridRecommendationService;
     }
 
     /**
@@ -43,8 +48,17 @@ public class WishlistController {
         model.addAttribute("wishlistItems", wishlists);
         model.addAttribute("totalItems", wishlists.size());
 
-        // Show recommended/trending products to encourage discovery when wishlist is empty
-        model.addAttribute("recommendedProducts", productDAO.findTrending(4));
+        // Show personalized recommendations (fallback to trending)
+        List<Product> recommendedProducts;
+        try {
+            recommendedProducts = hybridRecommendationService.getRecommendations(userId, 4);
+            if (recommendedProducts.isEmpty()) {
+                recommendedProducts = productDAO.findTrending(4);
+            }
+        } catch (Exception e) {
+            recommendedProducts = productDAO.findTrending(4);
+        }
+        model.addAttribute("recommendedProducts", recommendedProducts);
 
         return "wishlist";
     }

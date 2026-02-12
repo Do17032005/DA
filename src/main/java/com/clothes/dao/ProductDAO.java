@@ -85,6 +85,18 @@ public class ProductDAO {
                 product.setPurchaseCount(0);
             }
 
+            try {
+                product.setIsNew(rs.getBoolean("is_new"));
+            } catch (Exception e) {
+                product.setIsNew(false);
+            }
+
+            try {
+                product.setIsHot(rs.getBoolean("is_hot"));
+            } catch (Exception e) {
+                product.setIsHot(false);
+            }
+
             return product;
         }
     }
@@ -128,6 +140,24 @@ public class ProductDAO {
                 "WHERE is_active = TRUE " +
                 "ORDER BY COALESCE(purchase_count, 0) * 10 + COALESCE(view_count, 0) DESC, created_at DESC " +
                 "LIMIT ?";
+        return jdbcTemplate.query(sql, new ProductRowMapper(), limit);
+    }
+
+    /**
+     * Find products marked as new
+     */
+    public List<Product> findNewProducts(int limit) {
+        String sql = "SELECT * FROM products WHERE is_active = TRUE AND is_new = TRUE " +
+                "ORDER BY created_at DESC LIMIT ?";
+        return jdbcTemplate.query(sql, new ProductRowMapper(), limit);
+    }
+
+    /**
+     * Find products marked as hot
+     */
+    public List<Product> findHotProducts(int limit) {
+        String sql = "SELECT * FROM products WHERE is_active = TRUE AND is_hot = TRUE " +
+                "ORDER BY updated_at DESC, created_at DESC LIMIT ?";
         return jdbcTemplate.query(sql, new ProductRowMapper(), limit);
     }
 
@@ -198,7 +228,7 @@ public class ProductDAO {
      */
     public List<Product> findWithFilters(Long categoryId, Product.Gender gender,
             BigDecimal minPrice, BigDecimal maxPrice,
-            String sortBy) {
+            String sortBy, Boolean isNew, Boolean isHot) {
         StringBuilder sql = new StringBuilder("SELECT * FROM products WHERE is_active = 1");
 
         List<Object> params = new java.util.ArrayList<>();
@@ -224,6 +254,16 @@ public class ProductDAO {
         } else if (maxPrice != null) {
             sql.append(" AND price <= ?");
             params.add(maxPrice);
+        }
+
+        boolean filterNew = Boolean.TRUE.equals(isNew);
+        boolean filterHot = Boolean.TRUE.equals(isHot);
+        if (filterNew && filterHot) {
+            sql.append(" AND (is_new = TRUE OR is_hot = TRUE)");
+        } else if (filterNew) {
+            sql.append(" AND is_new = TRUE");
+        } else if (filterHot) {
+            sql.append(" AND is_hot = TRUE");
         }
 
         // Build ORDER BY clause
@@ -255,6 +295,75 @@ public class ProductDAO {
         }
         System.out.println("SQL: " + sql.toString());
         System.out.println("Params: " + params);
+        return jdbcTemplate.query(sql.toString(), new ProductRowMapper(), params.toArray());
+    }
+
+    /**
+     * Find products for admin with filters (include inactive)
+     */
+    public List<Product> findAdminWithFilters(String keyword, Long categoryId, String status,
+            String sortBy, Boolean isNew, Boolean isHot) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM products WHERE 1=1");
+        List<Object> params = new java.util.ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (product_name LIKE ? OR sku LIKE ?)");
+            String pattern = "%" + keyword.trim() + "%";
+            params.add(pattern);
+            params.add(pattern);
+        }
+
+        if (categoryId != null) {
+            sql.append(" AND category_id = ?");
+            params.add(categoryId);
+        }
+
+        if (status != null && !status.isBlank()) {
+            switch (status) {
+                case "active":
+                    sql.append(" AND is_active = TRUE");
+                    break;
+                case "inactive":
+                    sql.append(" AND is_active = FALSE");
+                    break;
+                case "out_of_stock":
+                    sql.append(" AND stock_quantity <= 0");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        boolean filterNew = Boolean.TRUE.equals(isNew);
+        boolean filterHot = Boolean.TRUE.equals(isHot);
+        if (filterNew && filterHot) {
+            sql.append(" AND (is_new = TRUE OR is_hot = TRUE)");
+        } else if (filterNew) {
+            sql.append(" AND is_new = TRUE");
+        } else if (filterHot) {
+            sql.append(" AND is_hot = TRUE");
+        }
+
+        if (sortBy != null && !sortBy.isBlank()) {
+            switch (sortBy) {
+                case "price_asc":
+                    sql.append(" ORDER BY price ASC");
+                    break;
+                case "price_desc":
+                    sql.append(" ORDER BY price DESC");
+                    break;
+                case "name":
+                    sql.append(" ORDER BY product_name ASC");
+                    break;
+                case "newest":
+                default:
+                    sql.append(" ORDER BY created_at DESC");
+                    break;
+            }
+        } else {
+            sql.append(" ORDER BY created_at DESC");
+        }
+
         return jdbcTemplate.query(sql.toString(), new ProductRowMapper(), params.toArray());
     }
 
@@ -333,6 +442,22 @@ public class ProductDAO {
     }
 
     /**
+     * Update new flag
+     */
+    public int updateNewStatus(Long productId, boolean isNew) {
+        String sql = "UPDATE products SET is_new = ?, updated_at = NOW() WHERE product_id = ?";
+        return jdbcTemplate.update(sql, isNew, productId);
+    }
+
+    /**
+     * Update hot flag
+     */
+    public int updateHotStatus(Long productId, boolean isHot) {
+        String sql = "UPDATE products SET is_hot = ?, updated_at = NOW() WHERE product_id = ?";
+        return jdbcTemplate.update(sql, isHot, productId);
+    }
+
+    /**
      * Update stock quantity
      */
     public int updateStock(Long productId, int stockQuantity) {
@@ -348,7 +473,7 @@ public class ProductDAO {
                 "product_name = ?, description = ?, category_id = ?, price = ?, " +
                 "discount_price = ?, stock_quantity = ?, image_url = ?, brand = ?, " +
                 "color = ?, size = ?, material = ?, gender = ?, season = ?, " +
-                "sku = ?, is_active = ?, updated_at = NOW() " +
+                "sku = ?, is_active = ?, is_new = ?, is_hot = ?, updated_at = NOW() " +
                 "WHERE product_id = ?";
 
         return jdbcTemplate.update(sql,
@@ -367,6 +492,8 @@ public class ProductDAO {
                 product.getSeason() != null ? product.getSeason().name() : null,
                 product.getSku(),
                 product.getIsActive(),
+                Boolean.TRUE.equals(product.getIsNew()),
+                Boolean.TRUE.equals(product.getIsHot()),
                 product.getProductId());
     }
 
@@ -376,8 +503,8 @@ public class ProductDAO {
     public Long save(Product product) {
         String sql = "INSERT INTO products (product_name, description, category_id, price, " +
                 "discount_price, stock_quantity, image_url, brand, color, size, material, " +
-                "gender, season, sku, is_active, created_at, updated_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                "gender, season, sku, is_active, is_new, is_hot, created_at, updated_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
         jdbcTemplate.update(sql,
                 product.getProductName(),
@@ -394,7 +521,9 @@ public class ProductDAO {
                 product.getGender() != null ? product.getGender().name() : null,
                 product.getSeason() != null ? product.getSeason().name() : null,
                 product.getSku(),
-                product.getIsActive());
+                product.getIsActive(),
+                Boolean.TRUE.equals(product.getIsNew()),
+                Boolean.TRUE.equals(product.getIsHot()));
 
         return jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
     }

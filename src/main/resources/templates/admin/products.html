@@ -4,6 +4,22 @@
 
 <head>
     <title>Quản lý sản phẩm</title>
+    <th:block layout:fragment="css">
+        <style>
+            .tag-toggle-btn {
+                min-width: 34px;
+                height: 34px;
+                padding: 0.35rem 0.5rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .tag-toggle-btn i {
+                font-size: 0.95rem;
+            }
+        </style>
+    </th:block>
 </head>
 
 <body>
@@ -62,6 +78,18 @@
                                 A-Z</option>
                         </select>
                     </div>
+                    <div class="col-md-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="filterIsNew" name="isNew" value="true"
+                                th:checked="${param.isNew != null}">
+                            <label class="form-check-label" for="filterIsNew">Mới</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="filterIsHot" name="isHot" value="true"
+                                th:checked="${param.isHot != null}">
+                            <label class="form-check-label" for="filterIsHot">Hot</label>
+                        </div>
+                    </div>
                     <div class="col-md-3">
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary flex-grow-1">
@@ -116,6 +144,10 @@
                                     <small class="text-muted">
                                         SKU: <code th:text="${product.sku}">PRD-001</code>
                                     </small>
+                                    <div class="mt-1">
+                                        <span class="badge bg-success" th:if="${product.isNew}">Mới</span>
+                                        <span class="badge bg-danger" th:if="${product.isHot}">Hot</span>
+                                    </div>
                                 </td>
                                 <td>
                                     <span class="badge bg-secondary" th:text="${product.categoryName}">
@@ -161,6 +193,18 @@
                                             class="btn btn-outline-primary">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        <button class="btn btn-outline-success tag-toggle-btn"
+                                            th:classappend="${product.isNew} ? ' active' : ''"
+                                            th:onclick="'toggleProductNew(' + ${product.productId} + ')'"
+                                            title="Đánh dấu Mới">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger tag-toggle-btn"
+                                            th:classappend="${product.isHot} ? ' active' : ''"
+                                            th:onclick="'toggleProductHot(' + ${product.productId} + ')'"
+                                            title="Đánh dấu Hot">
+                                            <i class="fas fa-fire"></i>
+                                        </button>
                                         <button class="btn btn-outline-info"
                                             th:onclick="'duplicateProduct(' + ${product.productId} + ')'">
                                             <i class="fas fa-copy"></i>
@@ -226,6 +270,18 @@
             function toggleProductStatus(id) {
                 $.post('/admin/products/' + id + '/toggle-status', function () {
                     console.log('Toggled status');
+                });
+            }
+
+            function toggleProductNew(id) {
+                $.post('/admin/products/' + id + '/toggle-new', function () {
+                    location.reload();
+                });
+            }
+
+            function toggleProductHot(id) {
+                $.post('/admin/products/' + id + '/toggle-hot', function () {
+                    location.reload();
                 });
             }
 

@@ -155,6 +155,8 @@ CREATE TABLE `products` (
     `is_active` BOOLEAN DEFAULT TRUE,
     `view_count` INT DEFAULT 0,
     `purchase_count` INT DEFAULT 0,
+    `is_new` BOOLEAN DEFAULT FALSE,
+    `is_hot` BOOLEAN DEFAULT FALSE,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (`category_id`) REFERENCES `categories`(`category_id`) ON DELETE SET NULL
