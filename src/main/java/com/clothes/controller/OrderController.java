@@ -41,7 +41,8 @@ public class OrderController {
      * Show checkout page
      */
     @GetMapping("/checkout")
-    public String showCheckout(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+    public String showCheckout(@RequestParam(required = false) List<Long> selectedItems,
+            HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             redirectAttributes.addFlashAttribute("error", "Vui lòng đăng nhập để tiếp tục");
@@ -54,13 +55,33 @@ public class OrderController {
             return "redirect:/cart";
         }
 
+        List<CartItem> checkoutItems;
+        if (selectedItems != null && !selectedItems.isEmpty()) {
+            checkoutItems = cart.getItems().stream()
+                    .filter(item -> selectedItems.contains(item.getCartItemId()))
+                    .toList();
+            if (checkoutItems.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Không có sản phẩm nào hợp lệ được chọn");
+                return "redirect:/cart";
+            }
+        } else {
+            checkoutItems = cart.getItems();
+        }
+
         // Get user addresses
         List<Address> addresses = addressService.getAddressesByUserId(userId);
         Optional<Address> defaultAddress = addressService.getDefaultAddress(userId);
 
         // Calculate totals
-        BigDecimal subtotal = cart.getTotalAmount();
+        BigDecimal subtotal = checkoutItems.stream()
+                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         BigDecimal shippingFee = BigDecimal.ZERO;
+        if (subtotal.compareTo(BigDecimal.ZERO) > 0 && subtotal.compareTo(new BigDecimal("500000")) < 0) {
+            shippingFee = new BigDecimal("30000"); // default shipping fee
+        }
+
         BigDecimal discount = BigDecimal.ZERO;
 
         // Check for voucher in session
@@ -82,12 +103,13 @@ public class OrderController {
         }
 
         model.addAttribute("cart", cart);
-        model.addAttribute("cartItems", cart.getItems());
+        model.addAttribute("cartItems", checkoutItems);
         model.addAttribute("subtotal", subtotal);
         model.addAttribute("shippingFee", shippingFee);
         model.addAttribute("discount", discount);
         model.addAttribute("total", total);
         model.addAttribute("appliedVoucher", appliedVoucher);
+        model.addAttribute("selectedItems", selectedItems);
 
         model.addAttribute("addresses", addresses);
         model.addAttribute("defaultAddress", defaultAddress.orElse(null));
@@ -100,6 +122,7 @@ public class OrderController {
      */
     @PostMapping("/checkout")
     public String processCheckout(
+            @RequestParam(required = false) List<Long> selectedItems,
             @RequestParam(required = false) Long addressId,
             @RequestParam(defaultValue = "COD") String paymentMethod,
             @RequestParam(required = false) String voucherCode,
@@ -124,6 +147,19 @@ public class OrderController {
             if (cart.getItems().isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "Giỏ hàng trống");
                 return "redirect:/cart";
+            }
+
+            List<CartItem> checkoutItems;
+            if (selectedItems != null && !selectedItems.isEmpty()) {
+                checkoutItems = cart.getItems().stream()
+                        .filter(item -> selectedItems.contains(item.getCartItemId()))
+                        .toList();
+                if (checkoutItems.isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "Không có sản phẩm nào hợp lệ được chọn");
+                    return "redirect:/cart";
+                }
+            } else {
+                checkoutItems = cart.getItems();
             }
 
             String shippingAddress = "";
@@ -160,23 +196,42 @@ public class OrderController {
             }
 
             // Apply voucher if provided
-            BigDecimal totalAmount = cart.getTotalAmount();
+            BigDecimal subtotal = checkoutItems.stream()
+                    .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            BigDecimal shippingFee = BigDecimal.ZERO;
+            if (subtotal.compareTo(BigDecimal.ZERO) > 0 && subtotal.compareTo(new BigDecimal("500000")) < 0) {
+                shippingFee = new BigDecimal("30000"); // default shipping fee
+            }
+
             BigDecimal discount = BigDecimal.ZERO;
 
             if (voucherCode != null && !voucherCode.trim().isEmpty()) {
                 try {
-                    discount = voucherService.applyVoucher(voucherCode, totalAmount);
-                    totalAmount = totalAmount.subtract(discount);
+                    discount = voucherService.applyVoucher(voucherCode, subtotal);
                 } catch (Exception e) {
                     redirectAttributes.addFlashAttribute("warning", "Voucher: " + e.getMessage());
                 }
             }
 
-            // Create order
-            Long orderId = orderService.createOrder(userId, cart, shippingAddress, paymentMethod, notes);
+            BigDecimal totalAmount = subtotal.add(shippingFee).subtract(discount);
+            if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
+                totalAmount = BigDecimal.ZERO;
+            }
 
-            // Clear cart
-            cartService.clearCart();
+            // Create order
+            Long orderId = orderService.createOrder(userId, checkoutItems, totalAmount, shippingAddress, paymentMethod,
+                    notes);
+
+            // Clear purchased items from cart
+            if (selectedItems != null && !selectedItems.isEmpty()) {
+                for (Long itemId : selectedItems) {
+                    cartService.removeCartItem(itemId);
+                }
+            } else {
+                cartService.clearCart();
+            }
 
             redirectAttributes.addFlashAttribute("success", "Đặt hàng thành công!");
             redirectAttributes.addFlashAttribute("orderId", orderId);

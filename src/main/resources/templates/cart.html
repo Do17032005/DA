@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
 <head>
     <title>Giỏ hàng</title>
 </head>
+
 <body>
     <main layout:fragment="content">
         <div class="container my-5">
@@ -53,20 +54,20 @@
                                     <tbody>
                                         <tr th:each="item : ${cartItems}" th:id="'cart-item-' + ${item.cartItemId}">
                                             <td class="align-middle">
-                                                <input type="checkbox" class="form-check-input item-checkbox" 
-                                                       th:value="${item.cartItemId}">
+                                                <input type="checkbox" class="form-check-input item-checkbox"
+                                                    th:value="${item.cartItemId}" th:data-price="${item.price}"
+                                                    th:data-quantity="${item.quantity}">
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <img th:src="${item.imageUrl}" 
-                                                         th:alt="${item.productName}"
-                                                         class="rounded" 
-                                                         style="width: 80px; height: 80px; object-fit: cover;">
+                                                    <img th:src="${item.imageUrl}" th:alt="${item.productName}"
+                                                        class="rounded"
+                                                        style="width: 80px; height: 80px; object-fit: cover;">
                                                     <div class="ms-3">
                                                         <h6 class="mb-1">
-                                                            <a th:href="@{/products/{id}(id=${item.productId})}" 
-                                                               class="text-decoration-none text-dark"
-                                                               th:text="${item.productName}">
+                                                            <a th:href="@{/products/{id}(id=${item.productId})}"
+                                                                class="text-decoration-none text-dark"
+                                                                th:text="${item.productName}">
                                                                 Product Name
                                                             </a>
                                                         </h6>
@@ -82,26 +83,23 @@
                                                 </div>
                                             </td>
                                             <td class="align-middle text-center">
-                                                <span class="text-danger fw-bold" 
-                                                      th:text="${#numbers.formatDecimal(item.price, 0, 0)} + 'đ'">
+                                                <span class="text-danger fw-bold"
+                                                    th:text="${#numbers.formatDecimal(item.price, 0, 0)} + 'đ'">
                                                     299,000đ
                                                 </span>
                                             </td>
                                             <td class="align-middle">
                                                 <div class="qty-control mx-auto" style="width: fit-content;">
-                                                    <button type="button" class="qty-decrease" 
-                                                            th:onclick="'updateQuantity(' + ${item.cartItemId} + ', ' + ${item.quantity - 1} + ')'">
+                                                    <button type="button" class="qty-decrease"
+                                                        th:onclick="'updateQuantity(' + ${item.cartItemId} + ', ' + ${item.quantity - 1} + ')'">
                                                         <i class="fas fa-minus"></i>
                                                     </button>
-                                                    <input type="number" 
-                                                           th:value="${item.quantity}" 
-                                                           min="1" 
-                                                           th:max="${item.stockQuantity}"
-                                                           th:onchange="'updateQuantity(' + ${item.cartItemId} + ', this.value)'"
-                                                           class="form-control text-center" 
-                                                           style="width: 70px;">
-                                                    <button type="button" class="qty-increase" 
-                                                            th:onclick="'updateQuantity(' + ${item.cartItemId} + ', ' + ${item.quantity + 1} + ')'">
+                                                    <input type="number" th:value="${item.quantity}" min="1"
+                                                        th:max="${item.stockQuantity}"
+                                                        th:onchange="'updateQuantity(' + ${item.cartItemId} + ', this.value)'"
+                                                        class="form-control text-center" style="width: 70px;">
+                                                    <button type="button" class="qty-increase"
+                                                        th:onclick="'updateQuantity(' + ${item.cartItemId} + ', ' + ${item.quantity + 1} + ')'">
                                                         <i class="fas fa-plus"></i>
                                                     </button>
                                                 </div>
@@ -110,15 +108,15 @@
                                                 </small>
                                             </td>
                                             <td class="align-middle text-end">
-                                                <strong class="text-danger" 
-                                                        th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 0)} + 'đ'">
+                                                <strong class="text-danger"
+                                                    th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 0)} + 'đ'">
                                                     598,000đ
                                                 </strong>
                                             </td>
                                             <td class="align-middle text-center">
-                                                <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                        th:onclick="'removeCartItem(' + ${item.cartItemId} + ')'"
-                                                        title="Xóa">
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    th:onclick="'removeCartItem(' + ${item.cartItemId} + ')'"
+                                                    title="Xóa">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </td>
@@ -130,8 +128,8 @@
                         <div class="card-footer bg-light">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                            onclick="removeSelected()">
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="removeSelected()">
                                         <i class="fas fa-trash me-1"></i>Xóa đã chọn
                                     </button>
                                 </div>
@@ -156,17 +154,15 @@
                             <div class="mb-3">
                                 <label class="form-label small fw-bold">Mã giảm giá</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="voucherCode" 
-                                           placeholder="Nhập mã giảm giá"
-                                           th:value="${appliedVoucher != null ? appliedVoucher.code : ''}">
-                                    <button class="btn btn-outline-primary" type="button" 
-                                            onclick="applyVoucher()"
-                                            th:if="${appliedVoucher == null}">
+                                    <input type="text" class="form-control" id="voucherCode"
+                                        placeholder="Nhập mã giảm giá"
+                                        th:value="${appliedVoucher != null ? appliedVoucher.code : ''}">
+                                    <button class="btn btn-outline-primary" type="button" onclick="applyVoucher()"
+                                        th:if="${appliedVoucher == null}">
                                         Áp dụng
                                     </button>
-                                    <button class="btn btn-outline-danger" type="button" 
-                                            onclick="removeVoucher()"
-                                            th:if="${appliedVoucher != null}">
+                                    <button class="btn btn-outline-danger" type="button" onclick="removeVoucher()"
+                                        th:if="${appliedVoucher != null}">
                                         Xóa
                                     </button>
                                 </div>
@@ -181,27 +177,29 @@
                                 <div class="accordion accordion-flush" id="voucherAccordion">
                                     <div class="accordion-item border-0">
                                         <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed p-2 small" type="button" 
-                                                    data-bs-toggle="collapse" data-bs-target="#voucherList">
+                                            <button class="accordion-button collapsed p-2 small" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#voucherList">
                                                 <i class="fas fa-ticket-alt me-2"></i>
                                                 Voucher khả dụng (<span th:text="${availableVouchers.size()}">3</span>)
                                             </button>
                                         </h2>
-                                        <div id="voucherList" class="accordion-collapse collapse" 
-                                             data-bs-parent="#voucherAccordion">
+                                        <div id="voucherList" class="accordion-collapse collapse"
+                                            data-bs-parent="#voucherAccordion">
                                             <div class="accordion-body p-2">
                                                 <div class="list-group list-group-flush">
-                                                    <div class="list-group-item px-0 py-2" 
-                                                         th:each="voucher : ${availableVouchers}">
+                                                    <div class="list-group-item px-0 py-2"
+                                                        th:each="voucher : ${availableVouchers}">
                                                         <div class="d-flex justify-content-between align-items-start">
                                                             <div class="flex-grow-1">
-                                                                <div class="fw-bold small" th:text="${voucher.code}">CODE123</div>
-                                                                <div class="small text-muted" th:text="${voucher.description}">
+                                                                <div class="fw-bold small" th:text="${voucher.code}">
+                                                                    CODE123</div>
+                                                                <div class="small text-muted"
+                                                                    th:text="${voucher.description}">
                                                                     Giảm 10%
                                                                 </div>
                                                             </div>
-                                                            <button class="btn btn-sm btn-outline-primary" 
-                                                                    th:onclick="'applyVoucherCode(\'' + ${voucher.code} + '\')'">
+                                                            <button class="btn btn-sm btn-outline-primary"
+                                                                th:onclick="'applyVoucherCode(\'' + ${voucher.code} + '\')'">
                                                                 Dùng
                                                             </button>
                                                         </div>
@@ -218,12 +216,13 @@
                             <!-- Price Breakdown -->
                             <div class="mb-2 d-flex justify-content-between">
                                 <span>Tạm tính:</span>
-                                <strong th:text="${#numbers.formatDecimal(subtotal, 0, 0)} + 'đ'">598,000đ</strong>
+                                <strong id="summary-subtotal"
+                                    th:text="${#numbers.formatDecimal(subtotal, 0, 0)} + 'đ'">598,000đ</strong>
                             </div>
 
                             <div class="mb-2 d-flex justify-content-between" th:if="${discount > 0}">
                                 <span>Giảm giá:</span>
-                                <strong class="text-success">
+                                <strong class="text-success" id="summary-discount" th:data-discount="${discount}">
                                     -<span th:text="${#numbers.formatDecimal(discount, 0, 0)}">50,000</span>đ
                                 </strong>
                             </div>
@@ -231,19 +230,21 @@
                             <div class="mb-2 d-flex justify-content-between">
                                 <span>Phí vận chuyển:</span>
                                 <span>
-                                    <span th:if="${shippingFee > 0}" 
-                                          th:text="${#numbers.formatDecimal(shippingFee, 0, 0)} + 'đ'">
+                                    <span th:if="${shippingFee > 0}" id="summary-shipping"
+                                        th:text="${#numbers.formatDecimal(shippingFee, 0, 0)} + 'đ'">
                                         30,000đ
                                     </span>
-                                    <span th:if="${shippingFee == 0}" class="text-success">Miễn phí</span>
+                                    <span th:if="${shippingFee == 0}" id="summary-shipping" class="text-success">Miễn
+                                        phí</span>
                                 </span>
                             </div>
 
-                            <div class="small text-muted mb-3" 
-                                 th:if="${subtotal < @settingsService.getSettingAsDouble('free_shipping_threshold', 500000)}">
+                            <div class="small text-muted mb-3" id="free-shipping-note"
+                                th:if="${subtotal < @settingsService.getSettingAsDouble('free_shipping_threshold', 500000)}">
                                 <i class="fas fa-info-circle me-1"></i>
-                                Mua thêm 
-                                <strong th:text="${#numbers.formatDecimal(@settingsService.getSettingAsDouble('free_shipping_threshold', 500000) - subtotal, 0, 0)} + 'đ'">
+                                Mua thêm
+                                <strong
+                                    th:text="${#numbers.formatDecimal(@settingsService.getSettingAsDouble('free_shipping_threshold', 500000) - subtotal, 0, 0)} + 'đ'">
                                     100,000đ
                                 </strong>
                                 để được miễn phí ship
@@ -253,16 +254,16 @@
 
                             <div class="mb-4 d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">Tổng cộng:</h5>
-                                <h4 class="mb-0 text-danger" 
+                                <h4 class="mb-0 text-danger" id="summary-total"
                                     th:text="${#numbers.formatDecimal(total, 0, 0)} + 'đ'">
                                     628,000đ
                                 </h4>
                             </div>
 
                             <div class="d-grid gap-2">
-                                <a th:href="@{/orders/checkout}" class="btn btn-primary btn-lg">
+                                <button type="button" class="btn btn-primary btn-lg" onclick="proceedToCheckout()">
                                     <i class="fas fa-credit-card me-2"></i>Thanh toán
-                                </a>
+                                </button>
                                 <button type="button" class="btn btn-outline-secondary" onclick="updateCart()">
                                     <i class="fas fa-sync me-1"></i>Cập nhật giỏ hàng
                                 </button>
@@ -298,22 +299,20 @@
                         <div class="col-md-3 col-sm-6" th:each="product : ${recommendedProducts}">
                             <div class="card product-card h-100">
                                 <a th:href="@{/products/{id}(id=${product.productId})}">
-                                    <img th:src="${product.imageUrl}" 
-                                         th:alt="${product.productName}"
-                                         class="card-img-top" style="height: 250px; object-fit: cover;">
+                                    <img th:src="${product.imageUrl}" th:alt="${product.productName}"
+                                        class="card-img-top" style="height: 250px; object-fit: cover;">
                                 </a>
                                 <div class="card-body">
                                     <h6 class="card-title">
-                                        <a th:href="@{/products/{id}(id=${product.productId})}" 
-                                           class="text-decoration-none text-dark"
-                                           th:text="${product.productName}">
+                                        <a th:href="@{/products/{id}(id=${product.productId})}"
+                                            class="text-decoration-none text-dark" th:text="${product.productName}">
                                         </a>
                                     </h6>
                                     <p class="h6 text-danger mb-2">
                                         <span th:text="${#numbers.formatDecimal(product.price, 0, 0)}">299,000</span>đ
                                     </p>
                                     <button class="btn btn-primary btn-sm w-100"
-                                            th:onclick="'addToCart(' + ${product.productId} + ')'">
+                                        th:onclick="'addToCart(' + ${product.productId} + ')'">
                                         <i class="fas fa-shopping-cart me-1"></i>Thêm vào giỏ
                                     </button>
                                 </div>
@@ -329,8 +328,8 @@
         <script>
             function updateQuantity(cartItemId, quantity) {
                 if (quantity < 1) return;
-                
-                $.post('/cart/update/' + cartItemId, { quantity: quantity }, function(response) {
+
+                $.post('/cart/update/' + cartItemId, { quantity: quantity }, function (response) {
                     if (response.success) {
                         location.reload();
                     } else {
@@ -340,7 +339,7 @@
             }
 
             function removeSelected() {
-                const selectedItems = $('.item-checkbox:checked').map(function() {
+                const selectedItems = $('.item-checkbox:checked').map(function () {
                     return $(this).val();
                 }).get();
 
@@ -350,7 +349,7 @@
                 }
 
                 if (confirm('Bạn có chắc muốn xóa ' + selectedItems.length + ' sản phẩm đã chọn?')) {
-                    $.post('/cart/remove-multiple', { ids: selectedItems }, function(response) {
+                    $.post('/cart/remove-multiple', { ids: selectedItems }, function (response) {
                         if (response.success) {
                             location.reload();
                         }
@@ -362,24 +361,95 @@
                 location.reload();
             }
 
+            function proceedToCheckout() {
+                const selectedItems = $('.item-checkbox:checked').map(function () {
+                    return $(this).val();
+                }).get();
+
+                if (selectedItems.length === 0) {
+                    showNotification('Vui lòng chọn ít nhất 1 sản phẩm để thanh toán!', 'warning');
+                    return;
+                }
+
+                const url = '/orders/checkout?selectedItems=' + selectedItems.join(',');
+                window.location.href = url;
+            }
+
             function applyVoucherCode(code) {
                 $('#voucherCode').val(code);
                 applyVoucher();
             }
 
+            // Calculate total dynamically
+            function calculateTotal() {
+                let subtotal = 0;
+                $('.item-checkbox:checked').each(function () {
+                    const price = parseFloat($(this).data('price')) || 0;
+                    const qty = parseInt($(this).data('quantity')) || 0;
+                    subtotal += price * qty;
+                });
+
+                let shippingFee = 0;
+                if (subtotal > 0 && subtotal < 500000) {
+                    shippingFee = 30000;
+                }
+
+                let discount = 0;
+                const discountElement = $('#summary-discount');
+                if (discountElement.length > 0) {
+                    discount = parseFloat(discountElement.data('discount')) || 0;
+                }
+
+                let total = subtotal + shippingFee - discount;
+                if (total < 0) total = 0;
+
+                const formatVnd = (amount) => amount.toLocaleString('en-US') + 'đ';
+
+                $('#summary-subtotal').text(formatVnd(subtotal));
+
+                if (shippingFee > 0) {
+                    $('#summary-shipping').removeClass('text-success').text(formatVnd(shippingFee));
+                } else {
+                    if (subtotal > 0) {
+                        $('#summary-shipping').addClass('text-success').text('Miễn phí');
+                    } else {
+                        $('#summary-shipping').removeClass('text-success').text('0đ');
+                    }
+                }
+
+                $('#summary-total').text(formatVnd(total));
+
+                const maxThreshold = 500000;
+                if (subtotal < maxThreshold && subtotal > 0) {
+                    const diff = maxThreshold - subtotal;
+                    $('#free-shipping-note').html('<i class="fas fa-info-circle me-1"></i> Mua thêm <strong>' + formatVnd(diff) + '</strong> để được miễn phí ship').show();
+                } else {
+                    $('#free-shipping-note').hide();
+                }
+            }
+
             // Select all checkbox
-            $('#selectAll').change(function() {
+            $('#selectAll').change(function () {
                 $('.item-checkbox').prop('checked', $(this).prop('checked'));
+                calculateTotal();
             });
 
-            $('.item-checkbox').change(function() {
+            $('.item-checkbox').change(function () {
                 if ($('.item-checkbox:checked').length === $('.item-checkbox').length) {
                     $('#selectAll').prop('checked', true);
                 } else {
                     $('#selectAll').prop('checked', false);
                 }
+                calculateTotal();
+            });
+
+            $(document).ready(function () {
+                $('#selectAll').prop('checked', true);
+                $('.item-checkbox').prop('checked', true);
+                calculateTotal();
             });
         </script>
     </th:block>
 </body>
+
 </html>

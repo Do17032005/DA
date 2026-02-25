@@ -2,7 +2,6 @@ package com.clothes.service;
 
 import com.clothes.dao.OrderDAO;
 import com.clothes.dao.OrderItemDAO;
-import com.clothes.model.Cart;
 import com.clothes.model.CartItem;
 import com.clothes.model.Order;
 import com.clothes.model.OrderItem;
@@ -30,15 +29,15 @@ public class OrderService {
     /**
      * Create order from cart
      */
-    public Long createOrder(Long userId, Cart cart, String shippingAddress,
+    public Long createOrder(Long userId, List<CartItem> items, BigDecimal totalAmount, String shippingAddress,
             String paymentMethod, String notes) {
-        if (cart == null || cart.getItems().isEmpty()) {
+        if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("Giỏ hàng trống");
         }
 
         Order order = new Order();
         order.setUserId(userId);
-        order.setTotalAmount(cart.getTotalAmount());
+        order.setTotalAmount(totalAmount);
         order.setStatus(Order.OrderStatus.PENDING);
         order.setShippingAddress(shippingAddress);
         order.setPaymentMethod(paymentMethod);
@@ -46,7 +45,7 @@ public class OrderService {
 
         // Convert cart items to order items
         List<OrderItem> orderItems = new ArrayList<>();
-        for (CartItem cartItem : cart.getItems()) {
+        for (CartItem cartItem : items) {
             OrderItem orderItem = new OrderItem();
             orderItem.setProductId(cartItem.getProductId());
             orderItem.setQuantity(cartItem.getQuantity());

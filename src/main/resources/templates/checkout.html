@@ -1,10 +1,11 @@
 ﻿<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
 <head>
     <title>Thanh toán</title>
 </head>
+
 <body>
     <main layout:fragment="content">
         <div class="container my-5">
@@ -46,6 +47,8 @@
             </div>
 
             <form th:action="@{/orders/checkout}" method="post" id="checkoutForm">
+                <input type="hidden" name="selectedItems" th:if="${selectedItems != null}"
+                    th:value="${#strings.listJoin(selectedItems, ',')}" />
                 <div class="row justify-content-center g-3">
                     <!-- Step 1: Shipping Information -->
                     <div class="col-lg-8 step-section" data-step-section="shipping">
@@ -61,18 +64,17 @@
                                         <label class="form-label">
                                             Họ và tên <span class="text-danger">*</span>
                                         </label>
-                                        <input type="text" class="form-control" name="fullName" id="fullName"
-                                               required placeholder="Nguyễn Văn A"
-                                               th:value="${defaultAddress != null ? defaultAddress.fullName : session.fullName}">
+                                        <input type="text" class="form-control" name="fullName" id="fullName" required
+                                            placeholder="Nguyễn Văn A"
+                                            th:value="${defaultAddress != null ? defaultAddress.fullName : session.fullName}">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">
                                             Số điện thoại <span class="text-danger">*</span>
                                         </label>
-                                        <input type="tel" class="form-control" name="phone" id="phone"
-                                               required placeholder="0123456789"
-                                               pattern="[0-9]{10}"
-                                               th:value="${defaultAddress != null ? defaultAddress.phone : session.phone}">
+                                        <input type="tel" class="form-control" name="phone" id="phone" required
+                                            placeholder="0123456789" pattern="[0-9]{10}"
+                                            th:value="${defaultAddress != null ? defaultAddress.phone : session.phone}">
                                     </div>
                                 </div>
 
@@ -80,9 +82,8 @@
                                     <label class="form-label">
                                         Email <span class="text-danger">*</span>
                                     </label>
-                                    <input type="email" class="form-control" name="email" id="email"
-                                           required placeholder="example@email.com"
-                                           th:value="${session.email}">
+                                    <input type="email" class="form-control" name="email" id="email" required
+                                        placeholder="example@email.com" th:value="${session.email}">
                                 </div>
 
                                 <!-- Saved Addresses -->
@@ -90,16 +91,12 @@
                                     <label class="form-label">Chọn địa chỉ đã lưu</label>
                                     <select class="form-select" id="savedAddressSelect" onchange="loadSavedAddress()">
                                         <option value="">-- Nhập địa chỉ mới --</option>
-                                        <option th:each="addr : ${addresses}" 
-                                                th:value="${addr.addressId}"
-                                                th:data-fullname="${addr.fullName}"
-                                                th:data-phone="${addr.phone}"
-                                                th:data-city="${addr.city}"
-                                                th:data-district="${addr.district}"
-                                                th:data-ward="${addr.ward}"
-                                                th:data-address="${addr.addressLine}"
-                                                th:selected="${defaultAddress != null && defaultAddress.addressId == addr.addressId}"
-                                                th:text="${addr.fullName + ' - ' + addr.phone + ' - ' + addr.addressLine + ', ' + addr.ward + ', ' + addr.district + ', ' + addr.city}">
+                                        <option th:each="addr : ${addresses}" th:value="${addr.addressId}"
+                                            th:data-fullname="${addr.fullName}" th:data-phone="${addr.phone}"
+                                            th:data-city="${addr.city}" th:data-district="${addr.district}"
+                                            th:data-ward="${addr.ward}" th:data-address="${addr.addressLine}"
+                                            th:selected="${defaultAddress != null && defaultAddress.addressId == addr.addressId}"
+                                            th:text="${addr.fullName + ' - ' + addr.phone + ' - ' + addr.addressLine + ', ' + addr.ward + ', ' + addr.district + ', ' + addr.city}">
                                             Address
                                         </option>
                                     </select>
@@ -112,24 +109,24 @@
                                             Tỉnh/Thành phố <span class="text-danger">*</span>
                                         </label>
                                         <input type="text" class="form-control" name="province" id="province"
-                                               placeholder="VD: Hà Nội" required
-                                               th:value="${defaultAddress != null ? defaultAddress.city : ''}">
+                                            placeholder="VD: Hà Nội" required
+                                            th:value="${defaultAddress != null ? defaultAddress.city : ''}">
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">
                                             Quận/Huyện <span class="text-danger">*</span>
                                         </label>
                                         <input type="text" class="form-control" name="district" id="district"
-                                               placeholder="VD: Cầu Giấy" required
-                                               th:value="${defaultAddress != null ? defaultAddress.district : ''}">
+                                            placeholder="VD: Cầu Giấy" required
+                                            th:value="${defaultAddress != null ? defaultAddress.district : ''}">
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">
                                             Phường/Xã <span class="text-danger">*</span>
                                         </label>
                                         <input type="text" class="form-control" name="ward" id="ward"
-                                               placeholder="VD: Dịch Vọng" required
-                                               th:value="${defaultAddress != null ? defaultAddress.ward : ''}">
+                                            placeholder="VD: Dịch Vọng" required
+                                            th:value="${defaultAddress != null ? defaultAddress.ward : ''}">
                                     </div>
                                 </div>
 
@@ -137,15 +134,15 @@
                                     <label class="form-label">
                                         Địa chỉ cụ thể <span class="text-danger">*</span>
                                     </label>
-                                    <input type="text" class="form-control" name="address" id="address"
-                                           required placeholder="Số nhà, tên đường..."
-                                           th:value="${defaultAddress != null ? defaultAddress.addressLine : ''}">
+                                    <input type="text" class="form-control" name="address" id="address" required
+                                        placeholder="Số nhà, tên đường..."
+                                        th:value="${defaultAddress != null ? defaultAddress.addressLine : ''}">
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">Ghi chú đơn hàng (tùy chọn)</label>
-                                    <textarea class="form-control" name="notes" rows="3" 
-                                              placeholder="Ghi chú về đơn hàng, ví dụ: thời gian hay chỉ dẫn địa điểm giao hàng chi tiết hơn."></textarea>
+                                    <textarea class="form-control" name="notes" rows="3"
+                                        placeholder="Ghi chú về đơn hàng, ví dụ: thời gian hay chỉ dẫn địa điểm giao hàng chi tiết hơn."></textarea>
                                 </div>
 
                                 <div class="form-check">
@@ -153,6 +150,12 @@
                                     <label class="form-check-label" for="saveAddress">
                                         Lưu địa chỉ này cho lần mua sau
                                     </label>
+                                </div>
+                                <div class="mt-4 text-end">
+                                    <button type="button" class="btn btn-primary btn-lg px-5 w-100"
+                                        onclick="document.querySelector('[data-step-link=\'payment\']').click()">
+                                        Tiếp tục đến phương thức thanh toán <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -169,8 +172,8 @@
                             <div class="card-body">
                                 <!-- COD -->
                                 <div class="form-check mb-3 p-3 border rounded">
-                                    <input class="form-check-input" type="radio" name="paymentMethod" 
-                                           value="COD" id="paymentCOD" checked>
+                                    <input class="form-check-input" type="radio" name="paymentMethod" value="COD"
+                                        id="paymentCOD" checked>
                                     <label class="form-check-label w-100" for="paymentCOD">
                                         <div class="d-flex align-items-center">
                                             <i class="fas fa-money-bill-wave fa-2x text-success me-3"></i>
@@ -186,17 +189,19 @@
 
                                 <!-- Bank Transfer -->
                                 <div class="form-check mb-3 p-3 border rounded">
-                                    <input class="form-check-input" type="radio" name="paymentMethod" 
-                                           value="BANK" id="paymentBank">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" value="BANK"
+                                        id="paymentBank">
                                     <label class="form-check-label w-100" for="paymentBank">
                                         <div class="d-flex align-items-center">
                                             <i class="fas fa-university fa-2x text-primary me-3"></i>
                                             <div>
                                                 <strong>Chuyển khoản ngân hàng</strong>
                                                 <p class="small text-muted mb-0">
-                                                    Chuyển khoản qua STK: 
-                                                    <strong th:text="${@settingsService.getSetting('bank_account_number', '1900123456789')}"></strong>
-                                                    - <span th:text="${@settingsService.getSetting('bank_name', 'Techcombank')}"></span>
+                                                    Chuyển khoản qua STK:
+                                                    <strong
+                                                        th:text="${@settingsService.getSetting('bank_account_number', '1900123456789')}"></strong>
+                                                    - <span
+                                                        th:text="${@settingsService.getSetting('bank_name', 'Techcombank')}"></span>
                                                 </p>
                                             </div>
                                         </div>
@@ -204,10 +209,10 @@
                                 </div>
 
                                 <!-- MoMo -->
-                                <div class="form-check mb-3 p-3 border rounded" 
-                                     th:if="${@settingsService.getSettingAsBoolean('payment_momo_enabled', false)}">
-                                    <input class="form-check-input" type="radio" name="paymentMethod" 
-                                           value="MOMO" id="paymentMomo">
+                                <div class="form-check mb-3 p-3 border rounded"
+                                    th:if="${@settingsService.getSettingAsBoolean('payment_momo_enabled', false)}">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" value="MOMO"
+                                        id="paymentMomo">
                                     <label class="form-check-label w-100" for="paymentMomo">
                                         <div class="d-flex align-items-center">
                                             <i class="fas fa-mobile-alt fa-2x text-danger me-3"></i>
@@ -222,10 +227,10 @@
                                 </div>
 
                                 <!-- VNPay -->
-                                <div class="form-check mb-3 p-3 border rounded" 
-                                     th:if="${@settingsService.getSettingAsBoolean('payment_vnpay_enabled', false)}">
-                                    <input class="form-check-input" type="radio" name="paymentMethod" 
-                                           value="VNPAY" id="paymentVnpay">
+                                <div class="form-check mb-3 p-3 border rounded"
+                                    th:if="${@settingsService.getSettingAsBoolean('payment_vnpay_enabled', false)}">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" value="VNPAY"
+                                        id="paymentVnpay">
                                     <label class="form-check-label w-100" for="paymentVnpay">
                                         <div class="d-flex align-items-center">
                                             <i class="fas fa-qrcode fa-2x text-info me-3"></i>
@@ -237,6 +242,17 @@
                                             </div>
                                         </div>
                                     </label>
+                                </div>
+
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary btn-lg"
+                                        onclick="document.querySelector('[data-step-link=\'shipping\']').click()">
+                                        <i class="fas fa-arrow-left me-2"></i> Quay lại
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-lg px-4"
+                                        onclick="document.querySelector('[data-step-link=\'complete\']').click()">
+                                        Tiếp tục đến kiểm tra đơn <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -257,16 +273,15 @@
                                 <!-- Order Items -->
                                 <div class="mb-3" style="max-height: 300px; overflow-y: auto;">
                                     <div class="d-flex mb-3 pb-3 border-bottom" th:each="item : ${cartItems}">
-                                        <img th:src="${item.imageUrl}" 
-                                             th:alt="${item.productName}"
-                                             class="rounded" 
-                                             style="width: 60px; height: 60px; object-fit: cover;"
-                                             onerror="this.src='/images/no-image.png'">
+                                        <img th:src="${item.imageUrl}" th:alt="${item.productName}" class="rounded"
+                                            style="width: 60px; height: 60px; object-fit: cover;"
+                                            onerror="this.src='/images/no-image.png'">
                                         <div class="ms-3 flex-grow-1">
                                             <div class="fw-bold mb-1" th:text="${item.productName}">Sản phẩm</div>
-                                            <div class="text-muted small" th:text="'SL: ' + ${item.quantity}">SL: 1</div>
-                                            <div class="text-danger fw-bold mt-1" 
-                                                 th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 0)} + 'đ'">
+                                            <div class="text-muted small" th:text="'SL: ' + ${item.quantity}">SL: 1
+                                            </div>
+                                            <div class="text-danger fw-bold mt-1"
+                                                th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 0)} + 'đ'">
                                                 399000đ
                                             </div>
                                         </div>
@@ -277,12 +292,10 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Mã giảm giá</label>
                                     <div class="input-group">
-                                        <input type="text" class="form-control" name="voucherCode" 
-                                               id="voucherCodeCheckout"
-                                               placeholder="Nhập mã"
-                                               th:value="${appliedVoucher != null ? appliedVoucher.code : ''}">
-                                        <button class="btn btn-primary" type="button" 
-                                                onclick="applyVoucherCheckout()">
+                                        <input type="text" class="form-control" name="voucherCode"
+                                            id="voucherCodeCheckout" placeholder="Nhập mã"
+                                            th:value="${appliedVoucher != null ? appliedVoucher.code : ''}">
+                                        <button class="btn btn-primary" type="button" onclick="applyVoucherCheckout()">
                                             Áp dụng
                                         </button>
                                     </div>
@@ -306,8 +319,8 @@
                                 <div class="mb-3 d-flex justify-content-between">
                                     <span>Phí vận chuyển:</span>
                                     <span>
-                                        <span th:if="${shippingFee > 0}" 
-                                              th:text="${#numbers.formatDecimal(shippingFee, 0, 0)} + 'đ'">
+                                        <span th:if="${shippingFee > 0}"
+                                            th:text="${#numbers.formatDecimal(shippingFee, 0, 0)} + 'đ'">
                                             0đ
                                         </span>
                                         <span th:if="${shippingFee == 0}" class="text-success fw-bold">Miễn phí</span>
@@ -318,7 +331,7 @@
 
                                 <div class="mb-4 d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0 fw-bold">Tổng cộng:</h5>
-                                    <h4 class="mb-0 text-danger fw-bold" 
+                                    <h4 class="mb-0 text-danger fw-bold"
                                         th:text="${#numbers.formatDecimal(total, 0, 0)} + 'đ'">
                                         399000đ
                                     </h4>
@@ -328,8 +341,9 @@
                                 <div class="form-check mb-3">
                                     <input class="form-check-input" type="checkbox" id="agreeTerms" required>
                                     <label class="form-check-label" for="agreeTerms">
-                                        Tôi đã đọc và đồng ý với 
-                                        <a href="/policy-return" target="_blank" class="text-primary">điều khoản & chính sách</a>
+                                        Tôi đã đọc và đồng ý với
+                                        <a href="/policy-return" target="_blank" class="text-primary">điều khoản & chính
+                                            sách</a>
                                     </label>
                                 </div>
 
@@ -364,9 +378,9 @@
                 const addressId = select.value;
                 const districtInput = document.getElementById('district');
                 const wardInput = document.getElementById('ward');
-                
+
                 document.getElementById('addressIdInput').value = addressId;
-                
+
                 if (!addressId) {
                     // Reset form
                     document.getElementById('fullName').value = '';
@@ -378,7 +392,7 @@
                     document.getElementById('address').value = '';
                     return;
                 }
-                
+
                 // Fill form with selected address data
                 document.getElementById('fullName').value = selectedOption.dataset.fullname || '';
                 document.getElementById('phone').value = selectedOption.dataset.phone || '';
@@ -395,7 +409,7 @@
                     return;
                 }
 
-                $.post('/cart/apply-voucher', { code: code }, function(response) {
+                $.post('/cart/apply-voucher', { code: code }, function (response) {
                     if (response.success) {
                         showNotification('Áp dụng mã thành công!', 'success');
                         location.reload();
@@ -424,7 +438,7 @@
 
                 stepLinks.forEach(link => {
                     if (!link.dataset.stepLink) return;
-                    link.addEventListener('click', function(event) {
+                    link.addEventListener('click', function (event) {
                         event.preventDefault();
                         showStep(this.dataset.stepLink);
                         window.scrollTo({ top: document.getElementById('checkoutForm').offsetTop - 80, behavior: 'smooth' });
@@ -435,7 +449,7 @@
             }
 
             // Form validation
-            $('#checkoutForm').on('submit', function(e) {
+            $('#checkoutForm').on('submit', function (e) {
                 const phone = $('input[name="phone"]').val();
                 if (!/^[0-9]{10}$/.test(phone)) {
                     e.preventDefault();
@@ -443,14 +457,14 @@
                     return false;
                 }
             });
-            
+
             // Auto-load default address on page load
-            $(document).ready(function() {
+            $(document).ready(function () {
                 initCheckoutSteps();
                 const savedAddressSelect = document.getElementById('savedAddressSelect');
                 if (savedAddressSelect && savedAddressSelect.value) {
                     // Delay to ensure page is fully loaded
-                    setTimeout(function() {
+                    setTimeout(function () {
                         loadSavedAddress();
                     }, 100);
                 }
@@ -458,4 +472,5 @@
         </script>
     </th:block>
 </body>
+
 </html>

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
 <head>
     <title>Đơn hàng của tôi</title>
 </head>
+
 <body>
     <main layout:fragment="content">
         <div class="container my-5">
@@ -61,38 +62,38 @@
                     <!-- Order Filter Tabs -->
                     <ul class="nav nav-pills mb-4">
                         <li class="nav-item">
-                            <a class="nav-link" th:classappend="${status == null || status == '' ? 'active' : ''}" 
-                               th:href="@{/user/orders}">
+                            <a class="nav-link" th:classappend="${status == null || status == '' ? 'active' : ''}"
+                                th:href="@{/user/orders}">
                                 Tất cả
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" th:classappend="${status == 'PENDING' ? 'active' : ''}" 
-                               th:href="@{/user/orders(status='PENDING')}">
+                            <a class="nav-link" th:classappend="${status == 'PENDING' ? 'active' : ''}"
+                                th:href="@{/user/orders(status='PENDING')}">
                                 Chờ xác nhận
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" th:classappend="${status == 'PROCESSING' ? 'active' : ''}" 
-                               th:href="@{/user/orders(status='PROCESSING')}">
+                            <a class="nav-link" th:classappend="${status == 'PROCESSING' ? 'active' : ''}"
+                                th:href="@{/user/orders(status='PROCESSING')}">
                                 Đang xử lý
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" th:classappend="${status == 'SHIPPING' ? 'active' : ''}" 
-                               th:href="@{/user/orders(status='SHIPPING')}">
+                            <a class="nav-link" th:classappend="${status == 'SHIPPING' ? 'active' : ''}"
+                                th:href="@{/user/orders(status='SHIPPING')}">
                                 Đang giao
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" th:classappend="${status == 'COMPLETED' ? 'active' : ''}" 
-                               th:href="@{/user/orders(status='COMPLETED')}">
+                            <a class="nav-link" th:classappend="${status == 'COMPLETED' ? 'active' : ''}"
+                                th:href="@{/user/orders(status='COMPLETED')}">
                                 Hoàn thành
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" th:classappend="${status == 'CANCELLED' ? 'active' : ''}" 
-                               th:href="@{/user/orders(status='CANCELLED')}">
+                            <a class="nav-link" th:classappend="${status == 'CANCELLED' ? 'active' : ''}"
+                                th:href="@{/user/orders(status='CANCELLED')}">
                                 Đã hủy
                             </a>
                         </li>
@@ -115,8 +116,7 @@
                                 <div class="row align-items-center">
                                     <div class="col-md-6">
                                         <strong>Mã đơn hàng: </strong>
-                                        <a th:href="@{/user/orders/{id}(id=${order.orderId})}" 
-                                           th:text="${order.orderCode}">
+                                        <a th:href="@{/orders/{id}(id=${order.orderId})}" th:text="${order.orderCode}">
                                             #ORD-001
                                         </a>
                                         <br>
@@ -128,8 +128,8 @@
                                         </small>
                                     </div>
                                     <div class="col-md-6 text-md-end">
-                                        <span class="badge" 
-                                              th:classappend="${order.status == 'PENDING' ? 'bg-warning text-dark' : 
+                                        <span class="badge"
+                                            th:classappend="${order.status == 'PENDING' ? 'bg-warning text-dark' : 
                                                                (order.status == 'PROCESSING' ? 'bg-info' :
                                                                (order.status == 'SHIPPING' ? 'bg-primary' :
                                                                (order.status == 'COMPLETED' ? 'bg-success' : 'bg-danger')))}">
@@ -141,30 +141,29 @@
                             <div class="card-body">
                                 <!-- Order Items -->
                                 <div class="mb-3">
-                                    <div class="d-flex mb-2 pb-2 border-bottom" 
-                                         th:each="item, iterStat : ${order.items}" 
-                                         th:if="${iterStat.index < 3}">
-                                        <img th:src="${item.imageUrl}" 
-                                             th:alt="${item.productName}"
-                                             class="rounded" 
-                                             style="width: 60px; height: 60px; object-fit: cover;">
+                                    <div class="d-flex mb-2 pb-2 border-bottom"
+                                        th:each="item, iterStat : ${order.items}" th:if="${iterStat.index < 3}">
+                                        <img th:src="${item.imageUrl}" th:alt="${item.productName}" class="rounded"
+                                            style="width: 60px; height: 60px; object-fit: cover;">
                                         <div class="ms-3 flex-grow-1">
                                             <h6 class="mb-1">
-                                                <a th:href="@{/products/{id}(id=${item.productId})}" 
-                                                   class="text-decoration-none text-dark"
-                                                   th:text="${item.productName}">
+                                                <a th:href="@{/products/{id}(id=${item.productId})}"
+                                                    class="text-decoration-none text-dark"
+                                                    th:text="${item.productName}">
                                                     Product Name
                                                 </a>
                                             </h6>
                                             <small class="text-muted">
-                                                <span th:if="${item.size != null}" th:text="'Size: ' + ${item.size}"></span>
-                                                <span th:if="${item.color != null}" th:text="', ' + ${item.color}"></span>
+                                                <span th:if="${item.size != null}"
+                                                    th:text="'Size: ' + ${item.size}"></span>
+                                                <span th:if="${item.color != null}"
+                                                    th:text="', ' + ${item.color}"></span>
                                                 <span th:text="' x ' + ${item.quantity}"></span>
                                             </small>
                                         </div>
                                         <div class="text-end">
-                                            <strong class="text-danger" 
-                                                    th:text="${#numbers.formatDecimal(item.price, 0, 0)} + 'đ'">
+                                            <strong class="text-danger"
+                                                th:text="${#numbers.formatDecimal(item.price, 0, 0)} + 'đ'">
                                                 299,000đ
                                             </strong>
                                         </div>
@@ -178,29 +177,29 @@
                                 <div class="d-flex justify-content-between align-items-center pt-3 border-top">
                                     <div>
                                         <span class="text-muted">Tổng cộng: </span>
-                                        <strong class="h5 text-danger mb-0" 
-                                                th:text="${#numbers.formatDecimal(order.total, 0, 0)} + 'đ'">
+                                        <strong class="h5 text-danger mb-0"
+                                            th:text="${#numbers.formatDecimal(order.total, 0, 0)} + 'đ'">
                                             628,000đ
                                         </strong>
                                     </div>
                                     <div class="d-flex gap-2">
-                                        <a th:href="@{/user/orders/{id}(id=${order.orderId})}" 
-                                           class="btn btn-outline-primary btn-sm">
+                                        <a th:href="@{/orders/{id}(id=${order.orderId})}"
+                                            class="btn btn-outline-primary btn-sm">
                                             <i class="fas fa-eye me-1"></i>Chi tiết
                                         </a>
                                         <button type="button" class="btn btn-primary btn-sm"
-                                                th:if="${order.status == 'COMPLETED' && !order.hasReview}"
-                                                th:onclick="'reviewOrder(' + ${order.orderId} + ')'">
+                                            th:if="${order.status == 'COMPLETED'}"
+                                            th:onclick="'reviewOrder(' + ${order.orderId} + ')'">
                                             <i class="fas fa-star me-1"></i>Đánh giá
                                         </button>
                                         <button type="button" class="btn btn-danger btn-sm"
-                                                th:if="${order.status == 'PENDING'}"
-                                                th:onclick="'cancelOrder(' + ${order.orderId} + ')'">
+                                            th:if="${order.status == 'PENDING'}"
+                                            th:onclick="'cancelOrder(' + ${order.orderId} + ')'">
                                             <i class="fas fa-times me-1"></i>Hủy đơn
                                         </button>
                                         <button type="button" class="btn btn-success btn-sm"
-                                                th:if="${order.status == 'COMPLETED'}"
-                                                th:onclick="'reorder(' + ${order.orderId} + ')'">
+                                            th:if="${order.status == 'COMPLETED'}"
+                                            th:onclick="'reorder(' + ${order.orderId} + ')'">
                                             <i class="fas fa-redo me-1"></i>Mua lại
                                         </button>
                                     </div>
@@ -212,25 +211,25 @@
                         <nav aria-label="Orders pagination" th:if="${totalPages > 1}">
                             <ul class="pagination justify-content-center">
                                 <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                                    <a class="page-link" 
-                                       th:href="@{/user/orders(page=${currentPage - 1}, status=${status})}" 
-                                       aria-label="Previous">
+                                    <a class="page-link"
+                                        th:href="@{/user/orders(page=${currentPage - 1}, status=${status})}"
+                                        aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
-                                
+
                                 <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
                                     th:classappend="${i == currentPage ? 'active' : ''}"
                                     th:if="${i >= currentPage - 2 && i <= currentPage + 2}">
-                                    <a class="page-link" 
-                                       th:href="@{/user/orders(page=${i}, status=${status})}" 
-                                       th:text="${i + 1}">1</a>
+                                    <a class="page-link" th:href="@{/user/orders(page=${i}, status=${status})}"
+                                        th:text="${i + 1}">1</a>
                                 </li>
-                                
-                                <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
-                                    <a class="page-link" 
-                                       th:href="@{/user/orders(page=${currentPage + 1}, status=${status})}" 
-                                       aria-label="Next">
+
+                                <li class="page-item"
+                                    th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                        th:href="@{/user/orders(page=${currentPage + 1}, status=${status})}"
+                                        aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
@@ -246,14 +245,14 @@
         <script>
             function cancelOrder(orderId) {
                 if (confirm('Bạn có chắc muốn hủy đơn hàng này?')) {
-                    $.post('/user/orders/' + orderId + '/cancel', function(response) {
+                    $.post('/user/orders/' + orderId + '/cancel', function (response) {
                         if (response.success) {
                             showNotification('Đã hủy đơn hàng thành công!', 'success');
                             setTimeout(() => location.reload(), 1000);
                         } else {
                             showNotification(response.message || 'Không thể hủy đơn hàng!', 'error');
                         }
-                    }).fail(function() {
+                    }).fail(function () {
                         showNotification('Có lỗi xảy ra, vui lòng thử lại!', 'error');
                     });
                 }
@@ -265,7 +264,7 @@
 
             function reorder(orderId) {
                 if (confirm('Bạn muốn mua lại các sản phẩm trong đơn hàng này?')) {
-                    $.post('/user/orders/' + orderId + '/reorder', function(response) {
+                    $.post('/user/orders/' + orderId + '/reorder', function (response) {
                         if (response.success) {
                             showNotification('Đã thêm sản phẩm vào giỏ hàng!', 'success');
                             setTimeout(() => window.location.href = '/cart', 1000);
@@ -278,4 +277,5 @@
         </script>
     </th:block>
 </body>
+
 </html>

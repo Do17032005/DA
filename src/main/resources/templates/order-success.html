@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
 <head>
     <title>Đặt hàng thành công</title>
 </head>
+
 <body>
     <main layout:fragment="content">
         <div class="container my-5">
@@ -17,7 +18,9 @@
                         </div>
                         <h1 class="mb-3">Đặt hàng thành công!</h1>
                         <p class="lead text-muted">
-                            Cảm ơn bạn đã mua sắm tại <span th:text="${@settingsService.getSetting('site_name', 'Clothes Shop')}">Clothes Shop</span>
+                            Cảm ơn bạn đã mua sắm tại <span
+                                th:text="${@settingsService.getSetting('site_name', 'Clothes Shop')}">Clothes
+                                Shop</span>
                         </p>
                     </div>
 
@@ -28,34 +31,34 @@
                                 <div class="col-md-6">
                                     <h5 class="mb-3">Thông tin đơn hàng</h5>
                                     <p class="mb-2">
-                                        <strong>Mã đơn hàng:</strong> 
+                                        <strong>Mã đơn hàng:</strong>
                                         <span class="text-primary" th:text="${order.orderCode}">
                                             #ORD-001
                                         </span>
                                     </p>
                                     <p class="mb-2">
-                                        <strong>Ngày đặt:</strong> 
+                                        <strong>Ngày đặt:</strong>
                                         <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">
                                             01/01/2026 10:00
                                         </span>
                                     </p>
                                     <p class="mb-0">
-                                        <strong>Trạng thái:</strong> 
+                                        <strong>Trạng thái:</strong>
                                         <span class="badge bg-warning text-dark">Chờ xác nhận</span>
                                     </p>
                                 </div>
                                 <div class="col-md-6">
                                     <h5 class="mb-3">Thông tin giao hàng</h5>
                                     <p class="mb-2">
-                                        <strong>Người nhận:</strong> 
+                                        <strong>Người nhận:</strong>
                                         <span th:text="${order.customerName}">Nguyễn Văn A</span>
                                     </p>
                                     <p class="mb-2">
-                                        <strong>Số điện thoại:</strong> 
+                                        <strong>Số điện thoại:</strong>
                                         <span th:text="${order.phone}">0123456789</span>
                                     </p>
                                     <p class="mb-0">
-                                        <strong>Địa chỉ:</strong> 
+                                        <strong>Địa chỉ:</strong>
                                         <span th:text="${order.shippingAddress}">
                                             123 Đường ABC, Phường XYZ, Quận 1, TP. HCM
                                         </span>
@@ -79,19 +82,21 @@
                                         <tr th:each="item : ${order.items}">
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <img th:src="${item.product != null ? item.product.imageUrl : '/images/default-product.jpg'}" 
-                                                         th:alt="${item.product != null ? item.product.productName : 'Product'}"
-                                                         class="rounded me-3" 
-                                                         style="width: 60px; height: 60px; object-fit: cover;">
+                                                    <img th:src="${item.product != null ? item.product.imageUrl : '/images/default-product.jpg'}"
+                                                        th:alt="${item.product != null ? item.product.productName : 'Product'}"
+                                                        class="rounded me-3"
+                                                        style="width: 60px; height: 60px; object-fit: cover;">
                                                     <div>
-                                                        <h6 class="mb-1" th:text="${item.product != null ? item.product.productName : 'Sản phẩm'}">
+                                                        <h6 class="mb-1"
+                                                            th:text="${item.product != null ? item.product.productName : 'Sản phẩm'}">
                                                             Product Name
                                                         </h6>
                                                         <small class="text-muted">
-                                                            <span th:if="${item.size != null and !item.size.isEmpty()}" 
-                                                                  th:text="'Size: ' + ${item.size}"></span>
-                                                            <span th:if="${item.color != null and !item.color.isEmpty()}" 
-                                                                  th:text="(item.size != null and !item.size.isEmpty() ? ', ' : '') + ${item.color}"></span>
+                                                            <span th:if="${item.size != null and !item.size.isEmpty()}"
+                                                                th:text="'Size: ' + ${item.size}"></span>
+                                                            <span
+                                                                th:if="${item.color != null and !item.color.isEmpty()}"
+                                                                th:text="(item.size != null and !item.size.isEmpty() ? ', ' : '') + ${item.color}"></span>
                                                         </small>
                                                     </div>
                                                 </div>
@@ -113,9 +118,11 @@
                                     </tbody>
                                     <tfoot class="table-light">
                                         <tr>
-                                            <td colspan="3" class="text-end"><h5 class="mb-0">Tổng cộng:</h5></td>
+                                            <td colspan="3" class="text-end">
+                                                <h5 class="mb-0">Tổng cộng:</h5>
+                                            </td>
                                             <td class="text-end">
-                                                <h5 class="text-danger mb-0" 
+                                                <h5 class="text-danger mb-0"
                                                     th:text="${#numbers.formatDecimal(order.totalAmount != null ? order.totalAmount : order.total, 0, 0)} + 'đ'">
                                                     299,000đ
                                                 </h5>
@@ -151,8 +158,8 @@
                                 <div class="col-md-4 mb-3">
                                     <div class="d-flex">
                                         <div class="flex-shrink-0">
-                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
-                                                 style="width: 40px; height: 40px;">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                                style="width: 40px; height: 40px;">
                                                 <strong>1</strong>
                                             </div>
                                         </div>
@@ -167,8 +174,8 @@
                                 <div class="col-md-4 mb-3">
                                     <div class="d-flex">
                                         <div class="flex-shrink-0">
-                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
-                                                 style="width: 40px; height: 40px;">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                                style="width: 40px; height: 40px;">
                                                 <strong>2</strong>
                                             </div>
                                         </div>
@@ -183,8 +190,8 @@
                                 <div class="col-md-4 mb-3">
                                     <div class="d-flex">
                                         <div class="flex-shrink-0">
-                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
-                                                 style="width: 40px; height: 40px;">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                                style="width: 40px; height: 40px;">
                                                 <strong>3</strong>
                                             </div>
                                         </div>
@@ -202,8 +209,7 @@
 
                     <!-- Action Buttons -->
                     <div class="text-center">
-                        <a th:href="@{/user/orders/{id}(id=${order.orderId})}" 
-                           class="btn btn-primary btn-lg me-2">
+                        <a th:href="@{/orders/{id}(id=${order.orderId})}" class="btn btn-primary btn-lg me-2">
                             <i class="fas fa-eye me-2"></i>Xem chi tiết đơn hàng
                         </a>
                         <a th:href="@{/products}" class="btn btn-outline-primary btn-lg">
@@ -217,11 +223,11 @@
                             <i class="fas fa-phone me-2"></i>Cần hỗ trợ?
                         </h6>
                         <p class="mb-0">
-                            Liên hệ với chúng tôi qua hotline 
+                            Liên hệ với chúng tôi qua hotline
                             <strong th:text="${@settingsService.getSetting('contact_phone', '1900-xxxx')}">
                                 1900-xxxx
-                            </strong> 
-                            hoặc email 
+                            </strong>
+                            hoặc email
                             <strong th:text="${@settingsService.getSetting('contact_email', 'support@example.com')}">
                                 support@example.com
                             </strong>
@@ -232,4 +238,5 @@
         </div>
     </main>
 </body>
+
 </html>

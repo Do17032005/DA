@@ -295,7 +295,8 @@ public class UserController {
      * Danh sách đơn hàng của người dùng
      */
     @GetMapping("/orders")
-    public String listOrders(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+    public String listOrders(@RequestParam(required = false) String status,
+            HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             redirectAttributes.addFlashAttribute("error", "Vui lòng đăng nhập");
@@ -304,7 +305,16 @@ public class UserController {
 
         try {
             List<Order> orders = orderDAO.findByUserId(userId);
+
+            // Filter by status if provided
+            if (status != null && !status.isEmpty()) {
+                orders = orders.stream()
+                        .filter(order -> status.equals(order.getStatus().name()))
+                        .toList();
+            }
+
             model.addAttribute("orders", orders);
+            model.addAttribute("status", status);
             return "orders";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
