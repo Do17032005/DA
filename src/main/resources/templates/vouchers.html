@@ -53,8 +53,11 @@
                 <!-- Main Content -->
                 <div class="col-md-9">
                     <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white py-3">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">Voucher & Khuyến mãi</h5>
+                            <a href="/vouchers" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>Săn thêm Voucher
+                            </a>
                         </div>
                         <div class="card-body">
                             <!-- Alerts -->
@@ -79,7 +82,7 @@
                                                 <span class="badge bg-danger"
                                                     th:if="${voucher.discountType.name() == 'FIXED'}">
                                                     -<span
-                                                        th:text="${#numbers.formatDecimal(voucher.discountValue, 0, 0)}">50000</span>đ
+                                                        th:text="${voucher.discountValue != null ? #numbers.formatDecimal(voucher.discountValue, 0, 0) : '0'}">50000</span>đ
                                                 </span>
                                             </div>
                                             <p class="card-text text-muted small" th:text="${voucher.description}">Mô tả
@@ -89,7 +92,7 @@
                                                     <small class="text-muted d-block">HSD: <span
                                                             th:text="${voucher.endDate != null ? #temporals.format(voucher.endDate, 'dd/MM/yyyy') : 'Vĩnh viễn'}">31/12/2026</span></small>
                                                     <small class="text-muted d-block">Đơn tối thiểu: <span
-                                                            th:text="${#numbers.formatDecimal(voucher.minOrderValue, 0, 0)} + 'đ'">100.000đ</span></small>
+                                                            th:text="${(voucher.minOrderValue != null ? #numbers.formatDecimal(voucher.minOrderValue, 0, 0) : '0') + 'đ'}">100.000đ</span></small>
                                                 </div>
                                                 <button class="btn btn-outline-primary btn-sm copy-btn"
                                                     th:data-code="${voucher.voucherCode}"
@@ -102,7 +105,8 @@
                                 </div>
                                 <div class="col-12 text-center py-5" th:if="${vouchers == null || vouchers.empty}">
                                     <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted">Hiện chưa có voucher nào khả dụng.</p>
+                                    <p class="text-muted">Bạn chưa thu thập voucher nào.</p>
+                                    <a href="/vouchers" class="btn btn-outline-primary">Đi săn voucher ngay!</a>
                                 </div>
                             </div>
                         </div>

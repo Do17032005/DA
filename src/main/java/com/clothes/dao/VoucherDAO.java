@@ -177,4 +177,18 @@ public class VoucherDAO {
         String sql = "UPDATE vouchers SET is_active = ?, updated_at = NOW() WHERE voucher_id = ?";
         return jdbcTemplate.update(sql, isActive, voucherId);
     }
+
+    /**
+     * Find active vouchers that a user hasn't collected yet
+     */
+    public List<Voucher> findAvailableVouchersForUser(Long userId) {
+        String sql = "SELECT v.* FROM vouchers v " +
+                "WHERE v.is_active = TRUE " +
+                "AND (v.start_date IS NULL OR v.start_date <= NOW()) " +
+                "AND (v.end_date IS NULL OR v.end_date >= NOW()) " +
+                "AND (v.quantity IS NULL OR v.used_count < v.quantity) " +
+                "AND v.voucher_id NOT IN (SELECT uv.voucher_id FROM user_vouchers uv WHERE uv.user_id = ?) " +
+                "ORDER BY v.discount_value DESC";
+        return jdbcTemplate.query(sql, new VoucherRowMapper(), userId);
+    }
 }

@@ -6,6 +6,7 @@ import com.clothes.model.Address;
 import com.clothes.dao.OrderDAO;
 import com.clothes.dao.WishlistDAO;
 import com.clothes.dao.VoucherDAO;
+import com.clothes.dao.UserVoucherDAO;
 import com.clothes.model.User;
 import com.clothes.model.Order;
 import com.clothes.service.UserService;
@@ -33,14 +34,17 @@ public class UserController {
     private final OrderDAO orderDAO;
     private final WishlistDAO wishlistDAO;
     private final VoucherDAO voucherDAO;
+    private final UserVoucherDAO userVoucherDAO;
 
     public UserController(UserService userService, AddressDAO addressDAO,
-            OrderDAO orderDAO, WishlistDAO wishlistDAO, VoucherDAO voucherDAO) {
+            OrderDAO orderDAO, WishlistDAO wishlistDAO, VoucherDAO voucherDAO,
+            UserVoucherDAO userVoucherDAO) {
         this.userService = userService;
         this.addressDAO = addressDAO;
         this.orderDAO = orderDAO;
         this.wishlistDAO = wishlistDAO;
         this.voucherDAO = voucherDAO;
+        this.userVoucherDAO = userVoucherDAO;
     }
 
     /**
@@ -283,10 +287,54 @@ public class UserController {
             return "redirect:/user/login";
         }
 
-        // For now, show all active vouchers (can be filtered by user eligibility later)
-        model.addAttribute("vouchers", voucherDAO.findValidVouchers());
+        // Show only vouchers collected by the user
+        var userVouchers = userVoucherDAO.findByUserId(userId);
+        model.addAttribute("vouchers", userVouchers.stream().map(uv -> uv.getVoucher()).toList());
+        model.addAttribute("userVouchers", userVouchers);
 
         return "vouchers";
+    }
+
+    /**
+     * Thu thập voucher
+     */
+    @PostMapping("/vouchers/collect/{id}")
+    @ResponseBody
+    public java.util.Map<String, Object> collectVoucher(@PathVariable Long id, HttpSession session) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đăng nhập để thu thập voucher");
+            return response;
+        }
+
+        try {
+            // Check if voucher exists and is valid
+            var voucherOpt = voucherDAO.findById(id);
+            if (voucherOpt.isEmpty() || !voucherOpt.get().isValid()) {
+                response.put("success", false);
+                response.put("message", "Voucher không tồn tại hoặc đã hết hạn");
+                return response;
+            }
+
+            // Check if already collected
+            if (userVoucherDAO.existsByUserAndVoucher(userId, id)) {
+                response.put("success", false);
+                response.put("message", "Bạn đã thu thập voucher này rồi");
+                return response;
+            }
+
+            userVoucherDAO.save(userId, id);
+            response.put("success", true);
+            response.put("message", "Thu thập voucher thành công!");
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Lỗi: " + e.getMessage());
+        }
+
+        return response;
     }
 
     // ========== QUẢN LÝ ĐƠN HÀNG ==========

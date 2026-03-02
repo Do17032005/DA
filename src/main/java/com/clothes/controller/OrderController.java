@@ -209,7 +209,7 @@ public class OrderController {
 
             if (voucherCode != null && !voucherCode.trim().isEmpty()) {
                 try {
-                    discount = voucherService.applyVoucher(voucherCode, subtotal);
+                    discount = voucherService.applyVoucher(voucherCode, subtotal, userId);
                 } catch (Exception e) {
                     redirectAttributes.addFlashAttribute("warning", "Voucher: " + e.getMessage());
                 }

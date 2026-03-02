@@ -376,10 +376,12 @@ public class CartController {
                     .map(item -> item.getSubtotal() != null ? item.getSubtotal() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            if (voucher.getMinOrderValue() != null && subtotal.compareTo(voucher.getMinOrderValue()) < 0) {
+            Long userId = (Long) session.getAttribute("userId");
+            try {
+                voucherService.applyVoucher(code, subtotal, userId); // Use this to validate including user collection
+            } catch (Exception e) {
                 response.put("success", false);
-                response.put("message", "Giá trị đơn hàng tối thiểu là "
-                        + new java.text.DecimalFormat("#,###").format(voucher.getMinOrderValue()) + "đ");
+                response.put("message", e.getMessage());
                 return response;
             }
 

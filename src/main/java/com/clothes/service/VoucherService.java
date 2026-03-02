@@ -1,6 +1,7 @@
 package com.clothes.service;
 
 import com.clothes.dao.VoucherDAO;
+import com.clothes.dao.UserVoucherDAO;
 import com.clothes.model.Voucher;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +17,11 @@ import java.util.Optional;
 public class VoucherService {
 
     private final VoucherDAO voucherDAO;
+    private final UserVoucherDAO userVoucherDAO;
 
-    public VoucherService(VoucherDAO voucherDAO) {
+    public VoucherService(VoucherDAO voucherDAO, UserVoucherDAO userVoucherDAO) {
         this.voucherDAO = voucherDAO;
+        this.userVoucherDAO = userVoucherDAO;
     }
 
     /**
@@ -138,6 +141,30 @@ public class VoucherService {
         // Validate voucher
         if (!voucher.isValid()) {
             throw new IllegalArgumentException("Voucher không hợp lệ hoặc đã hết hạn");
+        }
+
+        return applyVoucher(code, orderAmount, null);
+    }
+
+    /**
+     * Apply voucher to order for a specific user
+     */
+    public BigDecimal applyVoucher(String code, BigDecimal orderAmount, Long userId) {
+        Optional<Voucher> voucherOpt = voucherDAO.findByCode(code);
+        if (voucherOpt.isEmpty()) {
+            throw new IllegalArgumentException("Voucher không tồn tại");
+        }
+
+        Voucher voucher = voucherOpt.get();
+
+        // Validate voucher basic validity
+        if (!voucher.isValid()) {
+            throw new IllegalArgumentException("Voucher không hợp lệ hoặc đã hết hạn");
+        }
+
+        // Check if user has collected this voucher
+        if (userId != null && !userVoucherDAO.existsByUserAndVoucher(userId, voucher.getVoucherId())) {
+            throw new IllegalArgumentException("Bạn chưa thu thập voucher này. Hãy thu thập trước khi sử dụng.");
         }
 
         // Check minimum order amount

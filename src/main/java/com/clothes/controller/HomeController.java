@@ -3,6 +3,7 @@ package com.clothes.controller;
 import com.clothes.dao.BannerDAO;
 import com.clothes.dao.BlogPostDAO;
 import com.clothes.dao.ProductDAO;
+import com.clothes.dao.VoucherDAO;
 import com.clothes.service.CategoryService;
 import com.clothes.service.HybridRecommendationService;
 import org.springframework.stereotype.Controller;
@@ -22,17 +23,20 @@ public class HomeController {
     private final HybridRecommendationService recommendationService;
     private final BannerDAO bannerDAO;
     private final BlogPostDAO blogPostDAO;
+    private final VoucherDAO voucherDAO;
 
     public HomeController(ProductDAO productDAO,
             CategoryService categoryService,
             HybridRecommendationService recommendationService,
             BannerDAO bannerDAO,
-            BlogPostDAO blogPostDAO) {
+            BlogPostDAO blogPostDAO,
+            VoucherDAO voucherDAO) {
         this.productDAO = productDAO;
         this.categoryService = categoryService;
         this.recommendationService = recommendationService;
         this.bannerDAO = bannerDAO;
         this.blogPostDAO = blogPostDAO;
+        this.voucherDAO = voucherDAO;
     }
 
     /**
@@ -93,6 +97,7 @@ public class HomeController {
         model.addAttribute("categories", categories);
         model.addAttribute("banners", banners);
         model.addAttribute("blogPosts", blogPosts);
+        model.addAttribute("vouchers", voucherDAO.findValidVouchers());
 
         return "index";
     }

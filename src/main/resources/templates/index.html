@@ -165,8 +165,7 @@
                         <!-- Wishlist Button -->
                         <button class="btn btn-light btn-sm rounded-circle wishlist-btn"
                             th:with="isFavorite=${wishlistProductIds != null && wishlistProductIds.contains(product.productId)}"
-                            th:classappend="${isFavorite} ? ' active' : ''"
-                            th:data-in-wishlist="${isFavorite}"
+                            th:classappend="${isFavorite} ? ' active' : ''" th:data-in-wishlist="${isFavorite}"
                             th:onclick="'toggleWishlist(' + ${product.productId} + ', this)'">
                             <i th:class="${isFavorite} ? 'fas fa-heart text-danger' : 'far fa-heart'"></i>
                         </button>
@@ -239,8 +238,7 @@
 
                         <button class="btn btn-light btn-sm rounded-circle wishlist-btn"
                             th:with="isFavorite=${wishlistProductIds != null && wishlistProductIds.contains(product.productId)}"
-                            th:classappend="${isFavorite} ? ' active' : ''"
-                            th:data-in-wishlist="${isFavorite}"
+                            th:classappend="${isFavorite} ? ' active' : ''" th:data-in-wishlist="${isFavorite}"
                             th:onclick="'toggleWishlist(' + ${product.productId} + ', this)'"><i
                                 th:class="${isFavorite} ? 'fas fa-heart text-danger' : 'far fa-heart'"></i></button>
 
@@ -259,7 +257,8 @@
                             <div class="mb-2">
                                 <span class="h5 text-danger mb-0"
                                     th:if="${product.discountPrice != null && product.discountPrice < product.price}">
-                                    <span th:text="${#numbers.formatDecimal(product.discountPrice, 0, 0)}">199,000</span>đ
+                                    <span
+                                        th:text="${#numbers.formatDecimal(product.discountPrice, 0, 0)}">199,000</span>đ
                                 </span>
                                 <span class="text-muted text-decoration-line-through small ms-1"
                                     th:if="${product.discountPrice != null && product.discountPrice < product.price}"
@@ -280,32 +279,29 @@
             </div>
         </section>
 
-        <!-- Promotion Banner -->
+        <!-- Promotion Voucher Banner -->
         <section class="container mb-5">
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="card bg-primary text-white border-0 h-100">
-                        <div class="card-body p-5">
-                            <h3 class="fw-bold mb-3">Ưu đãi đặc biệt</h3>
-                            <p class="mb-4">Giảm giá tới 50% cho các sản phẩm mới</p>
-                            <a href="/products?discount=true" class="btn btn-light">
-                                Mua ngay
+            <div class="card border-0 shadow-sm"
+                style="background: linear-gradient(135deg, #0d6efd 0%, #00d2ff 100%); border-radius: 20px;">
+                <div class="card-body p-4 p-md-5 text-white">
+                    <div class="row align-items-center">
+                        <div class="col-lg-7">
+                            <h2 class="fw-bold mb-3">Săn Voucher - Mua Sắm Thả Ga!</h2>
+                            <p class="lead mb-4">Hàng ngàn mã giảm giá đang chờ bạn. Thu thập ngay để nhận ưu đãi lên
+                                đến 50%.</p>
+                            <div class="d-flex flex-wrap gap-2 mb-4" th:if="${vouchers != null && !vouchers.empty}">
+                                <div class="bg-white text-primary px-3 py-2 rounded-pill fw-bold small"
+                                    th:each="voucher, iter : ${vouchers}" th:if="${iter.index < 3}">
+                                    <i class="fas fa-tag me-1"></i>
+                                    <span th:text="${voucher.voucherCode}">CODE</span>
+                                </div>
+                            </div>
+                            <a href="/vouchers" class="btn btn-light btn-lg px-5 fw-bold text-primary shadow">
+                                <i class="fas fa-gift me-2"></i>Xem Tất Cả Voucher
                             </a>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card bg-dark text-white border-0 h-100">
-                        <div class="card-body p-5">
-                            <h3 class="fw-bold mb-3">Miễn phí vận chuyển</h3>
-                            <p class="mb-4">
-                                Cho đơn hàng từ
-                                <span
-                                    th:text="${#numbers.formatDecimal(@settingsService.getSettingAsDouble('free_shipping_threshold', 500000), 0, 0)}">500,000</span>đ
-                            </p>
-                            <a href="/products" class="btn btn-light">
-                                Khám phá
-                            </a>
+                        <div class="col-lg-5 d-none d-lg-block text-center">
+                            <i class="fas fa-ticket-alt fa-10x opacity-25"></i>
                         </div>
                     </div>
                 </div>
@@ -327,8 +323,7 @@
 
                         <button class="btn btn-light btn-sm rounded-circle wishlist-btn"
                             th:with="isFavorite=${wishlistProductIds != null && wishlistProductIds.contains(product.productId)}"
-                            th:classappend="${isFavorite} ? ' active' : ''"
-                            th:data-in-wishlist="${isFavorite}"
+                            th:classappend="${isFavorite} ? ' active' : ''" th:data-in-wishlist="${isFavorite}"
                             th:onclick="'toggleWishlist(' + ${product.productId} + ', this)'">
                             <i th:class="${isFavorite} ? 'fas fa-heart text-danger' : 'far fa-heart'"></i>
                         </button>
@@ -348,7 +343,8 @@
                             <div class="mb-2">
                                 <span class="h5 text-danger mb-0"
                                     th:if="${product.discountPrice != null && product.discountPrice < product.price}">
-                                    <span th:text="${#numbers.formatDecimal(product.discountPrice, 0, 0)}">199,000</span>đ
+                                    <span
+                                        th:text="${#numbers.formatDecimal(product.discountPrice, 0, 0)}">199,000</span>đ
                                 </span>
                                 <span class="text-muted text-decoration-line-through small ms-1"
                                     th:if="${product.discountPrice != null && product.discountPrice < product.price}"
