@@ -163,79 +163,6 @@
                         </div>
                     </div>
 
-                    <!-- Change Password -->
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">
-                                <i class="fas fa-lock me-2"></i>Đổi mật khẩu
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <form th:action="@{/user/change-password}" method="post" id="changePasswordForm">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Mật khẩu hiện tại <span
-                                                    class="text-danger">*</span></label>
-                                            <div class="input-group">
-                                                <input type="password" class="form-control" name="currentPassword"
-                                                    id="currentPassword" required>
-                                                <button class="btn btn-outline-secondary" type="button"
-                                                    onclick="togglePassword('currentPassword')">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Mật khẩu mới <span
-                                                    class="text-danger">*</span></label>
-                                            <div class="input-group">
-                                                <input type="password" class="form-control" name="newPassword"
-                                                    id="newPassword" required minlength="6">
-                                                <button class="btn btn-outline-secondary" type="button"
-                                                    onclick="togglePassword('newPassword')">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </div>
-                                            <small class="text-muted">Tối thiểu 6 ký tự</small>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Xác nhận mật khẩu mới <span
-                                                    class="text-danger">*</span></label>
-                                            <div class="input-group">
-                                                <input type="password" class="form-control" name="confirmPassword"
-                                                    id="confirmPassword" required>
-                                                <button class="btn btn-outline-secondary" type="button"
-                                                    onclick="togglePassword('confirmPassword')">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-key me-1"></i>Đổi mật khẩu
-                                        </button>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="alert alert-info">
-                                            <h6 class="alert-heading">
-                                                <i class="fas fa-info-circle me-1"></i>Lưu ý
-                                            </h6>
-                                            <ul class="small mb-0">
-                                                <li>Mật khẩu phải có ít nhất 6 ký tự</li>
-                                                <li>Nên sử dụng kết hợp chữ hoa, chữ thường và số</li>
-                                                <li>Không nên sử dụng thông tin cá nhân dễ đoán</li>
-                                                <li>Thay đổi mật khẩu định kỳ để bảo mật</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -253,39 +180,7 @@
                 }
             }
 
-            function togglePassword(fieldId) {
-                const field = document.getElementById(fieldId);
-                const button = field.nextElementSibling;
-                const icon = button.querySelector('i');
 
-                if (field.type === 'password') {
-                    field.type = 'text';
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                } else {
-                    field.type = 'password';
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
-            }
-
-            // Password validation
-            $('#changePasswordForm').on('submit', function (e) {
-                const newPassword = $('#newPassword').val();
-                const confirmPassword = $('#confirmPassword').val();
-
-                if (newPassword !== confirmPassword) {
-                    e.preventDefault();
-                    showNotification('Mật khẩu xác nhận không khớp!', 'error');
-                    return false;
-                }
-
-                if (newPassword.length < 6) {
-                    e.preventDefault();
-                    showNotification('Mật khẩu phải có ít nhất 6 ký tự!', 'error');
-                    return false;
-                }
-            });
         </script>
     </th:block>
 </body>
