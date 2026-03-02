@@ -76,6 +76,10 @@
                             </option>
                             <option value="name" th:selected="${param.sortBy != null && param.sortBy[0] == 'name'}">Tên
                                 A-Z</option>
+                            <option value="top_selling"
+                                th:selected="${param.sortBy != null && param.sortBy[0] == 'top_selling'}">
+                                Bán chạy nhất
+                            </option>
                         </select>
                     </div>
                     <div class="col-md-2">

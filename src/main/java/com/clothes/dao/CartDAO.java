@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,6 +125,47 @@ public class CartDAO {
     }
 
     /**
+     * Update item variant (size/color). If same variant already exists in cart,
+     * merge quantity.
+     */
+    public void updateItemVariant(Long cartItemId, String size, String color) {
+        String currentSql = "SELECT cart_id, product_id, quantity FROM cart_items WHERE cart_item_id = ?";
+        Map<String, Object> current = jdbcTemplate.queryForMap(currentSql, cartItemId);
+
+        Long cartId = ((Number) current.get("cart_id")).longValue();
+        Long productId = ((Number) current.get("product_id")).longValue();
+        Integer currentQty = ((Number) current.get("quantity")).intValue();
+
+        String checkSql = "SELECT cart_item_id, quantity FROM cart_items " +
+                "WHERE cart_id = ? AND product_id = ? AND cart_item_id <> ? " +
+                "AND (size = ? OR (size IS NULL AND ? IS NULL)) " +
+                "AND (color = ? OR (color IS NULL AND ? IS NULL))";
+
+        try {
+            CartItem existing = jdbcTemplate.queryForObject(checkSql,
+                    (rs, rowNum) -> {
+                        CartItem i = new CartItem();
+                        i.setCartItemId(rs.getLong("cart_item_id"));
+                        i.setQuantity(rs.getInt("quantity"));
+                        return i;
+                    },
+                    cartId, productId, cartItemId,
+                    size, size,
+                    color, color);
+
+            if (existing != null) {
+                updateItemQuantity(existing.getCartItemId(), existing.getQuantity() + currentQty);
+                removeItem(cartItemId);
+                return;
+            }
+        } catch (EmptyResultDataAccessException ignored) {
+        }
+
+        String updateSql = "UPDATE cart_items SET size = ?, color = ? WHERE cart_item_id = ?";
+        jdbcTemplate.update(updateSql, size, color, cartItemId);
+    }
+
+    /**
      * Remove item
      */
     public void removeItem(Long cartItemId) {
@@ -151,7 +193,8 @@ public class CartDAO {
      * Find items for a cart
      */
     private List<CartItem> findItemsByCartId(Long cartId) {
-        String sql = "SELECT ci.*, p.product_name, p.price, p.discount_price, p.image_url, p.stock_quantity " +
+        String sql = "SELECT ci.*, p.product_name, p.price, p.discount_price, p.image_url, p.stock_quantity, p.size AS product_size, p.color AS product_color "
+                +
                 "FROM cart_items ci " +
                 "JOIN products p ON ci.product_id = p.product_id " +
                 "WHERE ci.cart_id = ?";
@@ -171,6 +214,8 @@ public class CartDAO {
             p.setDiscountPrice(rs.getBigDecimal("discount_price"));
             p.setImageUrl(rs.getString("image_url"));
             p.setStockQuantity(rs.getInt("stock_quantity"));
+            p.setSize(rs.getString("product_size"));
+            p.setColor(rs.getString("product_color"));
 
             item.setProduct(p);
 

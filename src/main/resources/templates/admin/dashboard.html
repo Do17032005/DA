@@ -119,7 +119,7 @@
         <!-- Charts Row -->
         <div class="row">
             <!-- Revenue Chart -->
-            <div class="col-xl-8 col-lg-7">
+            <div class="col-xl-12 col-lg-12">
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 d-flex justify-content-between align-items-center">
                         <h6 class="m-0 font-weight-bold text-primary">Biểu đồ doanh thu</h6>
@@ -134,24 +134,12 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Category Pie Chart -->
-            <div class="col-xl-4 col-lg-5">
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Doanh thu theo danh mục</h6>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="categoryChart" style="height: 320px;"></canvas>
-                    </div>
-                </div>
-            </div>
         </div>
 
-        <!-- Recent Orders & Top Products -->
+        <!-- Recent Orders Row -->
         <div class="row">
             <!-- Recent Orders -->
-            <div class="col-xl-8 col-lg-7">
+            <div class="col-xl-12 col-lg-12">
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 d-flex justify-content-between align-items-center">
                         <h6 class="m-0 font-weight-bold text-primary">Đơn hàng mới nhất</h6>
@@ -209,13 +197,14 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Top Products & Low Stock -->
-            <div class="col-xl-4 col-lg-5">
+        </div>
                 <!-- Top Products -->
                 <div class="card shadow mb-4">
-                    <div class="card-header py-3">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
                         <h6 class="m-0 font-weight-bold text-primary">Sản phẩm bán chạy</h6>
+                        <a href="/admin/products?sortBy=top_selling" class="btn btn-sm btn-primary">
+                            Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
                     </div>
                     <div class="card-body">
                         <div th:each="product, iterStat : ${topProducts}" class="mb-3">
@@ -278,85 +267,146 @@
     </main>
 
     <th:block layout:fragment="scripts">
-        <script>
-            // Revenue Chart
-            const revenueCtx = document.getElementById('revenueChart');
-            const revenueChart = new Chart(revenueCtx, {
-                type: 'line',
-                data: {
-                    labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
-                    datasets: [{
-                        label: 'Doanh thu',
-                        data: [12000000, 19000000, 15000000, 25000000, 22000000, 30000000, 28000000, 35000000, 32000000, 40000000, 38000000, 45000000],
-                        borderColor: 'rgb(78, 115, 223)',
-                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString('vi-VN') + 'đ';
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get category revenue data from backend as JSON
+                let categoryRevenueJson = /*[[${categoryRevenue}]]*/ [];
+                let categoryData = [];
+                
+                if (categoryRevenueJson && Array.isArray(categoryRevenueJson) && categoryRevenueJson.length > 0) {
+                    categoryData = categoryRevenueJson.map(c => ({
+                        name: (c && c.name) ? c.name : 'Danh mục',
+                        percentage: (c && c.percentage) ? parseFloat(c.percentage) : 0
+                    }));
+                }
+                
+                // Get monthly revenue data from backend - convert to numbers
+                let monthlyRevenueData = /*[[${monthlyRevenue}]]*/ [];
+                let monthlyRevenue = [];
+                
+                // Process monthly revenue - convert BigDecimal to numbers
+                if (monthlyRevenueData && Array.isArray(monthlyRevenueData) && monthlyRevenueData.length > 0) {
+                    monthlyRevenue = monthlyRevenueData.map(val => {
+                        if (val === null || val === undefined) return 0;
+                        if (typeof val === 'number') return val;
+                        if (typeof val === 'string') return parseInt(val) || 0;
+                        return 0;
+                    });
+                }
+                
+                // Fallback to sample data if monthlyRevenue is empty
+                if (monthlyRevenue.length === 0) {
+                    monthlyRevenue = [
+                        100000000, 150000000, 120000000, 180000000, 160000000, 200000000,
+                        190000000, 280000000, 250000000, 300000000, 290000000, 400000000
+                    ];
+                }
+                
+
+                
+                console.log('Monthly Revenue:', monthlyRevenue);
+                console.log('Category Revenue:', categoryData);
+                
+                // Initialize revenue chart with real data from backend
+                let revenueChart;
+                const revenueCtx = document.getElementById('revenueChart');
+                
+                function initRevenueChart(monthlyData) {
+                    const months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+                    
+                    if (!revenueCtx) {
+                        console.error('Revenue chart context not found');
+                        return;
+                    }
+                    
+                    if (revenueChart) {
+                        revenueChart.destroy();
+                    }
+                    
+                    try {
+                        revenueChart = new Chart(revenueCtx, {
+                            type: 'line',
+                            data: {
+                                labels: months,
+                                datasets: [{
+                                    label: 'Doanh thu',
+                                    data: monthlyData || [],
+                                    borderColor: 'rgb(78, 115, 223)',
+                                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                                    tension: 0.4,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                return value.toLocaleString('vi-VN') + 'đ';
+                                            }
+                                        }
+                                    }
                                 }
                             }
-                        }
+                        });
+                    } catch (e) {
+                        console.error('Error creating revenue chart:', e);
                     }
                 }
-            });
-
-            // Category Pie Chart
-            const categoryCtx = document.getElementById('categoryChart');
-            const categoryChart = new Chart(categoryCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Áo nam', 'Áo nữ', 'Quần nam', 'Quần nữ', 'Phụ kiện'],
-                    datasets: [{
-                        data: [30, 25, 20, 15, 10],
-                        backgroundColor: [
-                            'rgb(78, 115, 223)',
-                            'rgb(28, 200, 138)',
-                            'rgb(54, 185, 204)',
-                            'rgb(246, 194, 62)',
-                            'rgb(231, 74, 59)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
+                
+                // Initialize revenue chart
+                if (revenueCtx) {
+                    initRevenueChart(monthlyRevenue);
+                } else {
+                    console.warn('Revenue chart canvas not found');
                 }
+
+
+                
+                // Make functions available globally for onclick handlers
+                window.filterDashboard = function() {
+                    const filter = document.getElementById('dateFilter').value;
+                    console.log('Filter by:', filter);
+                    const url = new URL(window.location);
+                    url.searchParams.set('period', filter);
+                    window.location.href = url.toString();
+                };
+
+                window.refreshDashboard = function() {
+                    location.reload();
+                };
+
+                window.changeChartPeriod = function(period) {
+                    console.log('Change chart period:', period);
+                    document.querySelectorAll('.btn-outline-primary').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    if (event.target) {
+                        event.target.classList.add('active');
+                    }
+                    
+                    fetch('/admin/api/dashboard/revenue?period=' + period)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && data.monthlyRevenue) {
+                                // Convert data if needed
+                                let convertedData = Array.isArray(data.monthlyRevenue) 
+                                    ? data.monthlyRevenue.map(v => typeof v === 'number' ? v : parseInt(v) || 0)
+                                    : [];
+                                initRevenueChart(convertedData);
+                            }
+                        })
+                        .catch(error => console.error('Error loading period data:', error));
+                };
             });
-
-            function filterDashboard() {
-                const filter = $('#dateFilter').val();
-                // TODO: Call API to filter dashboard data
-                console.log('Filter by:', filter);
-            }
-
-            function refreshDashboard() {
-                location.reload();
-            }
-
-            function changeChartPeriod(period) {
-                // TODO: Update chart data based on period
-                console.log('Change chart period:', period);
-            }
         </script>
     </th:block>
 </body>

@@ -28,14 +28,18 @@ public class AdminOrderController {
 
     @GetMapping
     public String listOrders(@RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             HttpSession session,
             Model model) {
         if (session.getAttribute("adminId") == null) {
             return "redirect:/admin/login";
         }
 
-        List<Order> orders = orderService.getOrdersByStatus(status);
+        List<Order> orders = orderService.getOrdersPaginated(status, page, size);
         Map<String, Long> statusCounts = orderService.getOrderStatusCounts();
+        int totalOrders = orderService.getTotalOrdersCount(status);
+        int totalPages = (int) Math.ceil((double) totalOrders / size);
 
         model.addAttribute("orders", orders);
         model.addAttribute("pendingCount", statusCounts.get("pending"));
@@ -43,6 +47,8 @@ public class AdminOrderController {
         model.addAttribute("shippingCount", statusCounts.get("shipping"));
         model.addAttribute("completedCount", statusCounts.get("completed"));
         model.addAttribute("status", status);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
 
         return "admin/orders";
     }
@@ -59,9 +65,9 @@ public class AdminOrderController {
         if (orderOpt.isEmpty()) {
             return "redirect:/admin/orders";
         }
-        
+
         Order order = orderOpt.get();
-        
+
         // Load order items with product details
         List<OrderItem> items = orderService.getOrderItems(id);
         order.setOrderItems(items);
@@ -78,11 +84,11 @@ public class AdminOrderController {
         System.out.println("=== POST /admin/orders/" + id + "/update-status ===");
         System.out.println("Status parameter: " + status);
         System.out.println("Session adminId: " + session.getAttribute("adminId"));
-        
+
         if (session.getAttribute("adminId") == null) {
             return ResponseEntity.status(401).body("Unauthorized - Admin login required");
         }
-        
+
         try {
             orderService.updateOrderStatus(id, status);
             System.out.println("Status update successful");

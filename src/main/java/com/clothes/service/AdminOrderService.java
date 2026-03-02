@@ -49,6 +49,27 @@ public class AdminOrderService {
         return orders;
     }
 
+    public List<Order> getOrdersPaginated(String status, int page, int size) {
+        List<Order> orders;
+        if (status == null || status.isEmpty() || status.equals("all")) {
+            orders = orderDAO.findAllPaginated(page, size);
+        } else {
+            Order.OrderStatus orderStatus = Order.OrderStatus.fromValue(status.toUpperCase());
+            orders = orderDAO.findByStatusPaginated(orderStatus, page, size);
+        }
+        enrichOrdersWithUserData(orders);
+        return orders;
+    }
+
+    public int getTotalOrdersCount(String status) {
+        if (status == null || status.isEmpty() || status.equals("all")) {
+            return orderDAO.count();
+        } else {
+            Order.OrderStatus orderStatus = Order.OrderStatus.fromValue(status.toUpperCase());
+            return orderDAO.countByStatus(orderStatus);
+        }
+    }
+
     public Optional<Order> getOrderById(Long id) {
         Optional<Order> order = orderDAO.findById(id);
         order.ifPresent(o -> {
@@ -67,21 +88,22 @@ public class AdminOrderService {
         System.out.println("=== AdminOrderService.updateOrderStatus ===");
         System.out.println("Order ID: " + orderId);
         System.out.println("New Status (raw): " + status);
-        
+
         if (status == null || status.trim().isEmpty()) {
             throw new IllegalArgumentException("Status cannot be null or empty");
         }
-        
+
         Order.OrderStatus newStatus = Order.OrderStatus.fromValue(status.toUpperCase());
         System.out.println("Parsed OrderStatus enum: " + newStatus);
-        
+
         int rowsUpdated = orderDAO.updateStatus(orderId, newStatus);
         System.out.println("Rows updated: " + rowsUpdated);
-        
+
         if (rowsUpdated == 0) {
-            throw new RuntimeException("Failed to update order status - no rows affected. Order ID may not exist: " + orderId);
+            throw new RuntimeException(
+                    "Failed to update order status - no rows affected. Order ID may not exist: " + orderId);
         }
-        
+
         System.out.println("Order status updated successfully");
     }
 
@@ -126,7 +148,7 @@ public class AdminOrderService {
             }
         });
     }
-    
+
     /**
      * Get order items with product details
      */

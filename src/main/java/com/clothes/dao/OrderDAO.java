@@ -140,6 +140,16 @@ public class OrderDAO {
         return jdbcTemplate.query(sql, new OrderRowMapper());
     }
 
+    public List<Order> findAllPaginated(int page, int size) {
+        String sql = "SELECT * FROM orders ORDER BY order_date DESC LIMIT ? OFFSET ?";
+        return jdbcTemplate.query(sql, new OrderRowMapper(), size, page * size);
+    }
+
+    public List<Order> findByStatusPaginated(Order.OrderStatus status, int page, int size) {
+        String sql = "SELECT * FROM orders WHERE status = ? ORDER BY order_date DESC LIMIT ? OFFSET ?";
+        return jdbcTemplate.query(sql, new OrderRowMapper(), status.getValue(), size, page * size);
+    }
+
     public List<Order> findByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         String sql = "SELECT * FROM orders WHERE order_date BETWEEN ? AND ? ORDER BY order_date DESC";
         return jdbcTemplate.query(sql, new OrderRowMapper(),

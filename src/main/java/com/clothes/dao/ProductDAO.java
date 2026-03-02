@@ -85,6 +85,16 @@ public class ProductDAO {
                 product.setPurchaseCount(0);
             }
 
+            // Map sold_count if present (for best selling query)
+            try {
+                int soldCount = rs.getInt("sold_count");
+                if (!rs.wasNull()) {
+                    product.setSoldCount(soldCount);
+                }
+            } catch (SQLException e) {
+                // Ignore if column not present
+            }
+
             try {
                 product.setIsNew(rs.getBoolean("is_new"));
             } catch (Exception e) {
@@ -368,6 +378,138 @@ public class ProductDAO {
     }
 
     /**
+     * Find products for admin with filters and pagination
+     */
+    public List<Product> findAdminWithFiltersPaginated(String keyword, Long categoryId, String status,
+            String sortBy, Boolean isNew, Boolean isHot, int page, int size) {
+        StringBuilder sql = new StringBuilder("SELECT p.*, COALESCE(SUM(oi.quantity), 0) as sold_count ");
+        sql.append("FROM products p ");
+        sql.append("LEFT JOIN order_items oi ON p.product_id = oi.product_id ");
+        sql.append("LEFT JOIN orders o ON oi.order_id = o.order_id ");
+        sql.append("WHERE 1=1 ");
+
+        List<Object> params = new java.util.ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (p.product_name LIKE ? OR p.sku LIKE ?)");
+            String pattern = "%" + keyword.trim() + "%";
+            params.add(pattern);
+            params.add(pattern);
+        }
+
+        if (categoryId != null) {
+            sql.append(" AND p.category_id = ?");
+            params.add(categoryId);
+        }
+
+        if (status != null && !status.isBlank()) {
+            switch (status) {
+                case "active":
+                    sql.append(" AND p.is_active = TRUE");
+                    break;
+                case "inactive":
+                    sql.append(" AND p.is_active = FALSE");
+                    break;
+                case "out_of_stock":
+                    sql.append(" AND p.stock_quantity <= 0");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        boolean filterNew = Boolean.TRUE.equals(isNew);
+        boolean filterHot = Boolean.TRUE.equals(isHot);
+        if (filterNew && filterHot) {
+            sql.append(" AND (p.is_new = TRUE OR p.is_hot = TRUE)");
+        } else if (filterNew) {
+            sql.append(" AND p.is_new = TRUE");
+        } else if (filterHot) {
+            sql.append(" AND p.is_hot = TRUE");
+        }
+
+        sql.append(" GROUP BY p.product_id ");
+
+        if (sortBy != null && !sortBy.isBlank()) {
+            switch (sortBy) {
+                case "price_asc":
+                    sql.append(" ORDER BY p.price ASC");
+                    break;
+                case "price_desc":
+                    sql.append(" ORDER BY p.price DESC");
+                    break;
+                case "name":
+                    sql.append(" ORDER BY p.product_name ASC");
+                    break;
+                case "top_selling":
+                    sql.append(" ORDER BY sold_count DESC, p.view_count DESC");
+                    break;
+                default:
+                    sql.append(" ORDER BY p.created_at DESC");
+                    break;
+            }
+        } else {
+            sql.append(" ORDER BY p.created_at DESC");
+        }
+
+        sql.append(" LIMIT ? OFFSET ?");
+        params.add(size);
+        params.add(page * size);
+
+        return jdbcTemplate.query(sql.toString(), new ProductRowMapper(), params.toArray());
+    }
+
+    /**
+     * Count products for admin with filters
+     */
+    public int countAdminWithFilters(String keyword, Long categoryId, String status,
+            Boolean isNew, Boolean isHot) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM products WHERE 1=1");
+        List<Object> params = new java.util.ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (product_name LIKE ? OR sku LIKE ?)");
+            String pattern = "%" + keyword.trim() + "%";
+            params.add(pattern);
+            params.add(pattern);
+        }
+
+        if (categoryId != null) {
+            sql.append(" AND category_id = ?");
+            params.add(categoryId);
+        }
+
+        if (status != null && !status.isBlank()) {
+            switch (status) {
+                case "active":
+                    sql.append(" AND is_active = TRUE");
+                    break;
+                case "inactive":
+                    sql.append(" AND is_active = FALSE");
+                    break;
+                case "out_of_stock":
+                    sql.append(" AND stock_quantity <= 0");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        boolean filterNew = Boolean.TRUE.equals(isNew);
+        boolean filterHot = Boolean.TRUE.equals(isHot);
+        if (filterNew && filterHot) {
+            sql.append(" AND (is_new = TRUE OR is_hot = TRUE)");
+        } else if (filterNew) {
+            sql.append(" AND is_new = TRUE");
+        } else if (filterHot) {
+            sql.append(" AND is_hot = TRUE");
+        }
+
+        Integer count = jdbcTemplate.queryForObject(sql.toString(), Integer.class, params.toArray());
+        return count != null ? count : 0;
+    }
+
+    /**
      * Find products by brand
      */
     public List<Product> findByBrand(String brand) {
@@ -425,11 +567,17 @@ public class ProductDAO {
     }
 
     /**
-     * Find best selling products
+     * Find best selling products based on completed orders
      */
     public List<Product> findBestSelling(int limit) {
-        String sql = "SELECT * FROM products WHERE is_active = 1 " +
-                "ORDER BY purchase_count DESC, view_count DESC LIMIT ?";
+        String sql = "SELECT p.*, COALESCE(SUM(oi.quantity), 0) as sold_count " +
+                "FROM products p " +
+                "LEFT JOIN order_items oi ON p.product_id = oi.product_id " +
+                "LEFT JOIN orders o ON oi.order_id = o.order_id " +
+                "WHERE p.is_active = 1 AND (o.status = 'COMPLETED' OR o.status IS NULL) " +
+                "GROUP BY p.product_id " +
+                "ORDER BY sold_count DESC, p.view_count DESC " +
+                "LIMIT ?";
         return jdbcTemplate.query(sql, new ProductRowMapper(), limit);
     }
 

@@ -234,6 +234,25 @@ public class CartController {
     }
 
     /**
+     * Update cart item variant (size/color)
+     */
+    @PostMapping("/update-variant/{cartItemId}")
+    @ResponseBody
+    public java.util.Map<String, Object> updateCartItemVariantApi(@PathVariable Long cartItemId,
+            @RequestParam(required = false) String size,
+            @RequestParam(required = false) String color) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        try {
+            cartService.updateCartItemVariant(cartItemId, size, color);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
+    /**
      * Remove item from cart (AJAX by CartItemId)
      */
     @PostMapping("/remove/{cartItemId}")
@@ -365,6 +384,38 @@ public class CartController {
             }
 
             session.setAttribute("appliedVoucher", voucher);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
+    /**
+     * Remove multiple items from cart
+     */
+    @PostMapping("/remove-multiple")
+    @ResponseBody
+    public java.util.Map<String, Object> removeMultiple(
+            @RequestParam(value = "ids", required = false) List<Long> ids,
+            @RequestParam(value = "ids[]", required = false) List<Long> idsArray) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        try {
+            List<Long> targetIds = (ids != null && !ids.isEmpty()) ? ids : idsArray;
+
+            if (targetIds == null || targetIds.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Không có sản phẩm nào được chọn để xóa");
+                return response;
+            }
+
+            for (Long cartItemId : targetIds) {
+                if (cartItemId != null) {
+                    cartService.removeCartItem(cartItemId);
+                }
+            }
+
             response.put("success", true);
         } catch (Exception e) {
             response.put("success", false);

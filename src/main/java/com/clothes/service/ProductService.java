@@ -31,6 +31,15 @@ public class ProductService {
         return productDAO.findAdminWithFilters(keyword, categoryId, status, sortBy, isNew, isHot);
     }
 
+    public List<Product> searchProductsPaginated(String keyword, Long categoryId, String status,
+            String sortBy, Boolean isNew, Boolean isHot, int page, int size) {
+        return productDAO.findAdminWithFiltersPaginated(keyword, categoryId, status, sortBy, isNew, isHot, page, size);
+    }
+
+    public int countProductsAdmin(String keyword, Long categoryId, String status, Boolean isNew, Boolean isHot) {
+        return productDAO.countAdminWithFilters(keyword, categoryId, status, isNew, isHot);
+    }
+
     public Optional<Product> getProductById(Long id) {
         return productDAO.findById(id);
     }

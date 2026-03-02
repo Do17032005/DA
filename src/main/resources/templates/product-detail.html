@@ -172,18 +172,44 @@
                             <!-- Size Selection -->
                             <div class="mb-3" th:if="${product.size != null and product.size != ''}">
                                 <h6 class="mb-2">Kích cỡ:</h6>
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <input type="hidden" name="size" th:value="${product.size}">
-                                    <span class="badge bg-secondary" th:text="${product.size}">M</span>
+
+                                <div class="d-flex gap-2 flex-wrap" th:if="${#strings.contains(product.size, ',')}">
+                                    <div class="size-option" th:each="sizeOption,iter : ${#strings.arraySplit(product.size, ',')}">
+                                        <input type="radio" class="d-none" name="size"
+                                               th:id="'size-' + ${iter.index}"
+                                               th:value="${#strings.trim(sizeOption)}"
+                                               th:checked="${iter.index == 0}">
+                                        <label class="btn btn-outline-secondary btn-sm mb-0"
+                                               th:for="'size-' + ${iter.index}"
+                                               th:text="${#strings.trim(sizeOption)}">M</label>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2 flex-wrap" th:unless="${#strings.contains(product.size, ',')}">
+                                    <input type="hidden" name="size" th:value="${#strings.trim(product.size)}">
+                                    <span class="badge bg-secondary" th:text="${#strings.trim(product.size)}">M</span>
                                 </div>
                             </div>
 
                             <!-- Color Selection -->
                             <div class="mb-3" th:if="${product.color != null and product.color != ''}">
                                 <h6 class="mb-2">Màu sắc:</h6>
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <input type="hidden" name="color" th:value="${product.color}">
-                                    <span class="badge bg-secondary" th:text="${product.color}">Đen</span>
+
+                                <div class="d-flex gap-2 flex-wrap" th:if="${#strings.contains(product.color, ',')}">
+                                    <div class="color-option" th:each="colorOption,iter : ${#strings.arraySplit(product.color, ',')}">
+                                        <input type="radio" class="d-none" name="color"
+                                               th:id="'color-' + ${iter.index}"
+                                               th:value="${#strings.trim(colorOption)}"
+                                               th:checked="${iter.index == 0}">
+                                        <label class="btn btn-outline-secondary btn-sm mb-0"
+                                               th:for="'color-' + ${iter.index}"
+                                               th:text="${#strings.trim(colorOption)}">Đen</label>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2 flex-wrap" th:unless="${#strings.contains(product.color, ',')}">
+                                    <input type="hidden" name="color" th:value="${#strings.trim(product.color)}">
+                                    <span class="badge bg-secondary" th:text="${#strings.trim(product.color)}">Đen</span>
                                 </div>
                             </div>
 
@@ -597,7 +623,7 @@
 
             document.addEventListener('DOMContentLoaded', function () {
                 if (productId) {
-                    recordInteraction(productId, 'view');
+                    // recordInteraction(productId, 'view'); // DISABLED - Fix recommendation service first
                 }
                 const tabButtons = document.querySelectorAll('#productTabs button[data-bs-toggle="tab"]');
 

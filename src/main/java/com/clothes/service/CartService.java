@@ -132,6 +132,15 @@ public class CartService {
     }
 
     /**
+     * Update item variant by Cart Item ID
+     */
+    public void updateCartItemVariant(Long cartItemId, String size, String color) {
+        String normalizedSize = (size != null && !size.trim().isEmpty()) ? size.trim() : null;
+        String normalizedColor = (color != null && !color.trim().isEmpty()) ? color.trim() : null;
+        cartDAO.updateItemVariant(cartItemId, normalizedSize, normalizedColor);
+    }
+
+    /**
      * Get cart item by product ID
      */
     public Optional<CartItem> getCartItem(Long productId) {

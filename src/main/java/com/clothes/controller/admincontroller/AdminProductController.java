@@ -39,18 +39,25 @@ public class AdminProductController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) Boolean isNew,
             @RequestParam(required = false) Boolean isHot,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             HttpSession session,
             Model model) {
         if (session.getAttribute("adminId") == null) {
             return "redirect:/admin/login";
         }
 
-        List<Product> products = productService.searchProducts(keyword, categoryId, status, sortBy, isNew, isHot);
+        List<Product> products = productService.searchProductsPaginated(keyword, categoryId, status, sortBy, isNew,
+                isHot, page, size);
+        int totalProducts = productService.countProductsAdmin(keyword, categoryId, status, isNew, isHot);
+        int totalPages = (int) Math.ceil((double) totalProducts / size);
         List<Category> categories = categoryService.getAllCategories();
 
         model.addAttribute("products", products);
         model.addAttribute("categories", categories);
-        model.addAttribute("totalProducts", products.size());
+        model.addAttribute("totalProducts", totalProducts);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
 
         return "admin/products";
     }
