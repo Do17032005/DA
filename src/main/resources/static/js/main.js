@@ -21,6 +21,9 @@ $(document).ready(function() {
     
     // Load wishlist count
     loadWishlistCount();
+
+    // Track product detail view for recommendation system
+    autoTrackProductView();
 });
 
 function getLoggedInUserId() {
@@ -30,8 +33,6 @@ function getLoggedInUserId() {
     return null;
 }
 
-// TEMPORARILY DISABLED - Fix recommendation service first
-/*
 function recordInteraction(productId, interactionType, value = null) {
     const userId = getLoggedInUserId();
     if (!userId || !productId || !interactionType) {
@@ -52,10 +53,35 @@ function recordInteraction(productId, interactionType, value = null) {
         url: '/api/recommendations/interaction',
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify(payload)
+        data: JSON.stringify(payload),
+        error: function() {
+            // Keep silent - tracking should never block user flow
+        }
     });
 }
-*/
+
+function getCurrentProductId() {
+    const dataProductId = $('body').data('product-id') || $('[data-product-id]').first().data('product-id');
+    if (dataProductId) {
+        return Number(dataProductId);
+    }
+
+    const match = window.location.pathname.match(/^\/products\/(\d+)(?:\/.*)?$/);
+    if (match && match[1]) {
+        return Number(match[1]);
+    }
+
+    return null;
+}
+
+function autoTrackProductView() {
+    const productId = getCurrentProductId();
+    if (!productId) {
+        return;
+    }
+
+    recordInteraction(productId, 'view');
+}
 
 // Cart functions
 function addToCart(productId, quantity = 1, size = null, color = null) {
@@ -72,7 +98,7 @@ function addToCart(productId, quantity = 1, size = null, color = null) {
             if (response.success) {
                 showNotification('Đã thêm vào giỏ hàng!', 'success');
                 loadCartCount();
-                // recordInteraction(productId, 'add_to_cart'); // DISABLED
+                recordInteraction(productId, 'add_to_cart');
                 
                 // Show mini cart preview
                 showMiniCart();
@@ -160,7 +186,7 @@ function toggleWishlist(productId, button) {
                 const inWishlist = serverAction === 'added';
                 updateWishlistButtonState(button, inWishlist);
                 if (inWishlist) {
-                    // recordInteraction(productId, 'wishlist'); // DISABLED
+                    recordInteraction(productId, 'wishlist');
                 }
                 showNotification(
                     inWishlist ? 'Đã thêm vào danh sách yêu thích!' : 'Đã gỡ khỏi danh sách yêu thích!',
@@ -527,3 +553,4 @@ window.changeMainImage = changeMainImage;
 window.applyVoucher = applyVoucher;
 window.removeVoucher = removeVoucher;
 window.showNotification = showNotification;
+window.recordInteraction = recordInteraction;

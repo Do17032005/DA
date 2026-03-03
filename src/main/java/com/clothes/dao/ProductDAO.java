@@ -154,6 +154,29 @@ public class ProductDAO {
     }
 
     /**
+     * Find trending products using time-decay interaction scoring
+     */
+    public List<Product> findTrendingTimeDecay(int limit, int windowDays, double lambda) {
+        String sql = "SELECT p.* FROM products p " +
+                "LEFT JOIN user_interactions ui ON p.product_id = ui.product_id " +
+                "AND ui.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) " +
+                "WHERE p.is_active = TRUE " +
+                "GROUP BY p.product_id " +
+                "ORDER BY COALESCE(SUM( " +
+                "CASE ui.interaction_type " +
+                "WHEN 'purchase' THEN 10.0 " +
+                "WHEN 'add_to_cart' THEN 3.0 " +
+                "WHEN 'wishlist' THEN 2.0 " +
+                "WHEN 'view' THEN 1.0 " +
+                "ELSE 0.5 END " +
+                "* EXP(-? * (TIMESTAMPDIFF(HOUR, ui.created_at, NOW()) / 24.0))" +
+                "), 0) DESC, p.created_at DESC " +
+                "LIMIT ?";
+
+        return jdbcTemplate.query(sql, new ProductRowMapper(), windowDays, lambda, limit);
+    }
+
+    /**
      * Find products marked as new
      */
     public List<Product> findNewProducts(int limit) {

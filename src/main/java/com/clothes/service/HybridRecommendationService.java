@@ -4,6 +4,7 @@ import com.clothes.dao.*;
 import com.clothes.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,10 +28,23 @@ public class HybridRecommendationService {
     private final UserInteractionDAO userInteractionDAO;
     private final RecommendationDAO recommendationDAO;
 
-    // Weights for different recommendation strategies
-    private static final double WEIGHT_USER_BASED_CF = 0.3;
-    private static final double WEIGHT_ITEM_BASED_CF = 0.5;
-    private static final double WEIGHT_TRENDING = 0.2;
+    @Value("${recommendation.weights.user-based:0.3}")
+    private double weightUserBasedCf;
+
+    @Value("${recommendation.weights.item-based:0.5}")
+    private double weightItemBasedCf;
+
+    @Value("${recommendation.weights.trending:0.2}")
+    private double weightTrending;
+
+    @Value("${recommendation.time-decay.window-days:30}")
+    private int timeDecayWindowDays;
+
+    @Value("${recommendation.time-decay.lambda:0.08}")
+    private double timeDecayLambda;
+
+    @Value("${recommendation.time-decay.enabled:true}")
+    private boolean useTimeDecayTrending;
 
     public HybridRecommendationService(UserBasedCFService userBasedCFService,
             ItemBasedCFService itemBasedCFService,
@@ -74,7 +88,7 @@ public class HybridRecommendationService {
             for (int i = 0; i < userBasedRecs.size(); i++) {
                 Long productId = userBasedRecs.get(i).getProductId();
                 if (!seenProducts.contains(productId)) {
-                    double score = WEIGHT_USER_BASED_CF * (1.0 - (i / (double) userBasedRecs.size()));
+                    double score = weightUserBasedCf * (1.0 - (i / (double) userBasedRecs.size()));
                     hybridScores.put(productId, hybridScores.getOrDefault(productId, 0.0) + score);
                 }
             }
@@ -88,7 +102,7 @@ public class HybridRecommendationService {
             for (int i = 0; i < itemBasedRecs.size(); i++) {
                 Long productId = itemBasedRecs.get(i).getProductId();
                 if (!seenProducts.contains(productId)) {
-                    double score = WEIGHT_ITEM_BASED_CF * (1.0 - (i / (double) itemBasedRecs.size()));
+                    double score = weightItemBasedCf * (1.0 - (i / (double) itemBasedRecs.size()));
                     hybridScores.put(productId, hybridScores.getOrDefault(productId, 0.0) + score);
                 }
             }
@@ -98,11 +112,13 @@ public class HybridRecommendationService {
 
         // 3. Trending products (for diversity)
         try {
-            List<Product> trendingProducts = productDAO.findTrending(limit);
+            List<Product> trendingProducts = useTimeDecayTrending
+                    ? productDAO.findTrendingTimeDecay(limit, timeDecayWindowDays, timeDecayLambda)
+                    : productDAO.findTrending(limit);
             for (int i = 0; i < trendingProducts.size(); i++) {
                 Long productId = trendingProducts.get(i).getProductId();
                 if (!seenProducts.contains(productId)) {
-                    double score = WEIGHT_TRENDING * (1.0 - (i / (double) trendingProducts.size()));
+                    double score = weightTrending * (1.0 - (i / (double) trendingProducts.size()));
                     hybridScores.put(productId, hybridScores.getOrDefault(productId, 0.0) + score);
                 }
             }
@@ -121,7 +137,9 @@ public class HybridRecommendationService {
 
         if (topProductIds.isEmpty()) {
             logger.warn("No hybrid recommendations generated, falling back to trending");
-            return productDAO.findTrending(limit);
+            return useTimeDecayTrending
+                    ? productDAO.findTrendingTimeDecay(limit, timeDecayWindowDays, timeDecayLambda)
+                    : productDAO.findTrending(limit);
         }
 
         // 5. Cache recommendations
@@ -139,7 +157,9 @@ public class HybridRecommendationService {
         if (userId != null) {
             return getRecommendations(userId, limit);
         } else {
-            return productDAO.findTrending(limit);
+            return useTimeDecayTrending
+                    ? productDAO.findTrendingTimeDecay(limit, timeDecayWindowDays, timeDecayLambda)
+                    : productDAO.findTrending(limit);
         }
     }
 
