@@ -24,6 +24,9 @@ $(document).ready(function() {
 
     // Track product detail view for recommendation system
     autoTrackProductView();
+
+    // Track purchased products once on order success page
+    autoTrackOrderPurchase();
 });
 
 function getLoggedInUserId() {
@@ -81,6 +84,40 @@ function autoTrackProductView() {
     }
 
     recordInteraction(productId, 'view');
+}
+
+function autoTrackOrderPurchase() {
+    const $trackingRoot = $('#purchaseTrackingData');
+    if (!$trackingRoot.length) {
+        return;
+    }
+
+    const orderId = Number($trackingRoot.data('order-id'));
+    if (!orderId) {
+        return;
+    }
+
+    const trackedKey = 'purchase_tracked_order_' + orderId;
+    if (localStorage.getItem(trackedKey) === '1') {
+        return;
+    }
+
+    let hasTracked = false;
+    $trackingRoot.find('.purchase-track-item').each(function() {
+        const productId = Number($(this).data('product-id'));
+        const quantity = Number($(this).data('quantity'));
+
+        if (!productId) {
+            return;
+        }
+
+        recordInteraction(productId, 'purchase', quantity > 0 ? quantity : 1);
+        hasTracked = true;
+    });
+
+    if (hasTracked) {
+        localStorage.setItem(trackedKey, '1');
+    }
 }
 
 // Cart functions

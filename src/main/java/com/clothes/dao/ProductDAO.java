@@ -19,6 +19,18 @@ import java.util.Optional;
 @Repository
 public class ProductDAO {
 
+    public static class TimeDecayTrendingScore {
+        public Long productId;
+        public String productName;
+        public Double score;
+
+        public TimeDecayTrendingScore(Long productId, String productName, Double score) {
+            this.productId = productId;
+            this.productName = productName;
+            this.score = score;
+        }
+    }
+
     private final JdbcTemplate jdbcTemplate;
 
     public ProductDAO(JdbcTemplate jdbcTemplate) {
@@ -174,6 +186,35 @@ public class ProductDAO {
                 "LIMIT ?";
 
         return jdbcTemplate.query(sql, new ProductRowMapper(), windowDays, lambda, limit);
+    }
+
+    /**
+     * Get raw time-decay scores for debugging/demo
+     */
+    public List<TimeDecayTrendingScore> getTimeDecayTrendingScores(int limit, int windowDays, double lambda) {
+        String sql = "SELECT p.product_id, p.product_name, COALESCE(SUM( " +
+                "CASE ui.interaction_type " +
+                "WHEN 'purchase' THEN 10.0 " +
+                "WHEN 'add_to_cart' THEN 3.0 " +
+                "WHEN 'wishlist' THEN 2.0 " +
+                "WHEN 'view' THEN 1.0 " +
+                "ELSE 0.5 END " +
+                "* EXP(-? * (TIMESTAMPDIFF(HOUR, ui.created_at, NOW()) / 24.0))" +
+                "), 0) AS time_decay_score " +
+                "FROM products p " +
+                "LEFT JOIN user_interactions ui ON p.product_id = ui.product_id " +
+                "AND ui.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) " +
+                "WHERE p.is_active = TRUE " +
+                "GROUP BY p.product_id, p.product_name " +
+                "ORDER BY time_decay_score DESC, p.created_at DESC " +
+                "LIMIT ?";
+
+        return jdbcTemplate.query(sql,
+                (rs, rowNum) -> new TimeDecayTrendingScore(
+                        rs.getLong("product_id"),
+                        rs.getString("product_name"),
+                        rs.getDouble("time_decay_score")),
+                lambda, windowDays, limit);
     }
 
     /**

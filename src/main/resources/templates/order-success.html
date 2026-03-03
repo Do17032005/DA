@@ -9,6 +9,13 @@
 <body>
     <main layout:fragment="content">
         <div class="container my-5">
+            <div id="purchaseTrackingData"
+                th:attr="data-order-id=${order.orderId}">
+                <input type="hidden"
+                    class="purchase-track-item"
+                    th:each="item : ${order.items}"
+                    th:attr="data-product-id=${item.productId},data-quantity=${item.quantity}" />
+            </div>
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <!-- Success Message -->

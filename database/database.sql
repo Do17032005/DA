@@ -29,6 +29,7 @@ DROP TABLE IF EXISTS `order_items`;
 DROP TABLE IF EXISTS `cart_items`;
 DROP TABLE IF EXISTS `shopping_carts`;
 DROP TABLE IF EXISTS `orders`;
+DROP TABLE IF EXISTS `user_vouchers`;
 DROP TABLE IF EXISTS `vouchers`;
 DROP TABLE IF EXISTS `products`;
 DROP TABLE IF EXISTS `categories`;
@@ -121,6 +122,18 @@ CREATE TABLE `vouchers` (
     `is_active` BOOLEAN DEFAULT TRUE,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `user_vouchers` (
+    `user_voucher_id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` BIGINT NOT NULL,
+    `voucher_id` BIGINT NOT NULL,
+    `collected_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `is_used` BOOLEAN DEFAULT FALSE,
+    `used_at` TIMESTAMP NULL,
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`voucher_id`) REFERENCES `vouchers`(`voucher_id`) ON DELETE CASCADE,
+    UNIQUE KEY `unique_user_voucher` (`user_id`, `voucher_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `system_settings` (
@@ -495,6 +508,28 @@ SET SQL_SAFE_UPDATES = 1;
 -- Optional verification
 -- SELECT interaction_type, COUNT(*) FROM user_interactions WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY interaction_type;
 -- SELECT product_id, interaction_type, COUNT(*) FROM user_interactions WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY product_id, interaction_type ORDER BY product_id;
+
+-- =====================================================================
+-- OPTIONAL ROLLBACK (for demo rehearsal reset)
+-- =====================================================================
+-- USE clothesshopdb;
+-- SET SQL_SAFE_UPDATES = 0;
+-- DELETE FROM recommendations_cache;
+-- DELETE FROM user_interactions
+-- WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY);
+--
+-- UPDATE products p
+-- LEFT JOIN (
+--     SELECT product_id,
+--            SUM(CASE WHEN interaction_type = 'view' THEN 1 ELSE 0 END) AS total_views,
+--            SUM(CASE WHEN interaction_type = 'purchase' THEN 1 ELSE 0 END) AS total_purchases
+--     FROM user_interactions
+--     GROUP BY product_id
+-- ) t ON p.product_id = t.product_id
+-- SET p.view_count = COALESCE(t.total_views, 0),
+--     p.purchase_count = COALESCE(t.total_purchases, 0)
+-- WHERE p.product_id IS NOT NULL;
+-- SET SQL_SAFE_UPDATES = 1;
 
 -- =====================================================================
 -- CHECK SCRIPT: run these queries after import to verify schema + demo data

@@ -1,5 +1,6 @@
 package com.clothes.controller;
 
+import com.clothes.dao.ProductDAO;
 import com.clothes.model.Product;
 import com.clothes.model.UserInteraction;
 import com.clothes.service.HybridRecommendationService;
@@ -30,13 +31,16 @@ public class RecommendationController {
     private final HybridRecommendationService hybridRecommendationService;
     private final UserBasedCFService userBasedCFService;
     private final ItemBasedCFService itemBasedCFService;
+    private final ProductDAO productDAO;
 
     public RecommendationController(HybridRecommendationService hybridRecommendationService,
             UserBasedCFService userBasedCFService,
-            ItemBasedCFService itemBasedCFService) {
+            ItemBasedCFService itemBasedCFService,
+            ProductDAO productDAO) {
         this.hybridRecommendationService = hybridRecommendationService;
         this.userBasedCFService = userBasedCFService;
         this.itemBasedCFService = itemBasedCFService;
+        this.productDAO = productDAO;
     }
 
     /**
@@ -260,6 +264,38 @@ public class RecommendationController {
             logger.error("Error recording interaction", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to record interaction", "message", e.getMessage()));
+        }
+    }
+
+    /**
+     * GET /api/recommendations/debug/time-decay
+     * Debug endpoint to inspect Time-Decay trending scores
+     */
+    @GetMapping("/debug/time-decay")
+    public ResponseEntity<?> getTimeDecayDebug(
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "30") int windowDays,
+            @RequestParam(defaultValue = "0.08") double lambda) {
+        try {
+            logger.info("GET /api/recommendations/debug/time-decay?limit={}&windowDays={}&lambda={}",
+                    limit, windowDays, lambda);
+
+            List<ProductDAO.TimeDecayTrendingScore> scores = productDAO.getTimeDecayTrendingScores(limit, windowDays,
+                    lambda);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("type", "time_decay_debug");
+            response.put("limit", limit);
+            response.put("windowDays", windowDays);
+            response.put("lambda", lambda);
+            response.put("count", scores.size());
+            response.put("scores", scores);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error getting time-decay debug scores", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to get time-decay debug scores", "message", e.getMessage()));
         }
     }
 
