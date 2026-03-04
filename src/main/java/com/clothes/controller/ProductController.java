@@ -7,8 +7,13 @@ import com.clothes.model.Category;
 import com.clothes.model.Wishlist;
 import com.clothes.model.Product;
 import com.clothes.model.Review;
+import com.clothes.model.UserInteraction;
 import com.clothes.service.CategoryService;
+import com.clothes.service.HybridRecommendationService;
+import com.clothes.service.HybridRecommendationService;
 import com.clothes.service.ItemBasedCFService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,19 +29,24 @@ import java.util.Optional;
 @RequestMapping("/products")
 public class ProductController {
 
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
+
     private final ProductDAO productDAO;
     private final CategoryService categoryService;
     private final ReviewDAO reviewDAO;
     private final WishlistDAO wishlistDAO;
     private final ItemBasedCFService itemBasedCFService;
+    private final HybridRecommendationService recommendationService;
 
     public ProductController(ProductDAO productDAO, CategoryService categoryService,
-            ReviewDAO reviewDAO, WishlistDAO wishlistDAO, ItemBasedCFService itemBasedCFService) {
+            ReviewDAO reviewDAO, WishlistDAO wishlistDAO, ItemBasedCFService itemBasedCFService,
+            HybridRecommendationService recommendationService) {
         this.productDAO = productDAO;
         this.categoryService = categoryService;
         this.reviewDAO = reviewDAO;
         this.wishlistDAO = wishlistDAO;
         this.itemBasedCFService = itemBasedCFService;
+        this.recommendationService = recommendationService;
     }
 
     /**
@@ -138,6 +148,17 @@ public class ProductController {
         // Increment view count
         productDAO.incrementViewCount(id);
 
+        // Track user interaction for recommendation system
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId != null) {
+            try {
+                recommendationService.recordInteraction(userId, id, UserInteraction.InteractionType.VIEW, null);
+            } catch (Exception e) {
+                // Log error but don't interrupt page load
+                logger.warn("Error recording user interaction", e);
+            }
+        }
+
         // Get category info
         Category category = null;
         if (product.getCategoryId() != null) {
@@ -150,7 +171,6 @@ public class ProductController {
         int reviewCount = reviewDAO.getReviewCount(id);
 
         // Check if user is logged in and can review
-        Long userId = (Long) session.getAttribute("userId");
         boolean canReview = userId != null && !reviewDAO.hasUserReviewed(userId, id);
         Long userReviewId = null;
         if (userId != null) {

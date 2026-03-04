@@ -6,7 +6,10 @@ import com.clothes.model.CartItem;
 import com.clothes.model.Order;
 import com.clothes.model.OrderItem;
 import com.clothes.model.Voucher;
+import com.clothes.model.UserInteraction;
 import com.clothes.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,17 +27,22 @@ import java.util.Optional;
 @RequestMapping("/orders")
 public class OrderController {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
     private final OrderService orderService;
     private final CartService cartService;
     private final AddressService addressService;
     private final VoucherService voucherService;
+    private final HybridRecommendationService recommendationService;
 
     public OrderController(OrderService orderService, CartService cartService,
-            AddressService addressService, VoucherService voucherService) {
+            AddressService addressService, VoucherService voucherService,
+            HybridRecommendationService recommendationService) {
         this.orderService = orderService;
         this.cartService = cartService;
         this.addressService = addressService;
         this.voucherService = voucherService;
+        this.recommendationService = recommendationService;
     }
 
     /**
@@ -223,6 +231,17 @@ public class OrderController {
             // Create order
             Long orderId = orderService.createOrder(userId, checkoutItems, totalAmount, shippingAddress, paymentMethod,
                     notes);
+
+            // Track purchases for recommendation system
+            for (CartItem item : checkoutItems) {
+                try {
+                    recommendationService.recordInteraction(userId, item.getProductId(),
+                            UserInteraction.InteractionType.PURCHASE, item.getPrice());
+                } catch (Exception e) {
+                    logger.warn("Error tracking purchase for product {}", item.getProductId(), e);
+                    // Don't interrupt checkout for tracking errors
+                }
+            }
 
             // Clear purchased items from cart
             if (selectedItems != null && !selectedItems.isEmpty()) {
