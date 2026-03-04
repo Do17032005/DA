@@ -63,7 +63,7 @@ public class ProductController {
             @RequestParam(required = false) Boolean isNew,
             @RequestParam(required = false) Boolean isHot,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "9") int size,
             Model model) {
         List<Product> products;
 
@@ -96,9 +96,24 @@ public class ProductController {
             }
         }
 
-        model.addAttribute("products", products);
-        model.addAttribute("totalProducts", products.size());
-        model.addAttribute("totalPages", 1);
+        int totalProducts = products.size();
+        int totalPages = (int) Math.ceil((double) totalProducts / size);
+        if (totalPages == 0)
+            totalPages = 1;
+        if (page >= totalPages)
+            page = totalPages - 1;
+        if (page < 0)
+            page = 0;
+
+        int startItem = page * size;
+        int endItem = Math.min(startItem + size, totalProducts);
+        List<Product> pagedProducts = (startItem < totalProducts && startItem >= 0)
+                ? products.subList(startItem, endItem)
+                : List.of();
+
+        model.addAttribute("products", pagedProducts);
+        model.addAttribute("totalProducts", totalProducts);
+        model.addAttribute("totalPages", totalPages);
         model.addAttribute("currentPage", page);
         model.addAttribute("categories", categoryService.getAllCategories());
         model.addAttribute("brands", productDAO.getAllBrands());

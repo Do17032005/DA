@@ -113,13 +113,13 @@
                             <div class="filter-section">
                                 <h6>Nhãn</h6>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="filterIsNew" name="isNew" value="true"
-                                        th:checked="${param.isNew != null}">
+                                    <input class="form-check-input" type="checkbox" id="filterIsNew" name="isNew"
+                                        value="true" th:checked="${param.isNew != null}">
                                     <label class="form-check-label" for="filterIsNew">Mới</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="filterIsHot" name="isHot" value="true"
-                                        th:checked="${param.isHot != null}">
+                                    <input class="form-check-input" type="checkbox" id="filterIsHot" name="isHot"
+                                        value="true" th:checked="${param.isHot != null}">
                                     <label class="form-check-label" for="filterIsHot">Hot</label>
                                 </div>
                             </div>
@@ -181,11 +181,32 @@
                                             th:if="${product.discountPrice != null && product.discountPrice < product.price}"
                                             th:text="${#numbers.formatDecimal(product.price, 0, 0)} + 'đ'"></small>
                                     </div>
-                                    <button class="btn btn-sm btn-primary w-100" th:onclick="'addToCart(' + ${product.productId} + ')'">Thêm vào giỏ</button>
+                                    <button class="btn btn-sm btn-primary w-100"
+                                        th:onclick="'addToCart(' + ${product.productId} + ')'">Thêm vào giỏ</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Pagination -->
+                    <nav aria-label="Page navigation" th:if="${totalPages > 1}" class="mt-5">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                <a class="page-link" href="javascript:void(0)"
+                                    th:onclick="${currentPage == 0} ? '' : 'changePage(' + (${currentPage} - 1) + ')'"
+                                    tabindex="-1">Trước</a>
+                            </li>
+                            <li class="page-item" th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                                th:classappend="${pageNum == currentPage} ? 'active'">
+                                <a class="page-link" href="javascript:void(0)"
+                                    th:onclick="'changePage(' + ${pageNum} + ')'" th:text="${pageNum + 1}"></a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                                <a class="page-link" href="javascript:void(0)"
+                                    th:onclick="${currentPage == totalPages - 1} ? '' : 'changePage(' + (${currentPage} + 1) + ')'">Sau</a>
+                            </li>
+                        </ul>
+                    </nav>
 
                     <div class="text-center py-5" th:if="${#lists.isEmpty(products)}">
                         <i class="fas fa-search fa-3x text-muted mb-3"></i>
@@ -198,7 +219,7 @@
 
     <th:block layout:fragment="scripts">
         <script>
-            function applyFilters() {
+            function applyFilters(pageIdx) {
                 const params = new URLSearchParams(window.location.search);
                 const gender = $('input[name="gender"]:checked').val();
                 const categories = $('input[name="categoryId"]:checked').map(function () { return this.value; }).get();
@@ -218,7 +239,17 @@
                 if (isHot) newParams.set('isHot', 'true');
                 categories.forEach(c => newParams.append('categoryId', c));
 
+                if (pageIdx !== undefined && pageIdx !== null) {
+                    newParams.set('page', pageIdx);
+                } else {
+                    newParams.set('page', 0);
+                }
+
                 window.location.href = '/products?' + newParams.toString();
+            }
+
+            function changePage(page) {
+                applyFilters(page);
             }
 
             function clearFilters() {
