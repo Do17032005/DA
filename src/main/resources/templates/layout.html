@@ -68,11 +68,9 @@
                 <!-- Logo -->
                 <div class="col-md-3">
                     <a th:href="@{/}" class="text-decoration-none">
-                        <img th:src="${@settingsService.getSetting('site_logo', '/images/logo.png')}"
-                            th:alt="${@settingsService.getSetting('site_name', 'Clothes Shop')}" height="50"
+                        <img src="/images/logo.png" alt="Clothes Shop" height="50"
                             class="d-none d-md-block">
-                        <h4 class="d-md-none mb-0 text-dark"
-                            th:text="${@settingsService.getSetting('site_name', 'Clothes Shop')}"></h4>
+                        <h4 class="d-md-none mb-0 text-dark">Clothes Shop</h4>
                     </a>
                 </div>
 

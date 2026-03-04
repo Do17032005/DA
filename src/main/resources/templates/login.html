@@ -176,13 +176,15 @@
 
             <div class="login-body">
                 <!-- Error Messages -->
-                <div class="alert alert-danger" th:if="${error}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${error}">
                     <i class="bi bi-exclamation-triangle me-2"></i>
                     <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-                <div class="alert alert-success" th:if="${success}">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${success}">
                     <i class="bi bi-check-circle me-2"></i>
                     <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
 
                 <!-- Login Form -->
@@ -191,8 +193,8 @@
                         <label for="username" class="form-label fw-semibold">Tên đăng nhập / Email</label>
                         <div class="input-group">
                             <span class="input-group-text border-end-0"><i class="bi bi-person"></i></span>
-                            <input type="text" class="form-control border-start-0" id="username" name="username"
-                                placeholder="Nhập tên đăng nhập hoặc email" required th:value="${username}">
+                            <input type="text" class="form-control border-start-0" id="username" name="usernameOrEmail"
+                                placeholder="Nhập tên đăng nhập hoặc email" required th:value="${usernameOrEmail}">
                         </div>
                     </div>
 
