@@ -60,6 +60,7 @@ public class HybridRecommendationService {
 
     /**
      * Get hybrid recommendations combining multiple strategies
+     * Now with gender/category preference detection
      */
     public List<Product> getRecommendations(Long userId, int limit) {
         logger.info("Generating Hybrid recommendations for user: {}", userId);
@@ -75,6 +76,10 @@ public class HybridRecommendationService {
                     .collect(Collectors.toList());
             return productDAO.findByIds(productIds);
         }
+
+        // Detect user's gender preference from interaction history
+        Product.Gender userGenderPreference = detectUserGenderPreference(userId);
+        logger.info("Detected user {} gender preference: {}", userId, userGenderPreference);
 
         // Get user's already seen products
         Set<Long> seenProducts = new HashSet<>(
@@ -126,8 +131,11 @@ public class HybridRecommendationService {
             logger.error("Error getting trending products", e);
         }
 
-        // 4. Sort by combined score and get top N
-        List<Map.Entry<Long, Double>> sortedProducts = new ArrayList<>(hybridScores.entrySet());
+        // 4. Apply gender/category preference boost
+        Map<Long, Double> boostedScores = applyGenderCategoryBoost(hybridScores, userGenderPreference);
+
+        // 5. Sort by combined score and get top N
+        List<Map.Entry<Long, Double>> sortedProducts = new ArrayList<>(boostedScores.entrySet());
         sortedProducts.sort((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()));
 
         List<Long> topProductIds = sortedProducts.stream()
@@ -142,10 +150,11 @@ public class HybridRecommendationService {
                     : productDAO.findTrending(limit);
         }
 
-        // 5. Cache recommendations
-        cacheRecommendations(userId, hybridScores, topProductIds);
+        // 6. Cache recommendations
+        cacheRecommendations(userId, boostedScores, topProductIds);
 
-        logger.info("Generated {} Hybrid recommendations for user: {}", topProductIds.size(), userId);
+        logger.info("Generated {} Hybrid recommendations for user: {} (gender preference: {})",
+                topProductIds.size(), userId, userGenderPreference);
         return productDAO.findByIds(topProductIds);
     }
 
@@ -235,6 +244,72 @@ public class HybridRecommendationService {
     public void cleanupExpiredCache() {
         int deleted = recommendationDAO.deleteExpired();
         logger.info("Cleaned up {} expired recommendations", deleted);
+    }
+
+    /**
+     * Detect user's gender preference based on interaction history
+     * Analyzes user's viewed/purchased products to determine preference
+     */
+    private Product.Gender detectUserGenderPreference(Long userId) {
+        List<UserInteraction> userInteractions = userInteractionDAO.findByUserId(userId);
+
+        if (userInteractions.isEmpty()) {
+            return Product.Gender.UNISEX; // Default if no history
+        }
+
+        // Count products by gender (weighted by interaction importance)
+        Map<Product.Gender, Double> genderScores = new EnumMap<>(Product.Gender.class);
+
+        for (UserInteraction interaction : userInteractions) {
+            try {
+                Optional<Product> product = productDAO.findById(interaction.getProductId());
+                if (product.isPresent()) {
+                    Product.Gender gender = product.get().getGender();
+                    double weight = interaction.getInteractionType().getWeight();
+
+                    genderScores.put(gender, genderScores.getOrDefault(gender, 0.0) + weight);
+                }
+            } catch (Exception e) {
+                logger.warn("Error getting product for interaction {}", interaction.getInteractionId());
+            }
+        }
+
+        // Find dominant gender (excluding UNISEX)
+        return genderScores.entrySet().stream()
+                .filter(e -> e.getKey() != Product.Gender.UNISEX)
+                .max(Comparator.comparingDouble(Map.Entry::getValue))
+                .map(Map.Entry::getKey)
+                .orElse(Product.Gender.UNISEX);
+    }
+
+    /**
+     * Apply gender and category boost to scores
+     * Boosts products that match user's dominant gender preference
+     */
+    private Map<Long, Double> applyGenderCategoryBoost(Map<Long, Double> scores, Product.Gender userGender) {
+        Map<Long, Double> boostedScores = new HashMap<>(scores);
+        double genderBoost = 0.3; // 30% boost for matching gender
+
+        for (Map.Entry<Long, Double> entry : boostedScores.entrySet()) {
+            try {
+                Optional<Product> product = productDAO.findById(entry.getKey());
+                if (product.isPresent()) {
+                    Product.Gender productGender = product.get().getGender();
+
+                    // Boost if matches user preference or is UNISEX
+                    if (productGender == userGender || productGender == Product.Gender.UNISEX) {
+                        double boostedScore = entry.getValue() * (1.0 + genderBoost);
+                        boostedScores.put(entry.getKey(), boostedScore);
+                        logger.debug("Boosted product {} (gender: {}) from {} to {}",
+                                entry.getKey(), productGender, entry.getValue(), boostedScore);
+                    }
+                }
+            } catch (Exception e) {
+                logger.warn("Error applying boost to product {}", entry.getKey());
+            }
+        }
+
+        return boostedScores;
     }
 
     /**
