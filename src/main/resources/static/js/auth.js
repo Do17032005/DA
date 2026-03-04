@@ -13,15 +13,15 @@
     }
 
     async function login(username, password, rememberMe) {
-        const result = await window.Api.postForm('/user/login', {
-            usernameOrEmail: username,
+        const result = await window.Api.postForm('/login', {
+            username: username,
             password: password,
             rememberMe: rememberMe ? 'true' : null
         });
 
         const finalUrl = (result.url || '').toLowerCase();
 
-        if (finalUrl.includes('/user/login')) {
+        if (finalUrl.includes('/login') || finalUrl.includes('/user/login')) {
             return {
                 success: false,
                 error: extractServerMessage(result.text) || 'Tên đăng nhập/email hoặc mật khẩu không đúng!'

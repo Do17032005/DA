@@ -176,25 +176,25 @@
 
             <div class="login-body">
                 <!-- Error Messages -->
-                <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${error}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${loginError}">
                     <i class="bi bi-exclamation-triangle me-2"></i>
-                    <span th:text="${error}"></span>
+                    <span th:text="${loginError}"></span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-                <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${success}">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${loginSuccess}">
                     <i class="bi bi-check-circle me-2"></i>
-                    <span th:text="${success}"></span>
+                    <span th:text="${loginSuccess}"></span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
 
                 <!-- Login Form -->
-                     <form id="loginForm" th:action="@{/user/login}" method="post">
+                     <form id="loginForm" th:action="@{/login}" method="post">
                     <div class="mb-3">
                         <label for="username" class="form-label fw-semibold">Tên đăng nhập / Email</label>
                         <div class="input-group">
                             <span class="input-group-text border-end-0"><i class="bi bi-person"></i></span>
-                            <input type="text" class="form-control border-start-0" id="username" name="usernameOrEmail"
-                                placeholder="Nhập tên đăng nhập hoặc email" required th:value="${usernameOrEmail}">
+                            <input type="text" class="form-control border-start-0" id="username" name="username"
+                                placeholder="Nhập tên đăng nhập hoặc email" required th:value="${username}">
                         </div>
                     </div>
 
@@ -431,51 +431,24 @@
             }
         });
 
-        // Login form submission
+        // Login form submission (server-side submit to avoid mismatched client parsing)
         document.getElementById('loginForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const submitBtn = this.querySelector('button[type="submit"]');
 
-            // Validate all fields
             const isUsernameValid = validateUsername(username);
             const isPasswordValid = validatePassword(password);
 
             if (!isUsernameValid || !isPasswordValid) {
+                e.preventDefault();
                 showAlert('Vui lòng kiểm tra lại thông tin đăng nhập!', 'danger');
                 return;
             }
 
-            // Show loading state
             submitBtn.disabled = true;
             submitBtn.classList.add('btn-loading');
-            const btnText = submitBtn.textContent;
             submitBtn.textContent = '';
-
-            // Call API to login
-            Auth.login(username, password).then(result => {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('btn-loading');
-                submitBtn.textContent = btnText;
-
-                if (result.success) {
-                    showAlert('Đăng nhập thành công! Đang chuyển hướng...', 'success');
-
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 1000);
-                } else {
-                    showAlert(result.error || 'Tên đăng nhập hoặc mật khẩu không đúng!', 'danger');
-                }
-            }).catch(error => {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('btn-loading');
-                submitBtn.textContent = btnText;
-                showAlert('Đã xảy ra lỗi kết nối. Vui lòng kiểm tra backend!', 'danger');
-                console.error('Login error:', error);
-            });
         });
 
         // Google login (simulated)

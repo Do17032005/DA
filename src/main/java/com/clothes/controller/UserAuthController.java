@@ -56,7 +56,8 @@ public class UserAuthController {
         }
 
         if (userOpt.isEmpty()) {
-            model.addAttribute("error", "Tên đăng nhập hoặc email không tồn tại!");
+            model.addAttribute("loginError", "Tên đăng nhập hoặc email không tồn tại!");
+            model.addAttribute("username", username);
             return "login";
         }
 
@@ -64,13 +65,15 @@ public class UserAuthController {
 
         // Check if user is active
         if (!user.getIsActive()) {
-            model.addAttribute("error", "Tài khoản của bạn đã bị vô hiệu hóa!");
+            model.addAttribute("loginError", "Tài khoản của bạn đã bị vô hiệu hóa!");
+            model.addAttribute("username", username);
             return "login";
         }
 
         // Check password (plain text for now - should use BCrypt in production)
         if (!password.equals(user.getPassword())) {
-            model.addAttribute("error", "Mật khẩu không chính xác!");
+            model.addAttribute("loginError", "Mật khẩu không chính xác!");
+            model.addAttribute("username", username);
             return "login";
         }
 
