@@ -177,7 +177,9 @@ public class OrderController {
                 // Get shipping address from ID
                 Optional<Address> addressOpt = addressService.getAddressById(addressId);
                 if (addressOpt.isPresent() && addressOpt.get().getUserId().equals(userId)) {
-                    shippingAddress = addressOpt.get().getFullAddress();
+                    Address addr = addressOpt.get();
+                    shippingAddress = String.format("%s (Người nhận: %s, SĐT: %s)",
+                            addr.getFullAddress(), addr.getRecipientName(), addr.getPhoneNumber());
                 }
             }
 
@@ -351,6 +353,10 @@ public class OrderController {
             redirectAttributes.addFlashAttribute("error", "Không có quyền xem đơn hàng này");
             return "redirect:/orders";
         }
+
+        // Load order items with product details
+        List<OrderItem> items = orderService.getOrderItems(id);
+        order.setOrderItems(items);
 
         model.addAttribute("order", order);
 

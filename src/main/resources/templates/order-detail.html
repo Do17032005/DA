@@ -3,7 +3,7 @@
     layout:decorate="~{layout}">
 
 <head>
-    <title>Chi tiết đơn hàng - <span th:text="${order.orderCode}"></span></title>
+    <title th:text="'Chi tiết đơn hàng - ' + ${order.orderCode}">Chi tiết đơn hàng</title>
 </head>
 
 <body>
@@ -42,10 +42,10 @@
                                     </p>
                                     <p class="mb-0 text-muted">Trạng thái:
                                         <span class="badge" align="middle"
-                                            th:classappend="${order.status == 'PENDING' ? 'bg-warning text-dark' : 
-                                                               (order.status == 'PROCESSING' ? 'bg-info' :
-                                                               (order.status == 'SHIPPING' ? 'bg-primary' :
-                                                               (order.status == 'COMPLETED' ? 'bg-success' : 'bg-danger')))}">
+                                            th:classappend="${order.status.name() == 'PENDING' ? 'bg-warning text-dark' : 
+                                                               (order.status.name() == 'PROCESSING' ? 'bg-info' :
+                                                               (order.status.name() == 'SHIPPING' ? 'bg-primary' :
+                                                               (order.status.name() == 'COMPLETED' ? 'bg-success' : 'bg-danger')))}">
                                             <span th:text="${order.statusText}">Chờ xác nhận</span>
                                         </span>
                                     </p>
@@ -85,11 +85,10 @@
                                                             </a>
                                                         </h6>
                                                         <small class="text-muted">
-                                                            <span th:if="${item.size != null and !item.size.isEmpty()}"
+                                                            <span th:if="${!#strings.isEmpty(item.size)}"
                                                                 th:text="'Size: ' + ${item.size}"></span>
-                                                            <span
-                                                                th:if="${item.color != null and !item.color.isEmpty()}"
-                                                                th:text="(item.size != null and !item.size.isEmpty() ? ', ' : '') + 'Màu: ' + ${item.color}"></span>
+                                                            <span th:if="${!#strings.isEmpty(item.color)}"
+                                                                th:text="${(!#strings.isEmpty(item.size) ? ', ' : '') + 'Màu: ' + item.color}"></span>
                                                         </small>
                                                     </div>
                                                 </div>
@@ -159,11 +158,11 @@
                             <hr>
                             <div class="mb-3">
                                 <h6>Người nhận:</h6>
-                                <p class="mb-1" th:text="${order.customerName}">Nguyễn Văn A</p>
+                                <p class="mb-1" th:text="${order.customerName ?: 'N/A'}">Nguyễn Văn A</p>
                             </div>
                             <div class="mb-3">
                                 <h6>Liên hệ:</h6>
-                                <p class="mb-1" th:text="${order.phone}">0123456789</p>
+                                <p class="mb-1" th:text="${order.phone ?: 'N/A'}">0123456789</p>
                             </div>
                             <div class="mb-3">
                                 <h6>Địa chỉ giao hàng:</h6>
@@ -171,7 +170,7 @@
                                     123 Đường ABC, Phường XYZ, Quận 1, TP. HCM
                                 </p>
                             </div>
-                            <div th:if="${order.notes != null and !order.notes.isEmpty()}">
+                            <div th:if="${!#strings.isEmpty(order.notes)}">
                                 <h6>Ghi chú:</h6>
                                 <p class="mb-0 text-muted fst-italic" th:text="${order.notes}">
                                 </p>
@@ -181,12 +180,16 @@
 
                     <!-- Action Buttons -->
                     <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-primary" th:if="${order.status == 'COMPLETED'}"
-                            th:onclick="'reviewOrder(' + ${order.orderId} + ')'">
+                        <button type="button" class="btn btn-danger" th:if="${order.status.name() == 'PENDING'}"
+                            th:onclick="|cancelOrder(${order.orderId})|">
+                            <i class="fas fa-times me-2"></i>Hủy đơn hàng
+                        </button>
+                        <button type="button" class="btn btn-primary" th:if="${order.status.name() == 'COMPLETED'}"
+                            th:onclick="|reviewOrder(${order.orderId})|">
                             <i class="fas fa-star me-2"></i>Đánh giá sản phẩm
                         </button>
-                        <button type="button" class="btn btn-success" th:if="${order.status == 'COMPLETED'}"
-                            th:onclick="'reorder(' + ${order.orderId} + ')'">
+                        <button type="button" class="btn btn-success" th:if="${order.status.name() == 'COMPLETED'}"
+                            th:onclick="|reorder(${order.orderId})|">
                             <i class="fas fa-redo me-2"></i>Mua lại đơn hàng
                         </button>
                     </div>
@@ -196,6 +199,21 @@
     </main>
     <th:block layout:fragment="scripts">
         <script>
+            function cancelOrder(orderId) {
+                if (confirm('Bạn có chắc muốn hủy đơn hàng này?')) {
+                    $.post('/user/orders/' + orderId + '/cancel', function (response) {
+                        if (response.success) {
+                            showNotification('Đã hủy đơn hàng thành công!', 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showNotification(response.message || 'Không thể hủy đơn hàng!', 'error');
+                        }
+                    }).fail(function () {
+                        showNotification('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+                    });
+                }
+            }
+
             function reviewOrder(orderId) {
                 window.location.href = '/user/orders/' + orderId + '/review';
             }

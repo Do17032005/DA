@@ -10,6 +10,7 @@ import com.clothes.dao.UserVoucherDAO;
 import com.clothes.model.User;
 import com.clothes.model.Order;
 import com.clothes.service.UserService;
+import com.clothes.service.OrderService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -35,16 +36,18 @@ public class UserController {
     private final WishlistDAO wishlistDAO;
     private final VoucherDAO voucherDAO;
     private final UserVoucherDAO userVoucherDAO;
+    private final OrderService orderService;
 
     public UserController(UserService userService, AddressDAO addressDAO,
             OrderDAO orderDAO, WishlistDAO wishlistDAO, VoucherDAO voucherDAO,
-            UserVoucherDAO userVoucherDAO) {
+            UserVoucherDAO userVoucherDAO, OrderService orderService) {
         this.userService = userService;
         this.addressDAO = addressDAO;
         this.orderDAO = orderDAO;
         this.wishlistDAO = wishlistDAO;
         this.voucherDAO = voucherDAO;
         this.userVoucherDAO = userVoucherDAO;
+        this.orderService = orderService;
     }
 
     /**
@@ -368,6 +371,37 @@ public class UserController {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
             return "redirect:/user/profile";
         }
+    }
+
+    /**
+     * Hủy đơn hàng
+     */
+    @PostMapping("/orders/{id}/cancel")
+    @ResponseBody
+    public java.util.Map<String, Object> cancelOrder(@PathVariable Long id, HttpSession session) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đăng nhập để hủy đơn");
+            return response;
+        }
+
+        try {
+            boolean cancelled = orderService.cancelOrder(id, userId);
+            if (cancelled) {
+                response.put("success", true);
+                response.put("message", "Hủy đơn hàng thành công");
+            } else {
+                response.put("success", false);
+                response.put("message", "Không thể hủy đơn hàng này");
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return response;
     }
 
     // ========== QUẢN LÝ ĐỊA CHỈ GIAO HÀNG ==========

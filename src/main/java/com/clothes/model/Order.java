@@ -197,6 +197,7 @@ public class Order {
     }
 
     public String getCustomerName() {
+        parseShippingAddress();
         return customerName;
     }
 
@@ -205,11 +206,42 @@ public class Order {
     }
 
     public String getPhone() {
+        parseShippingAddress();
         return phone;
     }
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    private void parseShippingAddress() {
+        if (shippingAddress == null || shippingAddress.isEmpty())
+            return;
+
+        // Try to parse format: ... (Người nhận: Name, SĐT: Phone)
+        if (shippingAddress.contains("(Người nhận:") && shippingAddress.contains("SĐT:")) {
+            try {
+                int startName = shippingAddress.indexOf("(Người nhận:") + "(Người nhận:".length();
+                int endName = shippingAddress.indexOf(", SĐT:");
+                int startPhone = shippingAddress.indexOf("SĐT:") + "SĐT:".length();
+                int endPhone = shippingAddress.lastIndexOf(")");
+
+                if (startName > 0 && endName > startName) {
+                    String parsedName = shippingAddress.substring(startName, endName).trim();
+                    if (!parsedName.isEmpty()) {
+                        this.customerName = parsedName;
+                    }
+                }
+                if (startPhone > 0 && endPhone > startPhone) {
+                    String parsedPhone = shippingAddress.substring(startPhone, endPhone).trim();
+                    if (!parsedPhone.isEmpty()) {
+                        this.phone = parsedPhone;
+                    }
+                }
+            } catch (Exception e) {
+                // Ignore parsing errors
+            }
+        }
     }
 
     public Integer getItemCount() {

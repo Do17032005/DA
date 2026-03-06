@@ -51,6 +51,20 @@ public class OrderDAO {
             order.setPaymentMethod(rs.getString("payment_method"));
             order.setNotes(rs.getString("note"));
 
+            // Populate customer details if available (from JOIN)
+            try {
+                String customerName = rs.getString("customer_name");
+                if (customerName != null) {
+                    order.setCustomerName(customerName);
+                }
+                String phone = rs.getString("customer_phone");
+                if (phone != null) {
+                    order.setPhone(phone);
+                }
+            } catch (SQLException e) {
+                // Columns not in result set
+            }
+
             // New field for admin - generated from ID since not in DB yet
             order.setOrderCode("ORD-" + rs.getLong("order_id"));
 
@@ -104,7 +118,10 @@ public class OrderDAO {
     }
 
     public Optional<Order> findById(Long orderId) {
-        String sql = "SELECT * FROM orders WHERE order_id = ?";
+        String sql = "SELECT o.*, u.full_name as customer_name, u.phone as customer_phone " +
+                "FROM orders o " +
+                "LEFT JOIN users u ON o.user_id = u.user_id " +
+                "WHERE o.order_id = ?";
         List<Order> orders = jdbcTemplate.query(sql, new OrderRowMapper(), orderId);
 
         if (orders.isEmpty()) {
@@ -119,7 +136,11 @@ public class OrderDAO {
     }
 
     public List<Order> findByUserId(Long userId) {
-        String sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC";
+        String sql = "SELECT o.*, u.full_name as customer_name, u.phone as customer_phone " +
+                "FROM orders o " +
+                "LEFT JOIN users u ON o.user_id = u.user_id " +
+                "WHERE o.user_id = ? " +
+                "ORDER BY o.order_date DESC";
         List<Order> orders = jdbcTemplate.query(sql, new OrderRowMapper(), userId);
 
         // Load order items for each order

@@ -189,17 +189,17 @@
                                         </a>
                                         <button type="button" class="btn btn-primary btn-sm"
                                             th:if="${order.status == 'COMPLETED'}"
-                                            th:onclick="'reviewOrder(' + ${order.orderId} + ')'">
+                                            th:onclick="|reviewOrder(${order.orderId})|">
                                             <i class="fas fa-star me-1"></i>Đánh giá
                                         </button>
                                         <button type="button" class="btn btn-danger btn-sm"
                                             th:if="${order.status == 'PENDING'}"
-                                            th:onclick="'cancelOrder(' + ${order.orderId} + ')'">
+                                            th:onclick="|cancelOrder(${order.orderId})|">
                                             <i class="fas fa-times me-1"></i>Hủy đơn
                                         </button>
                                         <button type="button" class="btn btn-success btn-sm"
                                             th:if="${order.status == 'COMPLETED'}"
-                                            th:onclick="'reorder(' + ${order.orderId} + ')'">
+                                            th:onclick="|reorder(${order.orderId})|">
                                             <i class="fas fa-redo me-1"></i>Mua lại
                                         </button>
                                     </div>
