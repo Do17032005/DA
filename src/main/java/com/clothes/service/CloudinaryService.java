@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -43,5 +44,15 @@ public class CloudinaryService {
      */
     public void deleteImage(String publicId) throws IOException {
         cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+    }
+
+    /**
+     * Upload ảnh từ File local lên Cloudinary
+     */
+    public String uploadFile(File file, String folder) throws IOException {
+        Map<?, ?> result = cloudinary.uploader().upload(file, ObjectUtils.asMap(
+                "folder", "clothes-shop/" + folder,
+                "resource_type", "image"));
+        return (String) result.get("secure_url");
     }
 }
