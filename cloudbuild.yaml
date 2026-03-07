@@ -1,0 +1,25 @@
+steps:
+  # Build Docker image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/clothes-shop:latest"
+      - "."
+
+  # Push to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "gcr.io/$PROJECT_ID/clothes-shop:latest"
+
+  # Deploy to Cloud Run
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    args:
+      - "run"
+      - "--filename=."
+      - "--image=gcr.io/$PROJECT_ID/clothes-shop:latest"
+      - "--location=asia-southeast1"
+
+images:
+  - "gcr.io/$PROJECT_ID/clothes-shop:latest"

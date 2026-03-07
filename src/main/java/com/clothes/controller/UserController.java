@@ -11,6 +11,7 @@ import com.clothes.model.User;
 import com.clothes.model.Order;
 import com.clothes.service.UserService;
 import com.clothes.service.OrderService;
+import com.clothes.service.CloudinaryService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -37,10 +38,12 @@ public class UserController {
     private final VoucherDAO voucherDAO;
     private final UserVoucherDAO userVoucherDAO;
     private final OrderService orderService;
+    private final CloudinaryService cloudinaryService;
 
     public UserController(UserService userService, AddressDAO addressDAO,
             OrderDAO orderDAO, WishlistDAO wishlistDAO, VoucherDAO voucherDAO,
-            UserVoucherDAO userVoucherDAO, OrderService orderService) {
+            UserVoucherDAO userVoucherDAO, OrderService orderService,
+            CloudinaryService cloudinaryService) {
         this.userService = userService;
         this.addressDAO = addressDAO;
         this.orderDAO = orderDAO;
@@ -48,6 +51,7 @@ public class UserController {
         this.voucherDAO = voucherDAO;
         this.userVoucherDAO = userVoucherDAO;
         this.orderService = orderService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     /**
@@ -190,17 +194,7 @@ public class UserController {
             String avatarUrl = null;
             if (avatar != null && !avatar.isEmpty()) {
                 try {
-                    String uploadDir = "uploads/avatars/";
-                    Path uploadPath = Paths.get(uploadDir);
-                    if (!Files.exists(uploadPath)) {
-                        Files.createDirectories(uploadPath);
-                    }
-
-                    String fileName = userId + "_" + System.currentTimeMillis() + "_" + avatar.getOriginalFilename();
-                    try (var inputStream = avatar.getInputStream()) {
-                        Files.copy(inputStream, uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-                        avatarUrl = "/uploads/avatars/" + fileName;
-                    }
+                    avatarUrl = cloudinaryService.uploadImage(avatar, "avatars");
                 } catch (IOException e) {
                     redirectAttributes.addFlashAttribute("error", "Lỗi upload ảnh: " + e.getMessage());
                     return "redirect:/user/profile";

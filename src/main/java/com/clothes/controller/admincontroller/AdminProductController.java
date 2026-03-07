@@ -3,6 +3,7 @@ package com.clothes.controller.admincontroller;
 import com.clothes.model.Category;
 import com.clothes.model.Product;
 import com.clothes.service.CategoryService;
+import com.clothes.service.CloudinaryService;
 import com.clothes.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -26,10 +27,13 @@ public class AdminProductController {
 
     private final ProductService productService;
     private final CategoryService categoryService;
+    private final CloudinaryService cloudinaryService;
 
-    public AdminProductController(ProductService productService, CategoryService categoryService) {
+    public AdminProductController(ProductService productService, CategoryService categoryService,
+            CloudinaryService cloudinaryService) {
         this.productService = productService;
         this.categoryService = categoryService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @GetMapping
@@ -104,20 +108,11 @@ public class AdminProductController {
             return "redirect:/admin/login";
         }
 
-        // Handle image upload
+        // Handle image upload via Cloudinary
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                String uploadDir = "uploads/products/";
-                Path uploadPath = Paths.get(uploadDir);
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
-                }
-
-                String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
-                try (var inputStream = imageFile.getInputStream()) {
-                    Files.copy(inputStream, uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-                    product.setImageUrl("/uploads/products/" + fileName);
-                }
+                String imageUrl = cloudinaryService.uploadImage(imageFile, "products");
+                product.setImageUrl(imageUrl);
             } catch (IOException e) {
                 // Log error
             }
