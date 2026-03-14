@@ -191,9 +191,6 @@ public class HybridRecommendationService {
      */
     public List<Product> getRealtimeRecommendations(Long userId, List<Long> recentProductIds, int limit) {
         int safeLimit = Math.max(limit, 1);
-        int expandedLimit = Math.max(safeLimit * 2, 8);
-        List<Product> baseRecommendations = getRecommendations(userId, expandedLimit);
-
         List<Long> normalizedRecentProductIds = recentProductIds == null
                 ? List.of()
                 : recentProductIds.stream()
@@ -202,64 +199,72 @@ public class HybridRecommendationService {
                         .limit(safeLimit)
                         .collect(Collectors.toList());
 
+        if (normalizedRecentProductIds.isEmpty()) {
+            return getRecommendations(userId, safeLimit);
+        }
+
         LinkedHashSet<Long> finalProductIds = new LinkedHashSet<>();
-        if (!normalizedRecentProductIds.isEmpty()) {
-            List<Product> recentProducts = productDAO.findByIds(normalizedRecentProductIds);
-            for (Product recentProduct : recentProducts) {
+        List<Product> recentProducts = productDAO.findByIds(normalizedRecentProductIds);
+        for (Product recentProduct : recentProducts) {
+            if (finalProductIds.size() >= safeLimit) {
+                break;
+            }
+            finalProductIds.add(recentProduct.getProductId());
+        }
+
+        Set<Long> purchasedProducts = new HashSet<>(normalizedRecentProductIds);
+        for (Product recentProduct : recentProducts) {
+            if (finalProductIds.size() >= safeLimit) {
+                break;
+            }
+
+            Long categoryId = recentProduct.getCategoryId();
+            Product.Gender gender = recentProduct.getGender();
+            if (categoryId == null) {
+                continue;
+            }
+
+            List<Product> sameCategoryProducts = productDAO.findByCategoryId(categoryId);
+            sameCategoryProducts.sort((p1, p2) -> {
+                int score1 = (p1.getPurchaseCount() != null ? p1.getPurchaseCount() : 0) * 10
+                        + (p1.getViewCount() != null ? p1.getViewCount() : 0);
+                int score2 = (p2.getPurchaseCount() != null ? p2.getPurchaseCount() : 0) * 10
+                        + (p2.getViewCount() != null ? p2.getViewCount() : 0);
+
+                int popularityCompare = Integer.compare(score2, score1);
+                if (popularityCompare != 0) {
+                    return popularityCompare;
+                }
+
+                if (p1.getCreatedAt() == null && p2.getCreatedAt() == null) {
+                    return 0;
+                }
+                if (p1.getCreatedAt() == null) {
+                    return 1;
+                }
+                if (p2.getCreatedAt() == null) {
+                    return -1;
+                }
+                return p2.getCreatedAt().compareTo(p1.getCreatedAt());
+            });
+
+            for (Product candidate : sameCategoryProducts) {
                 if (finalProductIds.size() >= safeLimit) {
                     break;
                 }
-                finalProductIds.add(recentProduct.getProductId());
-            }
-        }
 
-        Set<Long> seenProducts = new HashSet<>(userInteractionDAO.findProductIdsByUserId(userId));
-        Set<Long> purchasedProducts = new HashSet<>(normalizedRecentProductIds);
-
-        Map<Long, Double> mergedScores = new HashMap<>();
-
-        for (int i = 0; i < baseRecommendations.size(); i++) {
-            Product product = baseRecommendations.get(i);
-            Long productId = product.getProductId();
-            if (seenProducts.contains(productId) || purchasedProducts.contains(productId) || finalProductIds.contains(productId)) {
-                continue;
-            }
-            double rankScore = 1.0 - (i / (double) Math.max(baseRecommendations.size(), 1));
-            mergedScores.put(productId, mergedScores.getOrDefault(productId, 0.0) + rankScore);
-        }
-
-        if (!normalizedRecentProductIds.isEmpty()) {
-            int recentCount = normalizedRecentProductIds.size();
-            for (int i = 0; i < recentCount; i++) {
-                Long purchasedProductId = normalizedRecentProductIds.get(i);
-                double recencyBoost = 1.0 - (i / (double) recentCount);
-                List<Product> similarProducts = itemBasedCFService.getSimilarProducts(purchasedProductId, expandedLimit);
-
-                for (int rank = 0; rank < similarProducts.size(); rank++) {
-                    Product similar = similarProducts.get(rank);
-                    Long similarProductId = similar.getProductId();
-                    if (seenProducts.contains(similarProductId)
-                            || purchasedProducts.contains(similarProductId)
-                            || finalProductIds.contains(similarProductId)) {
-                        continue;
-                    }
-
-                    double similarityRank = 1.0 - (rank / (double) Math.max(similarProducts.size(), 1));
-                    double purchaseBoostScore = 1.6 * recencyBoost * similarityRank;
-                    mergedScores.put(similarProductId,
-                            mergedScores.getOrDefault(similarProductId, 0.0) + purchaseBoostScore);
+                Long candidateId = candidate.getProductId();
+                if (candidateId == null || purchasedProducts.contains(candidateId) || finalProductIds.contains(candidateId)) {
+                    continue;
                 }
+
+                if (gender != null && candidate.getGender() != gender) {
+                    continue;
+                }
+
+                finalProductIds.add(candidateId);
             }
         }
-
-        int remainingSlots = Math.max(0, safeLimit - finalProductIds.size());
-        List<Long> topProductIds = mergedScores.entrySet().stream()
-                .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()))
-                .limit(remainingSlots)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
-
-        finalProductIds.addAll(topProductIds);
 
         if (finalProductIds.size() < safeLimit) {
             List<Product> fallbackProducts = useTimeDecayTrending

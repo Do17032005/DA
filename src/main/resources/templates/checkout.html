@@ -46,7 +46,7 @@
                 </div>
             </div>
 
-            <form th:action="@{/orders/checkout}" method="post" id="checkoutForm">
+            <form th:action="@{/orders/checkout}" method="post" id="checkoutForm" novalidate>
                 <input type="hidden" name="selectedItems" th:if="${selectedItems != null}"
                     th:value="${#strings.listJoin(selectedItems, ',')}" />
                 <div class="row justify-content-center g-3">
@@ -67,6 +67,7 @@
                                         <input type="text" class="form-control" name="fullName" id="fullName" required
                                             placeholder="Nguyễn Văn A"
                                             th:value="${defaultAddress != null ? defaultAddress.fullName : session.fullName}">
+                                        <div class="invalid-feedback"></div>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">
@@ -75,6 +76,7 @@
                                         <input type="tel" class="form-control" name="phone" id="phone" required
                                             placeholder="0123456789" pattern="[0-9]{10}"
                                             th:value="${defaultAddress != null ? defaultAddress.phone : session.phone}">
+                                        <div class="invalid-feedback"></div>
                                     </div>
                                 </div>
 
@@ -84,6 +86,7 @@
                                     </label>
                                     <input type="email" class="form-control" name="email" id="email" required
                                         placeholder="example@email.com" th:value="${session.email}">
+                                    <div class="invalid-feedback"></div>
                                 </div>
 
                                 <!-- Saved Addresses -->
@@ -111,6 +114,7 @@
                                         <input type="text" class="form-control" name="province" id="province"
                                             placeholder="VD: Hà Nội" required
                                             th:value="${defaultAddress != null ? defaultAddress.city : ''}">
+                                        <div class="invalid-feedback"></div>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">
@@ -119,6 +123,7 @@
                                         <input type="text" class="form-control" name="district" id="district"
                                             placeholder="VD: Cầu Giấy" required
                                             th:value="${defaultAddress != null ? defaultAddress.district : ''}">
+                                        <div class="invalid-feedback"></div>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">
@@ -127,6 +132,7 @@
                                         <input type="text" class="form-control" name="ward" id="ward"
                                             placeholder="VD: Dịch Vọng" required
                                             th:value="${defaultAddress != null ? defaultAddress.ward : ''}">
+                                        <div class="invalid-feedback"></div>
                                     </div>
                                 </div>
 
@@ -137,6 +143,7 @@
                                     <input type="text" class="form-control" name="address" id="address" required
                                         placeholder="Số nhà, tên đường..."
                                         th:value="${defaultAddress != null ? defaultAddress.addressLine : ''}">
+                                    <div class="invalid-feedback"></div>
                                 </div>
 
                                 <div class="mb-3">
@@ -152,8 +159,7 @@
                                     </label>
                                 </div>
                                 <div class="mt-4 text-end">
-                                    <button type="button" class="btn btn-primary btn-lg px-5 w-100"
-                                        onclick="document.querySelector('[data-step-link=\'payment\']').click()">
+                                    <button type="button" class="btn btn-primary btn-lg px-5 w-100" id="toPaymentBtn" disabled>
                                         Tiếp tục đến phương thức thanh toán <i class="fas fa-arrow-right ms-2"></i>
                                     </button>
                                 </div>
@@ -250,7 +256,7 @@
                                         <i class="fas fa-arrow-left me-2"></i> Quay lại
                                     </button>
                                     <button type="button" class="btn btn-primary btn-lg px-4"
-                                        onclick="document.querySelector('[data-step-link=\'complete\']').click()">
+                                        id="toCompleteBtn" disabled>
                                         Tiếp tục đến kiểm tra đơn <i class="fas fa-arrow-right ms-2"></i>
                                     </button>
                                 </div>
@@ -345,6 +351,7 @@
                                         <a href="/policy-return" target="_blank" class="text-primary">điều khoản & chính
                                             sách</a>
                                     </label>
+                                    <div class="invalid-feedback" id="agreeTermsError"></div>
                                 </div>
 
                                 <!-- Submit Button -->
@@ -390,6 +397,9 @@
                     districtInput.value = '';
                     wardInput.value = '';
                     document.getElementById('address').value = '';
+                    if (window.checkoutStepApi && typeof window.checkoutStepApi.refreshStepAccess === 'function') {
+                        window.checkoutStepApi.refreshStepAccess();
+                    }
                     return;
                 }
 
@@ -400,6 +410,10 @@
                 document.getElementById('address').value = selectedOption.dataset.address || '';
                 districtInput.value = selectedOption.dataset.district || '';
                 wardInput.value = selectedOption.dataset.ward || '';
+
+                if (window.checkoutStepApi && typeof window.checkoutStepApi.refreshStepAccess === 'function') {
+                    window.checkoutStepApi.refreshStepAccess();
+                }
             }
 
             function applyVoucherCheckout() {
@@ -422,6 +436,19 @@
             function initCheckoutSteps() {
                 const stepLinks = document.querySelectorAll('[data-step-link]');
                 const stepSections = document.querySelectorAll('[data-step-section]');
+                const toPaymentBtn = document.getElementById('toPaymentBtn');
+                const toCompleteBtn = document.getElementById('toCompleteBtn');
+
+                const requiredFieldIds = ['fullName', 'phone', 'email', 'province', 'district', 'ward', 'address'];
+                const fieldLabels = {
+                    fullName: 'Họ và tên',
+                    phone: 'Số điện thoại',
+                    email: 'Email',
+                    province: 'Tỉnh/Thành phố',
+                    district: 'Quận/Huyện',
+                    ward: 'Phường/Xã',
+                    address: 'Địa chỉ cụ thể'
+                };
 
                 const showStep = (step) => {
                     stepSections.forEach(section => {
@@ -436,24 +463,277 @@
                     });
                 };
 
+                const setFieldValidation = (input, isValid, message) => {
+                    if (!input) {
+                        return;
+                    }
+
+                    input.classList.toggle('is-invalid', !isValid);
+                    const feedback = input.parentElement.querySelector('.invalid-feedback');
+                    if (feedback) {
+                        feedback.textContent = isValid ? '' : message;
+                    }
+                };
+
+                const setNavigationDisabled = (element, disabled) => {
+                    if (!element) {
+                        return;
+                    }
+
+                    if ('disabled' in element) {
+                        element.disabled = disabled;
+                    }
+
+                    if (element.tagName === 'A') {
+                        element.classList.toggle('disabled', disabled);
+                        element.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+                        if (disabled) {
+                            element.setAttribute('tabindex', '-1');
+                        } else {
+                            element.removeAttribute('tabindex');
+                        }
+                    }
+                };
+
+                const validateShippingStep = (options = { showNotification: false }) => {
+                    const missingLabels = [];
+                    let firstInvalid = null;
+
+                    requiredFieldIds.forEach(fieldId => {
+                        const input = document.getElementById(fieldId);
+                        if (!input) {
+                            return;
+                        }
+
+                        const value = (input.value || '').trim();
+                        const label = fieldLabels[fieldId] || fieldId;
+
+                        if (!value) {
+                            setFieldValidation(input, false, `Vui lòng nhập ${label.toLowerCase()}.`);
+                            missingLabels.push(label);
+                            if (!firstInvalid) {
+                                firstInvalid = input;
+                            }
+                            return;
+                        }
+
+                        if (fieldId === 'phone' && !/^0\d{9}$/.test(value)) {
+                            setFieldValidation(input, false, 'Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0.');
+                            missingLabels.push(label);
+                            if (!firstInvalid) {
+                                firstInvalid = input;
+                            }
+                            return;
+                        }
+
+                        if (fieldId === 'email') {
+                            const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                            if (!isEmailValid) {
+                                setFieldValidation(input, false, 'Email không đúng định dạng.');
+                                missingLabels.push(label);
+                                if (!firstInvalid) {
+                                    firstInvalid = input;
+                                }
+                                return;
+                            }
+                        }
+
+                        setFieldValidation(input, true, '');
+                    });
+
+                    if (firstInvalid) {
+                        firstInvalid.focus();
+                        if (options.showNotification) {
+                            const message = missingLabels.length > 0
+                                ? 'Vui lòng nhập đầy đủ thông tin giao hàng hợp lệ trước khi sang bước tiếp theo.'
+                                : 'Thông tin giao hàng chưa hợp lệ.';
+                            showNotification(message, 'warning');
+                        }
+                        return false;
+                    }
+
+                    return true;
+                };
+
+                const validatePaymentStep = (options = { showNotification: false }) => {
+                    const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked');
+                    if (selectedPayment) {
+                        return true;
+                    }
+
+                    if (options.showNotification) {
+                        showNotification('Vui lòng chọn phương thức thanh toán trước khi tiếp tục.', 'warning');
+                    }
+                    return false;
+                };
+
+                const validateTermsStep = (options = { showNotification: false }) => {
+                    const agreeTerms = document.getElementById('agreeTerms');
+                    const agreeTermsError = document.getElementById('agreeTermsError');
+                    if (!agreeTerms) {
+                        return true;
+                    }
+
+                    if (agreeTerms.checked) {
+                        agreeTerms.classList.remove('is-invalid');
+                        if (agreeTermsError) {
+                            agreeTermsError.textContent = '';
+                        }
+                        return true;
+                    }
+
+                    agreeTerms.classList.add('is-invalid');
+                    if (agreeTermsError) {
+                        agreeTermsError.textContent = 'Bạn cần đồng ý điều khoản trước khi đặt hàng.';
+                    }
+
+                    if (options.showNotification) {
+                        showNotification('Vui lòng đồng ý điều khoản trước khi đặt hàng.', 'warning');
+                    }
+
+                    return false;
+                };
+
+                const updateStepAccessState = () => {
+                    const shippingValid = validateShippingStep({ showNotification: false });
+                    const paymentValid = validatePaymentStep({ showNotification: false });
+
+                    const paymentLink = document.querySelector('[data-step-link="payment"]');
+                    const completeLink = document.querySelector('[data-step-link="complete"]');
+
+                    setNavigationDisabled(toPaymentBtn, !shippingValid);
+                    setNavigationDisabled(paymentLink, !shippingValid);
+
+                    const canGoComplete = shippingValid && paymentValid;
+                    setNavigationDisabled(toCompleteBtn, !canGoComplete);
+                    setNavigationDisabled(completeLink, !canGoComplete);
+                };
+
+                window.checkoutStepApi = {
+                    showStep,
+                    validateShippingStep,
+                    validatePaymentStep,
+                    validateTermsStep,
+                    refreshStepAccess: updateStepAccessState
+                };
+
+                requiredFieldIds.forEach(fieldId => {
+                    const input = document.getElementById(fieldId);
+                    if (!input) {
+                        return;
+                    }
+
+                    input.addEventListener('input', () => {
+                        if (input.classList.contains('is-invalid')) {
+                            validateShippingStep({ showNotification: false });
+                        }
+                        updateStepAccessState();
+                    });
+
+                    input.addEventListener('blur', () => {
+                        validateShippingStep({ showNotification: false });
+                        updateStepAccessState();
+                    });
+                });
+
+                document.querySelectorAll('input[name="paymentMethod"]').forEach((paymentInput) => {
+                    paymentInput.addEventListener('change', () => {
+                        updateStepAccessState();
+                    });
+                });
+
+                const agreeTerms = document.getElementById('agreeTerms');
+                if (agreeTerms) {
+                    agreeTerms.addEventListener('change', () => {
+                        validateTermsStep({ showNotification: false });
+                    });
+                }
+
+                if (toPaymentBtn) {
+                    toPaymentBtn.addEventListener('click', () => {
+                        if (!validateShippingStep({ showNotification: true })) {
+                            updateStepAccessState();
+                            return;
+                        }
+                        showStep('payment');
+                        updateStepAccessState();
+                    });
+                }
+
+                if (toCompleteBtn) {
+                    toCompleteBtn.addEventListener('click', () => {
+                        if (!validateShippingStep({ showNotification: true })) {
+                            showStep('shipping');
+                            updateStepAccessState();
+                            return;
+                        }
+                        if (!validatePaymentStep({ showNotification: true })) {
+                            updateStepAccessState();
+                            return;
+                        }
+                        showStep('complete');
+                        updateStepAccessState();
+                    });
+                }
+
                 stepLinks.forEach(link => {
                     if (!link.dataset.stepLink) return;
                     link.addEventListener('click', function (event) {
                         event.preventDefault();
-                        showStep(this.dataset.stepLink);
+                        const targetStep = this.dataset.stepLink;
+
+                        if (this.classList.contains('disabled')) {
+                            return;
+                        }
+
+                        if ((targetStep === 'payment' || targetStep === 'complete') &&
+                            !validateShippingStep({ showNotification: true })) {
+                            showStep('shipping');
+                            updateStepAccessState();
+                            return;
+                        }
+
+                        if (targetStep === 'complete' && !validatePaymentStep({ showNotification: true })) {
+                            showStep('payment');
+                            updateStepAccessState();
+                            return;
+                        }
+
+                        showStep(targetStep);
+                        updateStepAccessState();
                         window.scrollTo({ top: document.getElementById('checkoutForm').offsetTop - 80, behavior: 'smooth' });
                     });
                 });
 
                 showStep('shipping');
+                updateStepAccessState();
             }
 
-            // Form validation
             $('#checkoutForm').on('submit', function (e) {
-                const phone = $('input[name="phone"]').val();
-                if (!/^[0-9]{10}$/.test(phone)) {
+                const stepApi = window.checkoutStepApi;
+                if (!stepApi) {
+                    return;
+                }
+
+                const isShippingValid = stepApi.validateShippingStep({ showNotification: true });
+
+                if (!isShippingValid) {
+                    stepApi.showStep('shipping');
                     e.preventDefault();
-                    showNotification('Số điện thoại không hợp lệ!', 'error');
+                    return false;
+                }
+
+                const hasPaymentMethod = stepApi.validatePaymentStep({ showNotification: true });
+                if (!hasPaymentMethod) {
+                    stepApi.showStep('payment');
+                    e.preventDefault();
+                    return false;
+                }
+
+                const agreedTerms = stepApi.validateTermsStep({ showNotification: true });
+                if (!agreedTerms) {
+                    stepApi.showStep('complete');
+                    e.preventDefault();
                     return false;
                 }
             });
