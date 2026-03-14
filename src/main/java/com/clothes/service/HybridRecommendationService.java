@@ -159,6 +159,135 @@ public class HybridRecommendationService {
     }
 
     /**
+     * Force refresh recommendations and prioritize products related to recently
+     * purchased items.
+     */
+    public List<Product> refreshRecommendationsAfterPurchase(Long userId, List<Long> recentProductIds, int limit) {
+        recommendationDAO.deleteByUserId(userId);
+        List<Product> refreshed = getRealtimeRecommendations(userId, recentProductIds, limit);
+
+        if (!refreshed.isEmpty()) {
+            List<Long> refreshedProductIds = refreshed.stream()
+                    .map(Product::getProductId)
+                    .collect(Collectors.toList());
+
+            Map<Long, Double> scoreByProduct = new HashMap<>();
+            int total = refreshedProductIds.size();
+            for (int i = 0; i < total; i++) {
+                Long productId = refreshedProductIds.get(i);
+                double rankScore = 1.0 - (i / (double) Math.max(total, 1));
+                scoreByProduct.put(productId, rankScore);
+            }
+
+            cacheRecommendations(userId, scoreByProduct, refreshedProductIds);
+        }
+
+        return refreshed;
+    }
+
+    /**
+     * Build realtime recommendations by combining fresh hybrid results with a
+     * strong boost from products similar to recently purchased items.
+     */
+    public List<Product> getRealtimeRecommendations(Long userId, List<Long> recentProductIds, int limit) {
+        int safeLimit = Math.max(limit, 1);
+        int expandedLimit = Math.max(safeLimit * 2, 8);
+        List<Product> baseRecommendations = getRecommendations(userId, expandedLimit);
+
+        List<Long> normalizedRecentProductIds = recentProductIds == null
+                ? List.of()
+                : recentProductIds.stream()
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .limit(safeLimit)
+                        .collect(Collectors.toList());
+
+        LinkedHashSet<Long> finalProductIds = new LinkedHashSet<>();
+        if (!normalizedRecentProductIds.isEmpty()) {
+            List<Product> recentProducts = productDAO.findByIds(normalizedRecentProductIds);
+            for (Product recentProduct : recentProducts) {
+                if (finalProductIds.size() >= safeLimit) {
+                    break;
+                }
+                finalProductIds.add(recentProduct.getProductId());
+            }
+        }
+
+        Set<Long> seenProducts = new HashSet<>(userInteractionDAO.findProductIdsByUserId(userId));
+        Set<Long> purchasedProducts = new HashSet<>(normalizedRecentProductIds);
+
+        Map<Long, Double> mergedScores = new HashMap<>();
+
+        for (int i = 0; i < baseRecommendations.size(); i++) {
+            Product product = baseRecommendations.get(i);
+            Long productId = product.getProductId();
+            if (seenProducts.contains(productId) || purchasedProducts.contains(productId) || finalProductIds.contains(productId)) {
+                continue;
+            }
+            double rankScore = 1.0 - (i / (double) Math.max(baseRecommendations.size(), 1));
+            mergedScores.put(productId, mergedScores.getOrDefault(productId, 0.0) + rankScore);
+        }
+
+        if (!normalizedRecentProductIds.isEmpty()) {
+            int recentCount = normalizedRecentProductIds.size();
+            for (int i = 0; i < recentCount; i++) {
+                Long purchasedProductId = normalizedRecentProductIds.get(i);
+                double recencyBoost = 1.0 - (i / (double) recentCount);
+                List<Product> similarProducts = itemBasedCFService.getSimilarProducts(purchasedProductId, expandedLimit);
+
+                for (int rank = 0; rank < similarProducts.size(); rank++) {
+                    Product similar = similarProducts.get(rank);
+                    Long similarProductId = similar.getProductId();
+                    if (seenProducts.contains(similarProductId)
+                            || purchasedProducts.contains(similarProductId)
+                            || finalProductIds.contains(similarProductId)) {
+                        continue;
+                    }
+
+                    double similarityRank = 1.0 - (rank / (double) Math.max(similarProducts.size(), 1));
+                    double purchaseBoostScore = 1.6 * recencyBoost * similarityRank;
+                    mergedScores.put(similarProductId,
+                            mergedScores.getOrDefault(similarProductId, 0.0) + purchaseBoostScore);
+                }
+            }
+        }
+
+        int remainingSlots = Math.max(0, safeLimit - finalProductIds.size());
+        List<Long> topProductIds = mergedScores.entrySet().stream()
+                .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()))
+                .limit(remainingSlots)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        finalProductIds.addAll(topProductIds);
+
+        if (finalProductIds.size() < safeLimit) {
+            List<Product> fallbackProducts = useTimeDecayTrending
+                    ? productDAO.findTrendingTimeDecay(safeLimit * 2, timeDecayWindowDays, timeDecayLambda)
+                    : productDAO.findTrending(safeLimit * 2);
+
+            for (Product fallbackProduct : fallbackProducts) {
+                if (finalProductIds.size() >= safeLimit) {
+                    break;
+                }
+                Long fallbackId = fallbackProduct.getProductId();
+                if (finalProductIds.contains(fallbackId)) {
+                    continue;
+                }
+                finalProductIds.add(fallbackId);
+            }
+        }
+
+        if (finalProductIds.isEmpty()) {
+            return useTimeDecayTrending
+                    ? productDAO.findTrendingTimeDecay(safeLimit, timeDecayWindowDays, timeDecayLambda)
+                    : productDAO.findTrending(safeLimit);
+        }
+
+        return productDAO.findByIds(new ArrayList<>(finalProductIds));
+    }
+
+    /**
      * Get recommendations for homepage (personalized if logged in, trending
      * otherwise)
      */

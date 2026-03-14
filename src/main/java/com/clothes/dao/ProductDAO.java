@@ -148,10 +148,17 @@ public class ProductDAO {
             return List.of();
         }
 
-        String inClause = String.join(",", productIds.stream().map(id -> "?").toArray(String[]::new));
-        String sql = "SELECT * FROM products WHERE product_id IN (" + inClause + ") AND is_active = TRUE";
+        String placeholders = String.join(",", productIds.stream().map(id -> "?").toArray(String[]::new));
+        String sql = "SELECT * FROM products WHERE product_id IN (" + placeholders + ") " +
+                "AND is_active = TRUE ORDER BY FIELD(product_id, " + placeholders + ")";
 
-        return jdbcTemplate.query(sql, new ProductRowMapper(), productIds.toArray());
+        Object[] params = new Object[productIds.size() * 2];
+        for (int i = 0; i < productIds.size(); i++) {
+            params[i] = productIds.get(i);
+            params[i + productIds.size()] = productIds.get(i);
+        }
+
+        return jdbcTemplate.query(sql, new ProductRowMapper(), params);
     }
 
     /**

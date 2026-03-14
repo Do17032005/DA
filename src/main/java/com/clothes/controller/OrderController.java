@@ -34,15 +34,18 @@ public class OrderController {
     private final AddressService addressService;
     private final VoucherService voucherService;
     private final HybridRecommendationService recommendationService;
+    private final RecommendationRealtimeService recommendationRealtimeService;
 
     public OrderController(OrderService orderService, CartService cartService,
             AddressService addressService, VoucherService voucherService,
-            HybridRecommendationService recommendationService) {
+            HybridRecommendationService recommendationService,
+            RecommendationRealtimeService recommendationRealtimeService) {
         this.orderService = orderService;
         this.cartService = cartService;
         this.addressService = addressService;
         this.voucherService = voucherService;
         this.recommendationService = recommendationService;
+        this.recommendationRealtimeService = recommendationRealtimeService;
     }
 
     /**
@@ -235,6 +238,11 @@ public class OrderController {
                     notes);
 
             // Track purchases for recommendation system
+            List<Long> purchasedProductIds = checkoutItems.stream()
+                    .map(CartItem::getProductId)
+                    .distinct()
+                    .toList();
+
             for (CartItem item : checkoutItems) {
                 try {
                     recommendationService.recordInteraction(userId, item.getProductId(),
@@ -244,6 +252,14 @@ public class OrderController {
                     // Don't interrupt checkout for tracking errors
                 }
             }
+
+            try {
+                recommendationService.refreshRecommendationsAfterPurchase(userId, purchasedProductIds, 8);
+            } catch (Exception e) {
+                logger.warn("Error refreshing recommendations after checkout for user {}", userId, e);
+            }
+
+            recommendationRealtimeService.publishRecommendationRefresh(userId, purchasedProductIds, orderId);
 
             // Clear purchased items from cart
             if (selectedItems != null && !selectedItems.isEmpty()) {

@@ -220,14 +220,18 @@
         </section>
 
         <!-- Recommended Products -->
-        <section class="container mb-5" th:if="${recommendedProducts != null && !recommendedProducts.empty}">
+        <section id="homepageRecommendationSection" class="container mb-5" data-limit="8"
+            th:if="${session.userId != null || (recommendedProducts != null && !recommendedProducts.empty)}">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold mb-0">Gợi ý cho bạn</h2>
+                <div>
+                    <h2 class="fw-bold mb-0">Gợi ý cho bạn</h2>
+                    <small id="homepageRecommendationStatus" class="text-muted d-block"></small>
+                </div>
                 <a href="/products" class="btn btn-outline-primary">
                     Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
-            <div class="row g-4">
+            <div id="homepageRecommendationGrid" class="row g-4">
                 <div class="col-md-3 col-sm-6" th:each="product : ${recommendedProducts}">
                     <div class="card product-card h-100 position-relative">
                         <span class="badge bg-danger badge-sale"

@@ -27,6 +27,9 @@ $(document).ready(function() {
 
     // Track purchased products once on order success page
     autoTrackOrderPurchase();
+
+    // Keep recommendation section synced after new purchases
+    initRecommendationRealtime();
 });
 
 function getLoggedInUserId() {
@@ -97,27 +100,300 @@ function autoTrackOrderPurchase() {
         return;
     }
 
-    const trackedKey = 'purchase_tracked_order_' + orderId;
-    if (localStorage.getItem(trackedKey) === '1') {
+    const notifiedKey = 'recommendation_refresh_notified_order_' + orderId;
+    if (localStorage.getItem(notifiedKey) === '1') {
         return;
     }
 
-    let hasTracked = false;
+    const productIds = [];
     $trackingRoot.find('.purchase-track-item').each(function() {
         const productId = Number($(this).data('product-id'));
-        const quantity = Number($(this).data('quantity'));
 
         if (!productId) {
             return;
         }
 
-        recordInteraction(productId, 'purchase', quantity > 0 ? quantity : 1);
-        hasTracked = true;
+        if (!productIds.includes(productId)) {
+            productIds.push(productId);
+        }
     });
 
-    if (hasTracked) {
-        localStorage.setItem(trackedKey, '1');
+    if (!productIds.length) {
+        return;
     }
+
+    savePendingRecommendationRefresh(orderId, productIds);
+    notifyRecommendationRefresh(orderId, productIds);
+    localStorage.setItem(notifiedKey, '1');
+}
+
+function initRecommendationRealtime() {
+    const userId = getLoggedInUserId();
+    const $recommendationSection = $('#homepageRecommendationSection');
+
+    if (!userId || !$recommendationSection.length) {
+        return;
+    }
+
+    consumePendingRecommendationRefresh();
+
+    if (!window.EventSource) {
+        return;
+    }
+
+    let source = null;
+    let reconnectAttempts = 0;
+
+    const connect = function() {
+        if (source) {
+            source.close();
+        }
+
+        source = new EventSource('/api/recommendations/me/live');
+
+        source.addEventListener('recommendation-refresh', function(event) {
+            reconnectAttempts = 0;
+
+            let payload = {};
+            try {
+                payload = JSON.parse(event.data || '{}');
+            } catch (e) {
+                payload = {};
+            }
+
+            if (payload.type !== 'RECOMMENDATION_REFRESH') {
+                return;
+            }
+
+            refreshHomepageRecommendations({
+                refresh: true,
+                recentProductIds: Array.isArray(payload.recentProductIds) ? payload.recentProductIds : []
+            });
+        });
+
+        source.onerror = function() {
+            if (source) {
+                source.close();
+                source = null;
+            }
+
+            reconnectAttempts += 1;
+            const nextDelay = Math.min(10000, 1000 * reconnectAttempts);
+            setTimeout(connect, nextDelay);
+        };
+    };
+
+    connect();
+}
+
+function savePendingRecommendationRefresh(orderId, productIds) {
+    const payload = {
+        orderId: Number(orderId),
+        recentProductIds: productIds,
+        createdAt: Date.now()
+    };
+
+    localStorage.setItem('pending_recommendation_refresh', JSON.stringify(payload));
+}
+
+function consumePendingRecommendationRefresh() {
+    const pendingRaw = localStorage.getItem('pending_recommendation_refresh');
+    if (!pendingRaw) {
+        return;
+    }
+
+    try {
+        const payload = JSON.parse(pendingRaw);
+        const createdAt = Number(payload.createdAt || 0);
+        const isExpired = !createdAt || (Date.now() - createdAt) > 5 * 60 * 1000;
+
+        if (isExpired) {
+            localStorage.removeItem('pending_recommendation_refresh');
+            return;
+        }
+
+        const recentProductIds = Array.isArray(payload.recentProductIds) ? payload.recentProductIds : [];
+        const refreshPromise = refreshHomepageRecommendations({
+            refresh: true,
+            recentProductIds: recentProductIds
+        });
+
+        if (refreshPromise && typeof refreshPromise.then === 'function') {
+            refreshPromise.then(function(success) {
+                if (success) {
+                    localStorage.removeItem('pending_recommendation_refresh');
+                }
+            });
+        }
+    } catch (e) {
+        localStorage.removeItem('pending_recommendation_refresh');
+    }
+}
+
+function notifyRecommendationRefresh(orderId, productIds) {
+    const userId = getLoggedInUserId();
+    if (!userId) {
+        return;
+    }
+
+    $.ajax({
+        url: '/api/recommendations/me/refresh',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            orderId: Number(orderId),
+            recentProductIds: productIds
+        }),
+        error: function() {
+            // Keep silent, local pending refresh already acts as a fallback.
+        }
+    });
+}
+
+function refreshHomepageRecommendations(options = {}) {
+    const userId = getLoggedInUserId();
+    const $section = $('#homepageRecommendationSection');
+    const $grid = $('#homepageRecommendationGrid');
+
+    if (!userId || !$section.length || !$grid.length) {
+        return Promise.resolve(false);
+    }
+
+    const limit = Number($section.data('limit')) || 8;
+    const params = new URLSearchParams();
+    params.set('limit', String(limit));
+
+    if (options.refresh) {
+        params.set('refresh', 'true');
+    }
+
+    if (Array.isArray(options.recentProductIds) && options.recentProductIds.length) {
+        params.set('recentProductIds', options.recentProductIds.join(','));
+    }
+
+    return fetch('/api/recommendations/me?' + params.toString(), {
+        method: 'GET',
+        credentials: 'same-origin'
+    })
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Unable to refresh recommendations');
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            const products = Array.isArray(data.recommendations) ? data.recommendations : [];
+            renderHomepageRecommendations(products);
+
+            const now = new Date();
+            const $status = $('#homepageRecommendationStatus');
+            if ($status.length) {
+                $status.text('Đã cập nhật lúc ' + now.toLocaleTimeString('vi-VN'));
+            }
+
+            return true;
+        })
+        .catch(function() {
+            // Silent fail to avoid breaking shopping flow
+            return false;
+        });
+}
+
+function renderHomepageRecommendations(products) {
+    const $grid = $('#homepageRecommendationGrid');
+    if (!$grid.length) {
+        return;
+    }
+
+    if (!Array.isArray(products) || !products.length) {
+        $grid.html('<div class="col-12"><p class="text-muted mb-0">Chưa có gợi ý phù hợp ở thời điểm này.</p></div>');
+        return;
+    }
+
+    const cardsHtml = products.map(function(product) {
+        return buildRecommendationCard(product);
+    }).join('');
+
+    $grid.html(cardsHtml);
+}
+
+function buildRecommendationCard(product) {
+    const productId = Number(product.productId || 0);
+    const productName = escapeHtml(product.productName || 'Sản phẩm');
+    const imageUrl = escapeHtml(product.imageUrl || '/images/default-product.jpg');
+    const productLink = '/products/' + productId;
+    const addToCartCall = 'addToCart(' + productId + ')';
+    const toggleWishlistCall = 'toggleWishlist(' + productId + ', this)';
+
+    const discountPrice = toNumberOrNull(product.discountPrice);
+    const price = toNumberOrNull(product.price) || 0;
+    const hasDiscount = discountPrice !== null && discountPrice < price;
+
+    const saleBadge = hasDiscount
+        ? '<span class="badge bg-danger badge-sale">-' + calculateSalePercent(discountPrice, price) + '%</span>'
+        : '';
+
+    return '' +
+        '<div class="col-md-3 col-sm-6">' +
+            '<div class="card product-card h-100 position-relative">' +
+                saleBadge +
+                '<button class="btn btn-light btn-sm rounded-circle wishlist-btn" data-in-wishlist="false" onclick="' + toggleWishlistCall + '">' +
+                    '<i class="far fa-heart"></i>' +
+                '</button>' +
+                '<a href="' + productLink + '">' +
+                    '<img src="' + imageUrl + '" alt="' + productName + '" class="card-img-top" style="height: 280px; object-fit: cover;">' +
+                '</a>' +
+                '<div class="card-body">' +
+                    '<h6 class="card-title">' +
+                        '<a href="' + productLink + '" class="text-decoration-none text-dark">' + productName + '</a>' +
+                    '</h6>' +
+                    buildRecommendationPriceHtml(price, discountPrice, hasDiscount) +
+                    '<button class="btn btn-primary btn-sm w-100" onclick="' + addToCartCall + '">' +
+                        '<i class="fas fa-shopping-cart me-1"></i>Thêm vào giỏ' +
+                    '</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+}
+
+function buildRecommendationPriceHtml(price, discountPrice, hasDiscount) {
+    if (hasDiscount) {
+        return '' +
+            '<div class="mb-2">' +
+                '<span class="h5 text-danger mb-0">' + formatNumber(discountPrice) + 'đ</span>' +
+                '<span class="text-muted text-decoration-line-through small ms-1">' + formatNumber(price) + 'đ</span>' +
+            '</div>';
+    }
+
+    return '' +
+        '<div class="mb-2">' +
+            '<span class="h5 text-danger mb-0">' + formatNumber(price) + 'đ</span>' +
+        '</div>';
+}
+
+function calculateSalePercent(discountPrice, price) {
+    if (!price || price <= 0 || discountPrice === null || discountPrice >= price) {
+        return 0;
+    }
+    return Math.round((1 - (discountPrice / price)) * 100);
+}
+
+function toNumberOrNull(value) {
+    if (value === null || value === undefined || value === '') {
+        return null;
+    }
+
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // Cart functions

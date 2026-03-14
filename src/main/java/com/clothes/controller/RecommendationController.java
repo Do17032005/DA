@@ -5,17 +5,23 @@ import com.clothes.model.Product;
 import com.clothes.model.UserInteraction;
 import com.clothes.service.HybridRecommendationService;
 import com.clothes.service.ItemBasedCFService;
+import com.clothes.service.RecommendationRealtimeService;
 import com.clothes.service.UserBasedCFService;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * REST API Controller for AI Recommendation System
@@ -31,15 +37,18 @@ public class RecommendationController {
     private final HybridRecommendationService hybridRecommendationService;
     private final UserBasedCFService userBasedCFService;
     private final ItemBasedCFService itemBasedCFService;
+    private final RecommendationRealtimeService recommendationRealtimeService;
     private final ProductDAO productDAO;
 
     public RecommendationController(HybridRecommendationService hybridRecommendationService,
             UserBasedCFService userBasedCFService,
             ItemBasedCFService itemBasedCFService,
+            RecommendationRealtimeService recommendationRealtimeService,
             ProductDAO productDAO) {
         this.hybridRecommendationService = hybridRecommendationService;
         this.userBasedCFService = userBasedCFService;
         this.itemBasedCFService = itemBasedCFService;
+        this.recommendationRealtimeService = recommendationRealtimeService;
         this.productDAO = productDAO;
     }
 
@@ -69,6 +78,103 @@ public class RecommendationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to get recommendations", "message", e.getMessage()));
         }
+    }
+
+    /**
+     * GET /api/recommendations/me
+     * Get personalized recommendations for currently logged-in user
+     */
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyRecommendations(
+            @RequestParam(defaultValue = "8") int limit,
+            @RequestParam(defaultValue = "false") boolean refresh,
+            @RequestParam(required = false) String recentProductIds,
+            HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized", "message", "Vui lòng đăng nhập"));
+        }
+
+        try {
+            List<Long> parsedRecentProductIds = parseRecentProductIds(recentProductIds);
+
+            List<Product> recommendations;
+            if (refresh) {
+                recommendations = hybridRecommendationService.refreshRecommendationsAfterPurchase(
+                        userId,
+                        parsedRecentProductIds,
+                        limit);
+            } else if (!parsedRecentProductIds.isEmpty()) {
+                recommendations = hybridRecommendationService.getRealtimeRecommendations(
+                        userId,
+                        parsedRecentProductIds,
+                        limit);
+            } else {
+                recommendations = hybridRecommendationService.getRecommendations(userId, limit);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("userId", userId);
+            response.put("count", recommendations.size());
+            response.put("recommendations", recommendations);
+            response.put("type", refresh ? "hybrid_realtime_refresh" : "hybrid");
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error getting session recommendations for user: {}", userId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to get recommendations", "message", e.getMessage()));
+        }
+    }
+
+    /**
+     * GET /api/recommendations/me/live
+     * Subscribe recommendation refresh events for currently logged-in user
+     */
+    @GetMapping(value = "/me/live", produces = "text/event-stream")
+    public ResponseEntity<SseEmitter> streamMyRecommendations(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        SseEmitter emitter = recommendationRealtimeService.subscribe(userId);
+        return ResponseEntity.ok(emitter);
+    }
+
+    /**
+     * POST /api/recommendations/me/refresh
+     * Notify recommendation refresh event for currently logged-in user
+     */
+    @PostMapping("/me/refresh")
+    public ResponseEntity<?> triggerMyRecommendationRefresh(
+            @RequestBody(required = false) RecommendationRefreshRequest request,
+            HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized", "message", "Vui lòng đăng nhập"));
+        }
+
+        List<Long> recentProductIds = request != null && request.getRecentProductIds() != null
+                ? request.getRecentProductIds()
+                : List.of();
+        Long orderId = request != null ? request.getOrderId() : null;
+
+        try {
+            hybridRecommendationService.refreshRecommendationsAfterPurchase(userId, recentProductIds, 8);
+        } catch (Exception e) {
+            logger.warn("Unable to pre-refresh recommendations for user {}", userId, e);
+        }
+
+        recommendationRealtimeService.publishRecommendationRefresh(userId, recentProductIds, orderId);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Recommendation refresh event sent",
+                "userId", userId));
     }
 
     /**
@@ -305,10 +411,9 @@ public class RecommendationController {
     public static class InteractionRequest {
         private Long userId;
         private Long productId;
-        private String interactionType; // view, add_to_cart, purchase, rating, wishlist
-        private BigDecimal value; // Optional, for ratings
+        private String interactionType;
+        private BigDecimal value;
 
-        // Getters and Setters
         public Long getUserId() {
             return userId;
         }
@@ -349,6 +454,45 @@ public class RecommendationController {
                     ", interactionType='" + interactionType + '\'' +
                     ", value=" + value +
                     '}';
+        }
+    }
+
+    public static class RecommendationRefreshRequest {
+        private Long orderId;
+        private List<Long> recentProductIds;
+
+        public Long getOrderId() {
+            return orderId;
+        }
+
+        public void setOrderId(Long orderId) {
+            this.orderId = orderId;
+        }
+
+        public List<Long> getRecentProductIds() {
+            return recentProductIds;
+        }
+
+        public void setRecentProductIds(List<Long> recentProductIds) {
+            this.recentProductIds = recentProductIds;
+        }
+    }
+
+    private List<Long> parseRecentProductIds(String rawRecentProductIds) {
+        if (rawRecentProductIds == null || rawRecentProductIds.trim().isEmpty()) {
+            return List.of();
+        }
+
+        try {
+            return Arrays.stream(rawRecentProductIds.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(Long::valueOf)
+                    .distinct()
+                    .collect(Collectors.toCollection(ArrayList::new));
+        } catch (Exception ex) {
+            logger.warn("Unable to parse recentProductIds={}", rawRecentProductIds);
+            return List.of();
         }
     }
 }
