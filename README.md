@@ -28,11 +28,13 @@ Clothes Shop là website bán hàng thời trang trực tuyến với đầy đ�
 - **Bootstrap Icons 1.11.3** - Icon system
 - **Montserrat Font** - Typography
 
-### Backend (Demo)
+### Backend & AI
 
-- **Spring Boot** - Java framework
-- **LocalStorage** - Client-side data storage (demo)
+- **Spring Boot 3.2.0** - Java framework
+- **Spring Security & JWT** - Authentication & Authorization
+- **MySQL** - Relational Database
 - **Maven** - Build tool
+- **AI Recommendation** - Collaborative Filtering & Time-Decay Trending
 
 ---
 
@@ -100,14 +102,20 @@ DA/
 
 ### 🛍️ E-Commerce Features
 
-- Product listing với filters
+- Product listing với filters, pagination, scrollbar
 - Search functionality
-- Shopping cart
-- Checkout process
-- Order history
-- User profile management
+- Shopping cart quản lý qua Database
+- Checkout process & Order management
+- User profile & Address management
+- **Voucher/Khuyến mãi system**
 
-### 🏪 New Pages (Phase 3)
+### 🤖 AI Recommendation System
+
+- **Time-Decay Trending:** Gợi ý sản phẩm định hướng theo xu hướng cho người dùng mới (Cold Start).
+- **Collaborative Filtering:** Gợi ý cá nhân hóa dựa trên độ tương đồng Cosine của vector hành vi người dùng.
+- **Interaction Tracking:** Thu thập và đánh giá trọng số tương tác (View, Wishlist, Add to Cart, Purchase).
+
+### 🏪 Other Pages
 
 - Store locator với city filter
 - Contact form với FAQ
@@ -140,26 +148,22 @@ DA/
 
 ---
 
-## 📊 Tiến Độ Dự Án
+## 📊 Tiến Độ Dự Án (Theo Sprints)
 
-### ✅ Phase 1-3: Hoàn thành (100%)
+### ✅ Sprint 1-3: UI/UX & Frontend Core (Hoàn thành 100%)
+- Phân tích thiết kế, xây dựng HTML/CSS/JS tĩnh.
+- Form validation, responsive mobile-first.
 
-- Fixed Swiper.js, logo, search, navigation
-- Standardized headers
-- Created missing pages
+### ✅ Sprint 4-5: Backend API & AI Integration (Hoàn thành 100%)
+- Restful API với Spring Boot + Spring Security JWT.
+- Tích hợp MySQL Database, thiết kế sơ đồ thực thể ERD.
+- Module thuật toán AI Recommendation.
+- Data Seeding & Logic cho Đơn hàng, Giỏ hàng, Voucher.
 
-### ✅ Phase 4: Hoàn thành (100%)
-
-- [x] Form validation (login + register)
-- [x] Loading states & error handling
-- [x] Mobile responsive optimization
-- [x] Testing checklist
-
-### 📋 Next: Testing & Deployment
-
-- Cross-browser testing
-- Mobile testing
-- Performance optimization
+### 🔄 Sprint 6: Kiểm thử & Báo cáo (Đang tiến hành)
+- Kiểm thử tích hợp toàn bộ hệ thống (E2E).
+- So sánh kết quả hiển thị UX có/không có AI Recommendation.
+- Hoàn thiện tài liệu, sơ đồ Use Case, và báo cáo.
 
 ---
 
@@ -190,6 +194,6 @@ http://localhost:8080/index.html
 
 ---
 
-**Version:** 1.0.0 (Phase 4 Complete)  
-**Status:** ✅ Ready for Testing  
-**Last Updated:** February 1, 2026
+**Version:** 2.0.0 (Tích hợp AI & Backend Complete)  
+**Status:** 🔄 Testing & Documentation  
+**Last Updated:** March 2026
